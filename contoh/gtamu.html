@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D & A | mks-Invitation</title>
+    
+    <style>
+        /* Pengaturan dasar dan font */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* Kontainer utama untuk memusatkan konten */
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: #222;
+        }
+
+        /* Styling untuk form group (label + input) */
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        /* Styling input teks */
+        #namaInput {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box; /* Agar padding tidak menambah lebar */
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        #namaInput:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+
+        /* Styling tombol */
+        button {
+            width: 100%;
+            padding: 14px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.1s;
+            margin-bottom: 10px; /* Jarak antar tombol */
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* Tombol Buat Link (Biru) */
+        #buatLinkBtn {
+            background-color: #007bff;
+            color: white;
+        }
+
+        #buatLinkBtn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Tombol Salin Isi Pesan (Abu-abu/Netral) */
+        #copyMessageBtn {
+            background-color: #6c757d; /* Abu-abu netral */
+            color: white;
+            /* margin-top: 15px; Ini dihapus atau dikurangi karena ada elemen "atau" */
+        }
+
+        #copyMessageBtn:hover {
+            background-color: #5a6268;
+        }
+        
+        /* Tombol Kirim WA (Hijau) */
+        #kirimWaBtn {
+            background-color: #25D366;
+            color: white;
+            /* margin-top: 5px; Ini dihapus atau dikurangi */
+        }
+
+        #kirimWaBtn:hover {
+            background-color: #1EAE57;
+        }
+
+        /* Area hasil link */
+        #hasilLink {
+            margin-top: 25px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #555;
+            min-height: 2.5em; /* Memberi ruang agar tidak 'loncat' */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            word-wrap: break-word; /* Memastikan link panjang tidak overflow */
+            word-break: break-all;
+        }
+        
+        /* Gaya untuk teks 'atau' */
+        .separator {
+            margin: 10px 0;
+            font-weight: 600;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>mks-Invitation <br>Generate Tamu Undangan</h2>
+
+        <div class="form-group">
+            <label for="namaInput">Masukkan Nama Tamu:</label>
+            <input type="text" id="namaInput" placeholder="Contoh: Darmy Alfian">
+        </div>
+
+        <button id="buatLinkBtn">Buat Undangan</button>
+
+        <p id="hasilLink">Undangan akan muncul di sini...</p>
+        
+        <button id="copyMessageBtn">Salin Isi Pesan</button>
+        
+        <p class="separator">atau</p>
+        
+        <button id="kirimWaBtn">Kirim Undangan via WhatsApp</button>
+    </div>
+
+    <script>
+        // Menunggu hingga seluruh dokumen HTML dimuat
+        document.addEventListener("DOMContentLoaded", function() {
+
+            // Menyeleksi elemen-elemen yang dibutuhkan
+            const namaInput = document.getElementById("namaInput");
+            const buatLinkBtn = document.getElementById("buatLinkBtn");
+            const hasilLink = document.getElementById("hasilLink");
+            const copyMessageBtn = document.getElementById("copyMessageBtn"); // Elemen baru
+            const kirimWaBtn = document.getElementById("kirimWaBtn");
+            
+            const baseURL = "https://mks-invit.github.io/darmy-alfian/?to=";
+
+            // FUNGSI UTAMA: Membuat Template Pesan WhatsApp
+            function generateWhatsAppMessage(namaAsli, linkLengkap) {
+                return `Kepada Yth.
+Bapak/Ibu/Saudara(i)
+*${namaAsli}*
+-------------------- 
+
+*Assalamualaikum Warahmatullahi Wabarakatuh*
+
+Tanpa mengurangi rasa hormat perkenankan kami mengundang Bapak/Ibu/Saudara(i) ${namaAsli} untuk menghadiri acara pernikahan kami.
+
+Berikut Link Undangan Perikahan kami:
+
+${linkLengkap}
+
+Merupakan suatu kebahagiaan bagi kami apabila Bapak/Ibu/Saudara(i) ${namaAsli} berkenan untuk hadir dan memberikan doa restu
+Terima kasih
+
+*Wassalamualaikum Warahmatullahi Wabarakatuh*
+
+Hormat Kami,
+Darmi & Alfian`;
+            }
+
+            // 1. Fungsionalitas Tombol "Buat Undangan"
+            buatLinkBtn.addEventListener("click", function() {
+                const nama = namaInput.value;
+
+                // Validasi sederhana
+                if (!nama) {
+                    alert("Silakan masukkan nama tamu terlebih dahulu.");
+                    return;
+                }
+
+                // Encode nama untuk URL
+                const encodedNama = encodeURIComponent(nama);
+                
+                // Buat link lengkap
+                const linkLengkap = baseURL + encodedNama;
+
+                // Tampilkan link
+                hasilLink.textContent = linkLengkap;
+                hasilLink.style.color = "#000"; 
+            });
+
+            // 2. Fungsionalitas Tombol "Salin Isi Pesan" (BARU)
+            copyMessageBtn.addEventListener("click", function() {
+                const namaAsli = namaInput.value;
+                const linkLengkap = hasilLink.textContent;
+
+                // Validasi
+                if (!namaAsli || linkLengkap === "Undangan akan muncul di sini...") {
+                    alert("Silakan masukkan nama dan klik 'Buat Undangan' terlebih dahulu.");
+                    return;
+                }
+
+                const templatePesan = generateWhatsAppMessage(namaAsli, linkLengkap);
+                
+                // Menggunakan API Clipboard untuk menyalin teks
+                navigator.clipboard.writeText(templatePesan).then(function() {
+                    // Beri feedback visual singkat
+                    const originalText = copyMessageBtn.textContent;
+                    copyMessageBtn.textContent = "Berhasil Disalin!";
+                    setTimeout(() => {
+                        copyMessageBtn.textContent = originalText;
+                    }, 2000);
+                    
+                }).catch(function(err) {
+                    console.error('Gagal menyalin: ', err);
+                    alert('Gagal menyalin pesan. Pastikan browser Anda mendukung fungsi salin.');
+                });
+            });
+
+            // 3. Fungsionalitas Tombol "Kirim Undangan via WhatsApp"
+            kirimWaBtn.addEventListener("click", function() {
+                const namaAsli = namaInput.value;
+                const linkLengkap = hasilLink.textContent;
+
+                // Validasi
+                if (!namaAsli || linkLengkap === "Undangan akan muncul di sini...") {
+                    alert("Silakan masukkan nama dan klik 'Buat Undangan' terlebih dahulu.");
+                    return;
+                }
+
+                // Buat template pesan
+                const templatePesan = generateWhatsAppMessage(namaAsli, linkLengkap);
+
+                // Encode seluruh pesan untuk URL WhatsApp
+                const encodedPesan = encodeURIComponent(templatePesan);
+
+                // Buat URL WhatsApp
+                const waURL = `https://wa.me/?text=${encodedPesan}`;
+
+                // Buka link WhatsApp di tab baru
+                window.open(waURL, "_blank");
+            });
+
+        });
+    </script>
+
+</body>
+</html>
