@@ -1091,9 +1091,71 @@ var pp = {"ajax_url":"https:\/\/web.menujuacara.id\/wp-admin\/admin-ajax.php"};
 			<div class="elementor-widget-wrap elementor-element-populated">
 						<div class="elementor-element elementor-element-5b8d46f5 elementor-widget elementor-widget-html" data-id="5b8d46f5" data-element_type="widget" data-widget_type="html.default">
 				<div class="elementor-widget-container">
-			<script>
-var x=document.getElementById("song");var y = document.getElementById("youtube-audio");window.onbeforeunload=function(){window.scrollTo(0,0)};disableScrolling();document.body.style.overflowY="hidden";document.body.style.heigth="100vh";document.getElementById("tombol-buka").onclick=function(){myFunction();if(x!=null){playAudio();}if(y!=null){toggleAudio();}};function myFunction(){document.body.style.overflowY="unset";document.getElementById("tombol-buka").style.visibility="hidden";enableScrolling();}function disableScrolling(){var x=window.scrollX;var y=window.scrollY;window.onscroll=function(){window.scrollTo(x,y)}}function enableScrolling(){window.onscroll=function(){}}function playAudio(){x.play()}function pauseAudio(){x.pause()};
-</script>		</div>
+		
+
+
+
+<script>
+    var x=document.getElementById("song");
+    var y = document.getElementById("youtube-audio");
+    window.onbeforeunload=function(){window.scrollTo(0,0)};
+    disableScrolling();
+    document.body.style.overflowY="hidden";
+    document.body.style.heigth="100vh";
+    
+    // BAGIAN YANG DIMODIFIKASI: Tambahkan masukLayarPenuh();
+    document.getElementById("tombol-buka").onclick=function(){
+        myFunction();
+        if(x!=null){playAudio();}
+        if(y!=null){toggleAudio();}
+        
+        // Panggilan fungsi fullscreen di sini
+        masukLayarPenuh(); 
+    };
+    
+    function myFunction(){
+        document.body.style.overflowY="unset";
+        document.getElementById("tombol-buka").style.visibility="hidden";
+        enableScrolling();
+    }
+    
+    function disableScrolling(){
+        var x=window.scrollX;
+        var y=window.scrollY;
+        window.onscroll=function(){window.scrollTo(x,y)}
+    }
+    
+    function enableScrolling(){
+        window.onscroll=function(){}
+    }
+    
+    function playAudio(){
+        x.play()
+    }
+    
+    function pauseAudio(){
+        x.pause()
+    };
+    
+    // FUNGSI BARU UNTUK FULLSCREEN
+    function masukLayarPenuh() {
+        const docEl = document.documentElement;
+        // Cek dukungan untuk berbagai browser
+        if (docEl.requestFullscreen) {
+            docEl.requestFullscreen();
+        } else if (docEl.mozRequestFullScreen) { /* Firefox */
+            docEl.mozRequestFullScreen();
+        } else if (docEl.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+            docEl.webkitRequestFullscreen();
+        } else if (docEl.msRequestFullscreen) { /* IE/Edge */
+            docEl.msRequestFullscreen();
+        }
+    }
+</script>
+
+
+
+		</div>
 				</div>
 				<div class="elementor-element elementor-element-5882d25 elementor-widget elementor-widget-html" data-id="5882d25" data-element_type="widget" data-widget_type="html.default">
 				<div class="elementor-widget-container">
@@ -1475,6 +1537,9 @@ var ppCoupons = {"copied_text":"Copied"};
 <div class="watermark"><center><h3> </h3></center></div>
 
 
+	
+	
+	
 	
 	</body>
 
