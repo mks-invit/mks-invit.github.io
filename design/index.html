@@ -102,6 +102,32 @@ window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/16
     .cui_comment_count_card.cui_card-masih_ragu {
     background-color: #d7a916;
     }
+
+
+
+.watermark {
+  position: fixed; /* Membuatnya tetap di layar bahkan saat di-scroll */
+  top: 50%;
+  left: 50%;
+  
+  /* Mengatur kemiringan dan posisi tengah */
+  transform: translate(-50%, -50%) rotate(-45deg); 
+  
+  /* Ganti 'rem' untuk ukuran font yang berbeda */
+  font-size: 4rem; 
+  font-weight: bold;
+  color: rgba(0, 0, 0, 0.1); /* Warna semi-transparan (0.1 = 10% opacity) */
+  
+  /* Memastikan watermark di atas konten lain */
+  z-index: 9999; 
+  
+  /* Mencegah watermark menghalangi klik pada elemen di bawahnya */
+  pointer-events: none; 
+  
+  /* Mencegah teks ter-highlight */
+  user-select: none; 
+}
+
 	
 </style>
 <link rel='stylesheet' id='hello-elementor-css' href='wp-content/themes/hello-elementor/style.min653d.css?ver=2.7.1' media='all' />
@@ -5504,8 +5530,14 @@ var ppCoupons = {"copied_text":"Copied"};
 </script>
 <script src="wp-content/plugins/powerpack-elements/assets/js/min/frontend.min47cd.js?ver=2.9.17" id="powerpack-frontend-js"></script>
 <script src="wp-content/plugins/powerpack-elements/assets/lib/tooltipster/tooltipster.min47cd.js?ver=2.9.17" id="pp-tooltipster-js"></script>
+
+
+<div class="watermark">0823 9522 3314</div>
+
+	
 	</body>
 
 <!-- Mirrored from web.menujuacara.id/ by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 11 Nov 2025 13:27:26 GMT -->
 
 </html>
+
