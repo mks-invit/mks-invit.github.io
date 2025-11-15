@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Tugas Fitur Lengkap & Pengarsipan</title>
+    <title>Daftar Tugas (Task List)</title>
     <!-- Memuat Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -15,7 +15,7 @@
             color: #1f2937; /* Default text color (Light Mode fallback) */
             transition: background-color 0.3s, color 0.3s;
         }
-    
+
         /* Dark Mode Styles */
         body.dark {
             background-color: #1f2937;
@@ -25,1232 +25,556 @@
             background-color: #374151;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
         }
-        body.dark .border-gray-300 { border-color: #4b5563; }
-        body.dark .bg-gray-50, body.dark .bg-gray-100 { background-color: #4b5563; }
-        body.dark .text-gray-800 { color: #f3f4f6; }
-        body.dark .text-gray-500 { color: #d1d5db; }
-        body.dark input[type="text"], body.dark input[type="date"], body.dark select {
+        body.dark .border-gray-300 {
+            border-color: #4b5563;
+        }
+        body.dark .bg-white {
             background-color: #4b5563;
+        }
+        body.dark .text-gray-700 {
+            color: #d1d5db;
+        }
+        body.dark .hover:bg-gray-100:hover {
+            background-color: #6b7280;
+        }
+        body.dark .text-blue-600 {
+            color: #93c5fd;
+        }
+        body.dark .text-green-600 {
+            color: #6ee7b7;
+        }
+        body.dark input[type="text"], body.dark input[type="date"] {
+            background-color: #374151;
             color: #f3f4f6;
-        }
-        body.dark .subtask-input, body.dark #search-input { background-color: #4b5563 !important; }
-        
-        /* Dark Mode Color Adjustments for Tasks */
-        body.dark .task-completed { 
-            background-color: #4b5563; 
-            border-left-color: #10b981; 
-        }
-        body.dark .task-normal { 
-            background-color: #2c343e; 
-            border-left-color: #818cf8; 
-        }
-        body.dark .task-overdue { 
-            background-color: #584b3d; 
-            border-left-color: #ef4444; 
-        }
-        body.dark .subtask-item { background-color: #4b5563; }
-        body.dark .text-red-700 { color: #f87171; } 
-        body.dark .task-archived {
-            background-color: #2a2a2a; /* Warna lebih gelap untuk arsip */
-            border-left-color: #9ca3af; /* Abu-abu untuk arsip */
-        }
-
-        /* Style untuk input tanggal */
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(30%) sepia(35%) saturate(2200%) hue-rotate(220deg) brightness(90%) contrast(80%);
-        }
-        body.dark input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(70%) sepia(10%) saturate(1000%) hue-rotate(220deg) brightness(120%) contrast(80%);
-        }
-        /* Style untuk elemen yang dapat diklik (edit) */
-        .editable {
-            cursor: pointer;
-            padding: 1px 2px;
-            border-radius: 4px;
-            transition: background-color 0.1s;
-        }
-        .editable:hover {
-            background-color: rgba(165, 180, 252, 0.2); /* Indigo-200 opacity */
-        }
-        body.dark .editable:hover {
-             background-color: rgba(99, 102, 241, 0.3); /* Indigo-500 opacity */
+            border-color: #4b5563;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-start p-4 sm:p-8">
+<body class="transition-colors duration-300">
+    <div id="app-container" class="max-w-xl mx-auto mt-8 p-6 bg-white rounded-xl shadow-2xl transition-all duration-300">
+        <h1 class="text-3xl font-bold mb-4 text-center text-gray-800 dark:text-gray-100">Daftar Tugas Saya</h1>
 
-    <div class="w-full max-w-lg mb-4 flex justify-between items-center">
-        <!-- Dark Mode Toggle -->
-        <button
-            id="dark-mode-toggle"
-            class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 p-2 rounded-lg text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition"
-        >
-            Mode Terang
-        </button>
-        <!-- User ID placeholder yang ditingkatkan untuk salin/ganti -->
-        <div id="auth-section" class="flex flex-col items-end space-y-2">
-            <!-- Display & Reset Section -->
-            <div id="auth-info-display" class="flex items-center p-2 bg-indigo-50 dark:bg-indigo-900/50 rounded-lg text-xs text-indigo-700 dark:text-indigo-300">
-                <span class="font-semibold mr-1">ID Sesi:</span>
-                <span id="current-user-id" class="truncate max-w-28 sm:max-w-40 mr-2">Memuat...</span>
-                <button id="reset-id-btn" title="Reset ke ID Asli" class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200 transition">
-                    <!-- Icon Reset/Refresh -->
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m-4.243 0H4m11.5 0H20m-5.18 5.18a8.001 8.001 0 01-14.837 0m0 0H3m-1 0h12.179"></path></svg>
-                </button>
-            </div>
-            <!-- ID Change Input Section -->
-            <div class="flex">
-                <input type="text" id="new-id-input" placeholder="Ganti ID Sesi" class="p-1 text-xs border border-gray-300 rounded-l-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" style="width: 120px;">
-                <button id="switch-id-btn" class="bg-indigo-500 text-white p-1 text-xs rounded-r-lg hover:bg-indigo-600 transition disabled:opacity-50" title="Terapkan ID Baru">Ganti</button>
+        <!-- Info Autentikasi -->
+        <div id="auth-info" class="mb-4 text-center">
+            <div id="auth-info-display" class="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-xs text-blue-700 dark:text-blue-300">
+                Memuat autentikasi...
+                <span id="current-user-id" class="font-mono text-xs break-all"></span>
             </div>
         </div>
-    </div>
-    
-    <!-- SESSION SHORTCUTS -->
-    <div id="session-shortcuts-container" class="w-full max-w-lg mb-4 text-xs">
-        <div id="saved-ids-list" class="flex flex-wrap gap-2 items-center min-h-6">
-            <!-- Shortcuts will be rendered here by JavaScript -->
-        </div>
-    </div>
-    <!-- END SESSION SHORTCUTS -->
 
-    <div id="app-container" class="w-full max-w-lg bg-white shadow-2xl rounded-xl p-6 transition-all duration-300">
-        <h1 class="text-3xl font-extrabold text-gray-800 dark:text-white mb-2">Daftar Tugas Saya</h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Kelola tugas pribadi Anda dengan prioritas, tanggal, dan lokasi. Klik item teks untuk mengeditnya!</p>
-
-        
-        <!-- Formulir Tambah Tugas -->
-        <div class="space-y-3 mb-6">
-            <!-- Input Nama Tugas -->
-            <input
-                type="text"
-                id="task-input"
-                placeholder="Apa yang perlu Anda lakukan? (Wajib)"
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
-            >
+        <!-- Bagian Input Tugas Baru -->
+        <div class="space-y-4 mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg shadow-inner bg-gray-50 dark:bg-gray-700/50">
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-100">Tambah Tugas Baru</h2>
+            <input type="text" id="task-input" placeholder="Apa yang perlu Anda lakukan?" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100">
             
-            <!-- Input Tanggal & Lokasi -->
-            <div class="flex gap-3">
-                <input
-                    type="date"
-                    id="due-date-input"
-                    class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 text-gray-700 dark:text-gray-300"
-                    title="Tanggal Jatuh Tempo (Wajib)"
-                >
-                 <input
-                    type="text"
-                    id="location-input"
-                    placeholder="Lokasi (Wajib)"
-                    class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150"
-                >
+            <div class="flex space-x-3">
+                <input type="date" id="due-date-input" class="w-1/2 p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100">
+                <input type="text" id="location-input" placeholder="Lokasi (mis: Kantor, Rumah)" class="w-1/2 p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100">
             </div>
 
-            <!-- Input Prioritas -->
-             <select
-                id="priority-input"
-                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 text-gray-700 dark:text-gray-300"
-                title="Prioritas"
-            >
-                <option value="Medium" selected>Prioritas Sedang</option>
-                <option value="High">Prioritas Tinggi</option>
-                <option value="Low">Prioritas Rendah</option>
-            </select>
-
-            <!-- Tombol Tambah Tugas -->
-            <button
-                id="add-task-btn"
-                class="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-150 shadow-md hover:shadow-lg disabled:opacity-50"
-                disabled
-            >
+            <button id="add-task-btn" disabled class="w-full p-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
                 Tambah Tugas
             </button>
+            <div id="input-validation-message" class="text-sm text-red-500 mt-2 hidden">
+                Harap isi kolom tugas dan tanggal jatuh tempo.
+            </div>
+        </div>
+
+        <!-- Bagian Filter & Pencarian -->
+        <div class="mb-6 space-y-3">
+            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-100">Filter & Pencarian</h2>
+            
+            <!-- Filter Tanggal -->
+            <div class="flex space-x-2">
+                <button id="filter-date-all" class="filter-date-btn px-4 py-2 text-sm bg-blue-500 text-white rounded-full transition duration-150 shadow-md hover:bg-blue-600" data-filter="all">Semua Tanggal</button>
+                <button id="filter-date-today" class="filter-date-btn px-4 py-2 text-sm bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-full transition duration-150 hover:bg-gray-300 dark:hover:bg-gray-500" data-filter="today">Hari Ini</button>
+                <button id="filter-date-week" class="filter-date-btn px-4 py-2 text-sm bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-full transition duration-150 hover:bg-gray-300 dark:hover:bg-gray-500" data-filter="week">Minggu Ini</button>
+            </div>
+
+            <!-- Pencarian -->
+            <input type="text" id="search-input" placeholder="Cari tugas..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100">
         </div>
         
-        <!-- Pesan Status/Error -->
-        <div id="status-message" class="hidden mb-4 p-3 rounded-lg text-sm transition-all duration-300"></div>
-
-        <!-- Filter Bar -->
-        <div class="mb-4 space-y-3 p-3 border-b dark:border-gray-700">
-            <h3 class="text-sm font-semibold text-gray-600 dark:text-gray-300">Filter Tugas</h3>
-            
-            <!-- Search Input -->
-            <input
-                type="text"
-                id="search-input"
-                placeholder="Cari tugas, lokasi, atau prioritas..."
-                class="w-full p-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            >
-            
-            <div class="flex flex-wrap gap-2 text-xs">
-                <!-- Filter Status (Tambahkan Arsip di sini) -->
-                <span class="font-medium text-gray-500 dark:text-gray-400">Status:</span>
-                <button id="filter-status-active" class="filter-btn px-2 py-1 rounded-full font-semibold bg-indigo-500 text-white">Aktif</button>
-                <button id="filter-status-incomplete" class="filter-btn px-2 py-1 rounded-full font-medium bg-gray-200 dark:bg-gray-700 dark:text-gray-200">Belum Selesai</button>
-                <button id="filter-status-archived" class="filter-btn px-2 py-1 rounded-full font-medium bg-gray-200 dark:bg-gray-700 dark:text-gray-200">Arsip</button>
-            </div>
-
-            <div class="flex flex-wrap gap-2 text-xs">
-                <span class="font-medium text-gray-500 dark:text-gray-400">Jatuh Tempo:</span>
-                <button id="filter-date-all" class="filter-btn px-2 py-1 rounded-full font-semibold bg-indigo-500 text-white">Semua</button>
-                <button id="filter-date-today" class="filter-btn px-2 py-1 rounded-full font-medium bg-gray-200 dark:bg-gray-700 dark:text-gray-200">Hari Ini</button>
-                <button id="filter-date-week" class="filter-btn px-2 py-1 rounded-full font-medium bg-gray-200 dark:bg-gray-700 dark:text-gray-200">Minggu Ini</button>
-            </div>
-        </div>
-
         <!-- Daftar Tugas -->
-        <div id="tasks-list" class="space-y-4">
-            <p id="loading-tasks" class="text-gray-500 dark:text-gray-400 text-center py-4 hidden">Memuat tugas...</p>
-            <p id="no-tasks" class="text-gray-500 dark:text-gray-400 text-center py-4 hidden">Tidak ada tugas. Tambahkan yang baru!</p>
+        <div id="task-list" class="space-y-3">
+            <!-- Tugas akan dimuat di sini -->
         </div>
-        
+
+        <!-- Status Loading -->
+        <div id="loading-spinner" class="text-center mt-6 hidden">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-8 w-8 mx-auto" style="border-top-color: #3b82f6;"></div>
+            <p class="text-gray-500 mt-2">Memuat Tugas...</p>
+        </div>
+
+        <!-- Tombol Dark Mode -->
+        <div class="mt-6 text-center">
+            <button id="theme-toggle" class="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition duration-150 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <span class="ml-1">Ganti Tema</span>
+            </button>
+        </div>
     </div>
 
-    <!-- FOOTER COPYRIGHT -->
-    <footer class="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-        <p>
-            &copy; 2025
-            <a 
-                href="https://wa.me/6282395223314" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium transition"
-            >
-                aL-Ihsan Computer
-            </a>
-        </p>
-        <p class="text-xs mt-1">Ditenagai oleh Firebase</p>
-    </footer>
-
-    <!-- Memuat Firebase SDKs -->
     <script type="module">
+        // Import Firebase dari CDN
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // setLogLevel('Debug'); // Opsional: Untuk melihat log debug Firestore
-
-        /* * =====================================================================
-         * KONFIGURASI FIREBASE ANDA (Proyek: my-todo-2025-5d96b)
-         * =====================================================================
-         * PENTING: Menggunakan konfigurasi yang Anda sediakan.
-         */
-        const YOUR_FIREBASE_CONFIG = {
-          apiKey: "AIzaSyCpEzY-PnD-0g0EdhNzYyzPW_Jsp4h2fZU",
-          authDomain: "my-todo-2025-5d96b.firebaseapp.com",
-          projectId: "my-todo-2025-5d96b",
-          storageBucket: "my-todo-2025-5d96b.firebasestorage.app",
-          messagingSenderId: "36391204698",
-          appId: "1:36391204698:web:ab1142a99ad9926ce16563"
-        };
-        
-        // Cek variabel global yang disediakan oleh Canvas (jika ada)
-        const appId = typeof __app_id !== 'undefined' ? __app_id : YOUR_FIREBASE_CONFIG.appId || 'default-app-id'; 
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : YOUR_FIREBASE_CONFIG;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; 
-        
-        // --- Variabel Global Aplikasi ---
-        let app;
+        // Variabel Global
         let db;
         let auth;
-        let originalUserId = null; // Menyimpan UID asli dari otentikasi awal
-        let userId = null; 
-        let tasksCollectionRef = null;
-        let allTasksCache = []; // Cache untuk menyimpan semua tugas (termasuk yang diarsipkan)
-        let unsubscribeListener = null; // Menyimpan fungsi unsubscribe listener Firestore
+        let appId;
+        let currentUserId;
+        let allTasksCache = []; // Cache untuk semua tugas
+        let currentFilterDate = 'all'; // 'all', 'today', 'week'
+        let currentSearchTerm = '';
+        let unsubscribeTasks = null; // Untuk menyimpan fungsi unsubscribe onSnapshot
 
-        // Batas maksimum ID Sesi yang disimpan di localStorage
-        const MAX_SAVED_IDS = 5;
-
-        // --- Status Filter Global ---
-        // 'active' (default, bukan arsip), 'incomplete', 'archived'
-        let currentFilterStatus = 'active'; 
-        let currentFilterDate = 'all'; 
-        let currentSearchTerm = ''; // NEW
-
-        // --- Elemen DOM ---
+        // Elemen DOM
+        const taskListEl = document.getElementById('task-list');
         const taskInput = document.getElementById('task-input');
-        const priorityInput = document.getElementById('priority-input'); 
         const dueDateInput = document.getElementById('due-date-input');
         const locationInput = document.getElementById('location-input');
         const addTaskBtn = document.getElementById('add-task-btn');
-        const statusMessageEl = document.getElementById('status-message');
-        const tasksListEl = document.getElementById('tasks-list');
-        const loadingTasksEl = document.getElementById('loading-tasks');
-        const noTasksEl = document.getElementById('no-tasks');
-        const darkModeToggleBtn = document.getElementById('dark-mode-toggle'); 
-        
-        // --- Elemen DOM untuk ID Sesi ---
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const authInfoDisplayEl = document.getElementById('auth-info-display');
         const currentUserIdEl = document.getElementById('current-user-id');
-        const resetIdBtn = document.getElementById('reset-id-btn');
-        const newIdInput = document.getElementById('new-id-input');
-        const switchIdBtn = document.getElementById('switch-id-btn');
-        const authInfoDisplayEl = document.getElementById('auth-info-display'); 
-        const savedIdsListEl = document.getElementById('saved-ids-list'); 
-
-        // Filter Buttons & Search Input
-        const filterStatusActiveBtn = document.getElementById('filter-status-active'); 
-        const filterStatusIncompleteBtn = document.getElementById('filter-status-incomplete');
-        const filterStatusArchivedBtn = document.getElementById('filter-status-archived'); 
+        const validationMessageEl = document.getElementById('input-validation-message');
+        const searchInput = document.getElementById('search-input');
+        
         const filterDateAllBtn = document.getElementById('filter-date-all');
         const filterDateTodayBtn = document.getElementById('filter-date-today');
         const filterDateWeekBtn = document.getElementById('filter-date-week');
-        const searchInput = document.getElementById('search-input'); 
 
+        // ====================================================================
+        // UTILITIES & TEMA
+        // ====================================================================
 
-        // Fungsi utilitas untuk menampilkan pesan status/error
-        function showStatus(message, isError = false) {
-            statusMessageEl.textContent = message;
-            statusMessageEl.className = `mb-4 p-3 rounded-lg text-sm transition-all duration-300 ${isError ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300' : 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300'}`;
-            statusMessageEl.classList.remove('hidden');
-
-            setTimeout(() => {
-                statusMessageEl.classList.add('hidden');
-            }, 3000);
-        }
-        
-        // Utilitas untuk menghasilkan ID unik lokal (untuk subtasks)
-        function generateLocalId() {
-            return crypto.randomUUID();
+        function setLoading(isLoading) {
+            loadingSpinner.classList.toggle('hidden', !isLoading);
         }
 
-        // --- Fungsi Auth & Setup Inti ---
-
-        /**
-         * Mengautentikasi pengguna, mengatur ID pengguna, dan memulai listener data.
-         * Menggunakan signInWithCustomToken jika token ada, jika tidak, menggunakan signInAnonymously().
-         * @param {string|null} token - Token kustom.
-         */
-        async function authenticateUserAndSetupListener(token) {
-            if (unsubscribeListener) {
-                unsubscribeListener();
-                unsubscribeListener = null;
-            }
-            
-            try {
-                let uid;
-                if (token) {
-                    const userCredential = await signInWithCustomToken(auth, token);
-                    uid = userCredential.user.uid;
-                } else {
-                    const userCredential = await signInAnonymously(auth);
-                    uid = userCredential.user.uid;
-                }
-                
-                if (originalUserId === null) {
-                   originalUserId = uid;
-                }
-                
-                userId = uid; 
-                // Path koleksi standar: /artifacts/{appId}/users/{userId}/tasks
-                tasksCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/tasks`);
-                
-                currentUserIdEl.textContent = userId;
-                authInfoDisplayEl.classList.remove('bg-yellow-100', 'text-yellow-800', 'dark:bg-yellow-900/50', 'dark:text-yellow-300');
-                authInfoDisplayEl.classList.add('bg-indigo-50', 'text-indigo-700', 'dark:bg-indigo-900/50', 'dark:text-indigo-300');
-                addTaskBtn.disabled = false;
-                
-                setupRealtimeListener();
-            } catch (error) {
-                console.error("Gagal melakukan otentikasi Firebase:", error);
-                showStatus("Gagal mengotentikasi. Cek konfigurasi Firebase Anda.", true);
-                throw new Error("Gagal mengotentikasi.");
-            }
-        }
-
-        // --- Fungsi ID Sesi Baru & Shortcut ---
-        
-        function getSavedIds() {
-            try {
-                const savedIds = localStorage.getItem('savedUserIds');
-                return savedIds ? JSON.parse(savedIds) : [];
-            } catch (e) {
-                console.error("Failed to load saved IDs from localStorage:", e);
-                return [];
-            }
-        }
-
-        function saveIdShortcut(id) {
-            // Hanya simpan ID yang dimasukkan secara manual atau ID anonim jika originalUserId belum ada
-            if (originalUserId && id === originalUserId) return; 
-
-            let ids = getSavedIds();
-            ids = ids.filter(savedId => savedId !== id);
-            ids.unshift(id);
-            
-            if (ids.length > MAX_SAVED_IDS) {
-                ids = ids.slice(0, MAX_SAVED_IDS);
-            }
-            
-            localStorage.setItem('savedUserIds', JSON.stringify(ids));
-            renderSavedIds(); 
-        }
-
-        function renderSavedIds() {
-            const ids = getSavedIds();
-            savedIdsListEl.innerHTML = '';
-            
-            if (ids.length === 0) {
-                savedIdsListEl.innerHTML = '<span class="text-xs italic text-gray-400">Ganti ID Sesi untuk menyimpan shortcut.</span>';
-                return;
-            }
-
-            savedIdsListEl.innerHTML += '<span class="font-medium mr-1 text-gray-700 dark:text-gray-300">Shortcut Sesi:</span>';
-            
-            ids.forEach(id => {
-                const btn = document.createElement('button');
-                const isActive = id === userId;
-                
-                btn.className = `px-2 py-0.5 rounded-full text-xs font-medium transition ${
-                    isActive 
-                    ? 'bg-indigo-600 text-white shadow-md' 
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600'
-                }`;
-                
-                btn.textContent = id.substring(0, 8) + '...'; 
-                btn.title = `Beralih ke ID: ${id}`;
-                
-                btn.addEventListener('click', () => {
-                    if (!isActive) {
-                        switchSessionId(id);
-                    }
-                });
-                
-                savedIdsListEl.appendChild(btn);
-            });
-        }
-
-        async function switchSessionId(newId) {
-            if (!newId || newId.trim() === '') {
-                showStatus('ID Sesi baru tidak boleh kosong.', true);
-                return;
-            }
-            
-            if (unsubscribeListener) {
-                unsubscribeListener();
-            }
-            
-            userId = newId.trim();
-            // Beralih ke koleksi untuk ID Sesi yang berbeda
-            tasksCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/tasks`);
-            
-            currentUserIdEl.textContent = userId;
-            
-            authInfoDisplayEl.classList.add('bg-yellow-100', 'text-yellow-800', 'dark:bg-yellow-900/50', 'dark:text-yellow-300');
-            authInfoDisplayEl.classList.remove('bg-indigo-50', 'text-indigo-700', 'dark:bg-indigo-900/50', 'dark:text-indigo-300');
-            
-            setupRealtimeListener();
-            
-            saveIdShortcut(userId);
-            
-            showStatus(`Beralih ke ID Sesi: ${userId}.`);
-            newIdInput.value = '';
-        }
-        
-        async function resetSessionId() {
-            if (auth.currentUser) {
-                await signOut(auth);
-            }
-            
-            try {
-                // Hapus originalUserId agar ID baru yang anonim menjadi originalUserId
-                originalUserId = null; 
-                await authenticateUserAndSetupListener(initialAuthToken); 
-                showStatus('ID Sesi berhasil direset ke ID anonim baru.');
-            } catch (error) {
-                console.error("Gagal reset ID Sesi:", error);
-                showStatus('Gagal mereset ID. Cek konsol.', true);
-            }
-        }
-
-
-        // --- Dark Mode Logic ---
-
-        function initDarkMode() {
-            let isDarkModePreference = localStorage.getItem('darkMode');
-            let isDarkMode;
-
-            if (isDarkModePreference === null) {
-                isDarkMode = true; 
-            } else {
-                isDarkMode = isDarkModePreference === 'true';
-            }
-            
+        function initializeTheme() {
+            const isDarkMode = localStorage.getItem('theme') === 'dark' || 
+                                (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
             document.body.classList.toggle('dark', isDarkMode);
-            darkModeToggleBtn.textContent = isDarkMode ? 'Mode Terang' : 'Mode Gelap';
         }
 
-        function toggleDarkMode() {
+        function toggleTheme() {
             const isDarkMode = document.body.classList.toggle('dark');
-            localStorage.setItem('darkMode', isDarkMode);
-            darkModeToggleBtn.textContent = isDarkMode ? 'Mode Terang' : 'Mode Gelap';
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
         }
 
-
-        // --- Filter UI Logic ---
-
-        function updateFilterUI() {
-            [filterStatusActiveBtn, filterStatusIncompleteBtn, filterStatusArchivedBtn].forEach(btn => {
-                const statusName = btn.id.replace('filter-status-', '');
-                const isActive = statusName === currentFilterStatus;
-                btn.className = isActive 
-                    ? 'filter-btn px-2 py-1 rounded-full font-semibold bg-indigo-500 text-white' 
-                    : 'filter-btn px-2 py-1 rounded-full font-medium bg-gray-200 dark:bg-gray-700 dark:text-gray-200';
-            });
-
-             [filterDateAllBtn, filterDateTodayBtn, filterDateWeekBtn].forEach(btn => {
-                const dateName = btn.id.includes('all') ? 'all' : btn.id.includes('today') ? 'today' : 'thisweek';
-                const isActive = dateName === currentFilterDate;
-                btn.className = isActive 
-                    ? 'filter-btn px-2 py-1 rounded-full font-semibold bg-indigo-500 text-white' 
-                    : 'filter-btn px-2 py-1 rounded-full font-medium bg-gray-200 dark:bg-gray-700 dark:text-gray-200';
-            });
-            
-            renderTasks(allTasksCache);
+        function getTodayDateString() {
+            return new Date().toISOString().split('T')[0];
         }
 
-        // --- Filtering, Searching, and Sorting Logic ---
-
-        /**
-         * Menerapkan filter, pencarian, dan pengurutan ke array tugas.
-         * @param {Array<Object>} tasks - Array tugas.
-         * @returns {Array<Object>} Array tugas yang difilter dan diurutkan.
-         */
-        function applyFiltersAndSort(tasks) {
-            let filteredTasks = [...tasks];
-            const searchFilter = searchInput.value.toLowerCase().trim();
-
-            // 1. Filtering by Archiving Status
-            if (currentFilterStatus === 'active') {
-                // Tampilkan hanya yang TIDAK diarsipkan
-                filteredTasks = filteredTasks.filter(t => !t.archived);
-            } else if (currentFilterStatus === 'archived') {
-                // Tampilkan hanya yang DIARSIPKAN
-                filteredTasks = filteredTasks.filter(t => t.archived);
-            } else if (currentFilterStatus === 'incomplete') {
-                // Tampilkan yang BELUM SELESAI DAN BUKAN ARSIP
-                 filteredTasks = filteredTasks.filter(t => !t.completed && !t.archived);
+        function getDateFromTimestamp(timestamp) {
+            if (!timestamp) return null;
+            // Firestore timestamps often come as objects with seconds/nanoseconds
+            if (timestamp.seconds) {
+                return new Date(timestamp.seconds * 1000).toISOString().split('T')[0];
             }
-            
-            // 2. Filtering by Date
-            const now = new Date();
-            const today = new Date(now);
-            today.setHours(0, 0, 0, 0);
-            const endOfWeek = new Date(today);
-            endOfWeek.setDate(today.getDate() + 7);
-
-            if (currentFilterDate === 'today') {
-                filteredTasks = filteredTasks.filter(t => {
-                    if (!t.dueDate) return false;
-                    const taskDate = new Date(t.dueDate + 'T00:00:00');
-                    taskDate.setHours(0, 0, 0, 0);
-                    return taskDate.getTime() === today.getTime();
-                });
-            } else if (currentFilterDate === 'thisweek') {
-                filteredTasks = filteredTasks.filter(t => {
-                    if (!t.dueDate) return false;
-                    const taskDate = new Date(t.dueDate + 'T00:00:00');
-                    taskDate.setHours(0, 0, 0, 0);
-                    return taskDate.getTime() >= today.getTime() && taskDate.getTime() < endOfWeek.getTime();
-                });
-            }
-            
-            // 3. Filtering by Search Term
-            if (searchFilter) {
-                filteredTasks = filteredTasks.filter(t => 
-                    t.name.toLowerCase().includes(searchFilter) ||
-                    t.location.toLowerCase().includes(searchFilter) ||
-                    t.priority.toLowerCase().includes(searchFilter)
-                );
-            }
-
-
-            // 4. Sorting logic: 
-            const priorityOrder = { 'High': 1, 'Medium': 2, 'Low': 3 };
-            filteredTasks.sort((a, b) => {
-                // a. Status Selesai
-                if (a.completed !== b.completed) return a.completed ? 1 : -1;
-                
-                // b. Prioritas (High first)
-                const prioA = priorityOrder[a.priority || 'Medium'];
-                const prioB = priorityOrder[b.priority || 'Medium'];
-                if (prioA !== prioB) return prioA - prioB;
-
-                // c. Tanggal Jatuh Tempo (Earliest first, karena wajib diisi, tidak perlu cek Infinity)
-                const dateA = new Date(a.dueDate + 'T00:00:00').getTime();
-                const dateB = new Date(b.dueDate + 'T00:00:00').getTime();
-                return dateA - dateB;
-            });
-            
-            return filteredTasks;
-        }
-        
-        /**
-         * Mengaktifkan mode edit inline pada elemen.
-         */
-        function handleInlineEdit(element, taskId, field, currentValue, type = 'text') {
-            if (!userId) {
-                showStatus('Aplikasi belum terinisialisasi. Coba muat ulang.', true);
-                return;
-            }
-            
-            if (document.querySelector('input.active-edit, select.active-edit')) return;
-
-            const taskData = allTasksCache.find(t => t.id === taskId);
-            // Nonaktifkan edit jika selesai ATAU diarsipkan
-            if (taskData && (taskData.completed || taskData.archived)) { 
-                showStatus('Tugas yang sudah selesai atau diarsipkan tidak dapat diedit.', true);
-                return;
-            }
-
-            let input;
-            if (type === 'select') {
-                input = document.createElement('select');
-                input.innerHTML = `
-                    <option value="High" ${currentValue === 'High' ? 'selected' : ''}>Prioritas Tinggi</option>
-                    <option value="Medium" ${currentValue === 'Medium' ? 'selected' : ''}>Prioritas Sedang</option>
-                    <option value="Low" ${currentValue === 'Low' ? 'selected' : ''}>Prioritas Rendah</option>
-                `;
-            } else {
-                input = document.createElement('input');
-                input.type = type; // 'text' or 'date'
-                input.value = currentValue;
-            }
-
-            input.className = 'active-edit w-full p-1 border-b-2 border-indigo-500 bg-transparent focus:outline-none dark:text-white ' + (field === 'name' ? 'text-lg font-semibold' : 'text-sm');
-            
-            element.style.display = 'none';
-            element.parentNode.insertBefore(input, element);
-            input.focus();
-
-            const revert = () => {
-                setTimeout(() => {
-                    input.remove();
-                    element.style.display = '';
-                }, 100);
-            };
-
-            const saveChanges = async () => {
-                let newValue = input.value.trim();
-                
-                if (field === 'dueDate' && newValue === '') {
-                    showStatus('Tanggal jatuh tempo tidak boleh dikosongkan.', true);
-                    revert();
-                    return;
-                }
-
-                if (newValue === currentValue || (newValue === '' && field !== 'location')) {
-                    revert();
-                    return;
-                }
-                
-                try {
-                    const taskDocRef = doc(db, `artifacts/${appId}/users/${userId}/tasks`, taskId);
-                    await updateDoc(taskDocRef, { [field]: newValue });
-                } catch (error) {
-                    console.error(`Error updating ${field}: `, error);
-                    showStatus(`Gagal memperbarui ${field}.`, true);
-                }
-                revert();
-            };
-
-            // Event listeners untuk menyimpan
-            input.addEventListener('blur', saveChanges);
-            input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault(); 
-                    input.blur(); 
-                }
-            });
-            
-            if (type !== 'text') {
-                input.removeEventListener('blur', saveChanges); 
-                input.addEventListener('change', saveChanges);
-            }
+            return new Date(timestamp).toISOString().split('T')[0]; // Fallback for standard JS Date/String
         }
 
-
-        /**
-         * Menggambar ulang daftar tugas berdasarkan data dari Firestore.
-         */
-        function renderTasks(tasks) {
-            allTasksCache = tasks; // Cache data asli
-            tasksListEl.innerHTML = '';
-            loadingTasksEl.classList.add('hidden');
-            
-            const filteredAndSortedTasks = applyFiltersAndSort(tasks);
-
-            noTasksEl.classList.toggle('hidden', filteredAndSortedTasks.length > 0);
-
-            // Jika filter pencarian atau arsip membuat daftar kosong
-            if (filteredAndSortedTasks.length === 0 && tasks.length > 0) {
-                 tasksListEl.innerHTML = `<p class="text-gray-500 dark:text-gray-400 text-center py-4">Tidak ada tugas yang cocok dengan filter saat ini.</p>`;
-                 return;
-            }
-            if (tasks.length === 0) return;
-
-            filteredAndSortedTasks.forEach(task => {
-                const isTaskCompleted = task.completed;
-                const isTaskArchived = task.archived; 
-                
-                // --- LOGIC INDIKATOR KETERLAMBATAN (OVERDUE) ---
-                const now = new Date();
-                now.setHours(0, 0, 0, 0);
-                const taskDueDate = task.dueDate ? new Date(task.dueDate + 'T00:00:00') : null;
-                const isOverdue = !isTaskCompleted && !isTaskArchived && taskDueDate && taskDueDate.getTime() < now.getTime();
-                
-                // --- PENYESUAIAN WARNA KOLOM TUGAS ---
-                let taskClass = 'bg-white border-l-4 border-indigo-600 dark:bg-gray-700 task-normal'; // Default
-
-                if (isTaskArchived) { // Kasus Arsip
-                    taskClass = 'bg-gray-200 border-l-4 border-gray-400 dark:bg-gray-800 task-archived';
-                } else if (isTaskCompleted) {
-                    taskClass = 'bg-gray-100 border-l-4 border-green-400 dark:bg-gray-700 task-completed'; 
-                } else if (isOverdue) {
-                    taskClass = 'bg-yellow-50 border-l-4 border-red-600 dark:bg-gray-700 task-overdue'; 
-                } else {
-                    taskClass = 'bg-white border-l-4 border-indigo-600 dark:bg-gray-700 task-normal'; 
-                }
-
-                const taskItem = document.createElement('div');
-                taskItem.className = `flex flex-col p-4 rounded-xl shadow-lg transition duration-150 hover:shadow-xl ${taskClass}`;
-                taskItem.dataset.id = task.id;
-
-                const textClass = isTaskCompleted || isTaskArchived ? 'line-through text-gray-500 dark:text-gray-400' : 
-                                  isOverdue ? 'text-red-700 dark:text-red-300 font-semibold' : 
-                                  'text-gray-800 dark:text-white font-semibold';
-
-                const subtasks = task.subtasks || [];
-                
-                // Prioritas Badge
-                let priorityClass = '';
-                if (task.priority === 'High') priorityClass = 'bg-red-500';
-                else if (task.priority === 'Medium') priorityClass = 'bg-yellow-500';
-                else priorityClass = 'bg-blue-500';
-
-                const priorityText = { 'High': 'Tinggi', 'Medium': 'Sedang', 'Low': 'Rendah' }[task.priority] || 'Sedang';
-
-                // Badge Status
-                let statusBadge = '';
-                if (isTaskArchived) {
-                    statusBadge = `<span class="px-2 py-0.5 ml-2 rounded-full text-white text-xs font-bold bg-gray-500 flex-shrink-0">DIARSIPKAN</span>`;
-                } else if (isTaskCompleted) {
-                    statusBadge = `<span class="px-2 py-0.5 ml-2 rounded-full text-white text-xs font-bold bg-green-500 flex-shrink-0">SELESAI</span>`;
-                } else if (isOverdue) {
-                    statusBadge = `<span class="px-2 py-0.5 ml-2 rounded-full text-white text-xs font-bold bg-red-600 flex-shrink-0">TERLAMBAT</span>`;
-                }
-
-
-                const priorityBadge = `<span class="priority-editable editable px-2 py-0.5 ml-2 rounded-full text-white text-xs font-bold ${priorityClass} flex-shrink-0" data-field="priority" data-value="${task.priority}">${priorityText.toUpperCase()}</span>`;
-
-                // --- DETAIL TUGAS UTAMA (Nama, Tanggal, Lokasi, Kontrol) ---
-                let detailsHtml = '';
-                if (task.dueDate || task.location) {
-                    detailsHtml += `<div class="mt-1 text-xs text-gray-500 dark:text-gray-400 flex flex-wrap gap-x-3">`;
-                    if (task.dueDate) {
-                        const dateObj = new Date(task.dueDate + 'T00:00:00');
-                        const formattedDate = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-                        detailsHtml += `<span id="date-editable-${task.id}" class="date-editable editable ${textClass.includes('line-through') ? 'line-through' : 'text-indigo-600 dark:text-indigo-400 font-semibold'} flex items-center" data-field="dueDate" data-value="${task.dueDate}">
-                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                            ${formattedDate}
-                                        </span>`;
-                    }
-                    if (task.location) {
-                        detailsHtml += `<span id="location-editable-${task.id}" class="location-editable editable ${textClass.includes('line-through') ? 'line-through' : 'text-gray-500 dark:text-gray-400'} flex items-center" data-field="location" data-value="${task.location}">
-                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243m-4.243 4.243l4.243-4.243m0 0l4.243 4.243m0 0l4.243-4.243m-4.243 4.243V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12"></path></svg>
-                                            ${task.location}
-                                        </span>`;
-                    }
-                    detailsHtml += `</div>`;
-                }
-
-                // --- SUBTASKS CHECKLIST ---
-                let subtasksListHtml = '';
-                if (subtasks.length > 0) {
-                    subtasksListHtml = subtasks.map(subtask => `
-                        <div class="flex items-center justify-between mt-2 pl-2 pr-1 py-1 bg-gray-100 dark:bg-gray-600 rounded-lg subtask-item">
-                            <div class="flex items-center min-w-0 flex-grow">
-                                <input type="checkbox" class="toggle-subtask mr-3 w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500" ${subtask.completed ? 'checked' : ''} data-task-id="${task.id}" data-subtask-id="${subtask.id}" ${isTaskArchived ? 'disabled' : ''}>
-                                <span class="text-sm truncate ${subtask.completed ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-700 dark:text-gray-200'}">${subtask.name}</span>
-                            </div>
-                            <button class="delete-subtask text-red-400 hover:text-red-600 transition p-1 ml-2" data-task-id="${task.id}" data-subtask-id="${subtask.id}" ${isTaskArchived ? 'disabled' : ''}>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            </button>
-                        </div>
-                    `).join('');
-                    subtasksListHtml = `<div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600 ml-4">${subtasksListHtml}</div>`;
-                }
-                
-                // --- SUBTASK INPUT ---
-                const subtaskInputSection = `
-                    <div class="mt-3 ml-4 flex">
-                        <input type="text" placeholder="Tambahkan sub-tugas..." class="subtask-input flex-grow p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-l-lg text-sm focus:border-indigo-500" data-task-id="${task.id}" ${isTaskArchived || isTaskCompleted ? 'disabled' : ''}>
-                        <button class="add-subtask-btn bg-indigo-500 text-white p-2 rounded-r-lg hover:bg-indigo-600 transition text-sm font-medium" data-task-id="${task.id}" ${isTaskArchived || isTaskCompleted ? 'disabled' : ''}>
-                            + Sub
-                        </button>
-                    </div>
-                `;
-
-                // --- KONTROL TAMBAHAN (Arsip/Hapus) ---
-                let controlsHtml = '';
-                if (isTaskArchived) {
-                     // Tombol Un-Archive
-                    controlsHtml = `
-                        <button class="unarchive-task text-sm text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition flex items-center p-1" title="Batal Arsipkan">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                            Batal Arsipkan
-                        </button>
-                    `;
-                } else {
-                    // Tombol Arsip (Hanya muncul jika TIDAK diarsipkan)
-                    controlsHtml = `
-                        <button class="archive-task text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition flex items-center p-1 mr-2" title="Arsipkan Tugas">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
-                            Arsipkan
-                        </button>
-                    `;
-                }
-
-
-                taskItem.innerHTML = `
-                    <!-- HEADER TUGAS UTAMA -->
-                    <div class="flex items-start justify-between w-full">
-                        <div class="flex flex-col flex-grow min-w-0 pr-4">
-                            <div class="flex items-center mb-1">
-                                <input
-                                    type="checkbox"
-                                    class="toggle-completed mr-3 w-5 h-5 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500"
-                                    ${isTaskCompleted ? 'checked' : ''}
-                                    ${isTaskArchived ? 'disabled' : ''} 
-                                >
-                                <span id="name-editable-${task.id}" class="name-editable editable truncate ${textClass} text-lg" data-field="name" data-value="${task.name}">${task.name}</span>
-                                ${priorityBadge}
-                                ${statusBadge}
-                            </div>
-                            ${detailsHtml}
-                        </div>
-                        <div class="flex items-center flex-shrink-0">
-                             <button class="delete-task p-1 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 transition" title="Hapus Permanen">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- SUBTASKS SECTION -->
-                    ${subtasksListHtml}
-                    ${isTaskCompleted || isTaskArchived ? '' : subtaskInputSection}
-
-                    <!-- ARSIP / UNARCHIVE CONTROL -->
-                    <div class="flex justify-end mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
-                        ${controlsHtml}
-                    </div>
-                `;
-                
-                // Event listeners for main task
-                taskItem.querySelector('.delete-task')?.addEventListener('click', () => deleteTask(task.id));
-                taskItem.querySelector('.toggle-completed')?.addEventListener('change', (e) => toggleTaskCompleted(task.id, e.target.checked));
-                
-                // Archive/Unarchive Listeners
-                taskItem.querySelector('.archive-task')?.addEventListener('click', () => toggleArchiveTask(task.id, true));
-                taskItem.querySelector('.unarchive-task')?.addEventListener('click', () => toggleArchiveTask(task.id, false));
-
-                // EVENT LISTENERS UNTUK INLINE EDITING
-                
-                // Nama Tugas
-                taskItem.querySelector(`#name-editable-${task.id}`)?.addEventListener('click', (e) => {
-                    const el = e.target;
-                    handleInlineEdit(el, task.id, el.dataset.field, el.dataset.value, 'text');
-                });
-                
-                // Tanggal Jatuh Tempo
-                taskItem.querySelector(`#date-editable-${task.id}`)?.addEventListener('click', (e) => {
-                    const el = e.target.closest('.date-editable'); 
-                    handleInlineEdit(el, task.id, el.dataset.field, el.dataset.value, 'date');
-                });
-                
-                // Lokasi
-                taskItem.querySelector(`#location-editable-${task.id}`)?.addEventListener('click', (e) => {
-                    const el = e.target.closest('.location-editable');
-                    handleInlineEdit(el, task.id, el.dataset.field, el.dataset.value, 'text');
-                });
-                
-                // Prioritas
-                taskItem.querySelector(`.priority-editable`)?.addEventListener('click', (e) => {
-                    const el = e.target.closest('.priority-editable');
-                    handleInlineEdit(el, task.id, el.dataset.field, el.dataset.value, 'select');
-                });
-
-                // Event listeners for subtasks (Delegasi event secara efektif)
-                taskItem.querySelectorAll('.add-subtask-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        const input = taskItem.querySelector('.subtask-input');
-                        if (input && input.value.trim()) {
-                            addSubtask(task.id, input.value.trim());
-                            input.value = ''; 
-                        }
-                    });
-                });
-                taskItem.querySelectorAll('.subtask-input').forEach(input => {
-                    input.addEventListener('keypress', (e) => {
-                        if (e.key === 'Enter' && input.value.trim()) {
-                            addSubtask(task.id, input.value.trim());
-                            input.value = '';
-                        }
-                    });
-                });
-                taskItem.querySelectorAll('.toggle-subtask').forEach(checkbox => {
-                    checkbox.addEventListener('change', (e) => {
-                        toggleSubtaskCompleted(task.id, e.target.dataset.subtaskId, e.target.checked);
-                    });
-                });
-                 taskItem.querySelectorAll('.delete-subtask').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        deleteSubtask(task.id, btn.dataset.subtaskId);
-                    });
-                });
-
-
-                tasksListEl.appendChild(taskItem);
-            });
-            
-            checkDueDatesAndNotify(filteredAndSortedTasks.filter(t => !t.archived)); // Hanya periksa yang aktif
-        }
-        
-        // --- Fungsi Pengarsipan ---
-
-        /**
-         * Mengubah status archived sebuah tugas.
-         * @param {string} id - ID dokumen tugas.
-         * @param {boolean} shouldArchive - True untuk mengarsipkan, False untuk batal mengarsipkan.
-         */
-        async function toggleArchiveTask(id, shouldArchive) {
-            if (!userId) return showStatus('Aplikasi belum terinisialisasi. Coba muat ulang.', true);
-            
-            try {
-                const taskDocRef = doc(db, `artifacts/${appId}/users/${userId}/tasks`, id);
-                await updateDoc(taskDocRef, { 
-                    archived: shouldArchive,
-                });
-                showStatus(`Tugas berhasil ${shouldArchive ? 'diarsipkan' : 'dipulihkan'}.`);
-                
-                // Setelah un-archive, kembali ke tampilan aktif jika sebelumnya di tampilan arsip
-                if (!shouldArchive && currentFilterStatus === 'archived') {
-                    currentFilterStatus = 'active';
-                    updateFilterUI();
-                }
-
-            } catch (error) {
-                console.error("Error mengarsipkan tugas: ", error);
-                showStatus(`Gagal ${shouldArchive ? 'mengarsipkan' : 'memulihkan'} tugas.`, true);
-            }
-        }
-        
-        // --- Notifikasi Lokal ---
-
-        function checkDueDatesAndNotify(tasks) {
-            if (!("Notification" in window)) return; 
-            
-            if (Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
-
-            if (Notification.permission !== 'granted') return;
-
-            const now = new Date();
-            const today = new Date(now);
-            today.setHours(0, 0, 0, 0);
-
-            tasks.forEach(task => {
-                // Notifikasi sederhana: Tugas Belum Selesai yang jatuh tempo HARI INI
-                if (!task.completed && task.dueDate) {
-                    const taskDate = new Date(task.dueDate + 'T00:00:00');
-                    taskDate.setHours(0, 0, 0, 0);
-
-                    if (taskDate.getTime() === today.getTime()) {
-                        new Notification('Peringatan Tugas Hari Ini!', {
-                            body: `${task.name} jatuh tempo HARI INI (${task.dueDate}) di ${task.location}. Prioritas: ${task.priority}.`,
-                            icon: 'https://placehold.co/64x64/3b82f6/ffffff?text=TD',
-                            tag: task.id 
-                        });
-                    }
-                }
-            });
-        }
-        
-        // --- Fungsi Manipulasi Sub-Tugas (Helper) ---
-        
-        async function getTaskData(taskId) {
-            if (!db || !userId) return null;
-            const taskDocRef = doc(db, `artifacts/${appId}/users/${userId}/tasks`, taskId);
-            // Implementasi backoff untuk fetch API Firestore
-            const MAX_RETRIES = 5;
-            for (let i = 0; i < MAX_RETRIES; i++) {
-                try {
-                    const docSnap = await getDoc(taskDocRef);
-                    return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
-                } catch (error) {
-                    if (i < MAX_RETRIES - 1) {
-                        const delay = Math.pow(2, i) * 1000;
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        continue;
-                    }
-                    console.error("Gagal mengambil dokumen tugas setelah beberapa kali coba:", error);
-                    showStatus('Gagal membaca data tugas.', true);
-                    return null;
-                }
-            }
-        }
-        
-        async function addSubtask(taskId, subtaskName) {
-            if (!userId) return showStatus('Aplikasi belum terinisialisasi. Coba muat ulang.', true);
-            
-            const taskData = await getTaskData(taskId);
-            if (!taskData || taskData.archived || taskData.completed) return; // Guard
-
-            const newSubtask = {
-                id: generateLocalId(),
-                name: subtaskName,
-                completed: false
-            };
-            
-            const updatedSubtasks = [...(taskData.subtasks || []), newSubtask];
-            
-            try {
-                const taskDocRef = doc(db, `artifacts/${appId}/users/${userId}/tasks`, taskId);
-                await updateDoc(taskDocRef, {
-                    subtasks: updatedSubtasks
-                });
-                showStatus('Sub-tugas berhasil ditambahkan!');
-            } catch (error) {
-                console.error("Error menambahkan sub-tugas: ", error);
-                showStatus('Gagal menambahkan sub-tugas.', true);
-            }
+        function getStartOfWeek(date = new Date()) {
+            const day = date.getDay(); // 0 for Sunday, 6 for Saturday
+            const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Monday start
+            const startOfWeek = new Date(date.setDate(diff));
+            startOfWeek.setHours(0, 0, 0, 0);
+            return startOfWeek;
         }
 
-        async function toggleSubtaskCompleted(taskId, subtaskId, completed) {
-             if (!userId) return showStatus('Aplikasi belum terinisialisasi. Coba muat ulang.', true);
-             
-            const taskData = await getTaskData(taskId);
-            if (!taskData || taskData.archived) return; // Guard
-
-            const updatedSubtasks = (taskData.subtasks || []).map(subtask => {
-                if (subtask.id === subtaskId) {
-                    return { ...subtask, completed: completed };
-                }
-                return subtask;
-            });
-
-            try {
-                const taskDocRef = doc(db, `artifacts/${appId}/users/${userId}/tasks`, taskId);
-                await updateDoc(taskDocRef, {
-                    subtasks: updatedSubtasks
-                });
-            } catch (error) {
-                console.error("Error memperbarui status sub-tugas: ", error);
-                showStatus('Gagal memperbarui status sub-tugas.', true);
-            }
-        }
-
-        async function deleteSubtask(taskId, subtaskId) {
-             if (!userId) return showStatus('Aplikasi belum terinisialisasi. Coba muat ulang.', true);
-             
-            const taskData = await getTaskData(taskId);
-            if (!taskData || taskData.archived) return; // Guard
-
-            const updatedSubtasks = (taskData.subtasks || []).filter(subtask => subtask.id !== subtaskId);
-
-            try {
-                const taskDocRef = doc(db, `artifacts/${appId}/users/${userId}/tasks`, taskId);
-                await updateDoc(taskDocRef, {
-                    subtasks: updatedSubtasks
-                });
-                showStatus('Sub-tugas berhasil dihapus.');
-            } catch (error) {
-                console.error("Error menghapus sub-tugas: ", error);
-                showStatus('Gagal menghapus sub-tugas.', true);
-            }
-        }
-        
-        // --- Fungsi Tugas Utama ---
-
-        async function addTask() {
-            if (!userId) {
-                showStatus('Aplikasi belum terinisialisasi. Coba muat ulang.', true);
-                return;
-            }
-            
-            const taskName = taskInput.value.trim();
-            const dueDate = dueDateInput.value;
-            const location = locationInput.value.trim();
-            const priority = priorityInput.value;
-
-            if (!taskName) {
-                showStatus('Nama tugas tidak boleh kosong.', true);
-                return;
-            }
-            if (!dueDate) {
-                showStatus('Tanggal Jatuh Tempo Wajib diisi.', true);
-                dueDateInput.focus();
-                return;
-            }
-            if (!location) {
-                showStatus('Lokasi Wajib diisi.', true);
-                locationInput.focus();
-                return;
-            }
-
-            if (!tasksCollectionRef) {
-                showStatus('Koleksi Firestore belum disiapkan.', true);
-                return;
-            }
-
-            addTaskBtn.disabled = true;
-            taskInput.disabled = true;
-
-            try {
-                await addDoc(tasksCollectionRef, { 
-                    name: taskName,
-                    completed: false,
-                    archived: false, 
-                    dueDate: dueDate,
-                    location: location,
-                    priority: priority, 
-                    subtasks: [],
-                    createdAt: serverTimestamp()
-                });
-                
-                // Reset input setelah berhasil
-                taskInput.value = '';
-                dueDateInput.value = '';
-                locationInput.value = '';
-                priorityInput.value = 'Medium'; // Reset ke default
-
-                showStatus('Tugas berhasil ditambahkan!');
-            } catch (error) {
-                console.error("Error menambahkan tugas: ", error);
-                showStatus(`Gagal menambahkan tugas: ${error.message}`, true);
-            } finally {
-                addTaskBtn.disabled = false;
-                taskInput.disabled = false;
-            }
-        }
-
-        async function toggleTaskCompleted(id, completed) {
-            if (!userId) return showStatus('Aplikasi belum terinisialisasi. Coba muat ulang.', true);
-            
-            if (!tasksCollectionRef) return;
-            try {
-                const taskDocRef = doc(db, `artifacts/${appId}/users/${userId}/tasks`, id);
-                await updateDoc(taskDocRef, { completed: completed });
-            } catch (error) {
-                console.error("Error memperbarui status tugas: ", error);
-                showStatus('Gagal memperbarui status tugas.', true);
-            }
-        }
-
-        async function deleteTask(id) {
-            if (!userId) return showStatus('Aplikasi belum terinisialisasi. Coba muat ulang.', true);
-            
-            if (!tasksCollectionRef) return;
-            try {
-                const taskDocRef = doc(db, `artifacts/${appId}/users/${userId}/tasks`, id);
-                await deleteDoc(taskDocRef);
-                showStatus('Tugas berhasil dihapus.');
-            } catch (error) {
-                console.error("Error menghapus tugas: ", error);
-                showStatus('Gagal menghapus tugas.', true);
-            }
-        }
-
-        // --- Inisialisasi Aplikasi dan Otentikasi ---
+        // ====================================================================
+        // FIREBASE & AUTHENTICATION
+        // ====================================================================
 
         async function initializeAppAndAuth() {
             try {
-                // 1. Inisialisasi Firebase
-                app = initializeApp(firebaseConfig);
+                // 1. Get Canvas Global Variables
+                appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+                if (!firebaseConfig.apiKey) {
+                    throw new Error("Firebase config is missing or invalid.");
+                }
+
+                // 2. Initialize Firebase Services
+                const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
+                setLogLevel('debug');
 
-                // 2. Inisialisasi Dark Mode
-                initDarkMode(); 
-                darkModeToggleBtn.addEventListener('click', toggleDarkMode);
-                
-                // 3. Lakukan otentikasi awal dan setup listener
-                currentUserIdEl.textContent = 'Menyiapkan koneksi...';
-                await authenticateUserAndSetupListener(initialAuthToken);
-                
-                // 4. Setup event listeners untuk fitur ID Sesi
-                resetIdBtn.addEventListener('click', resetSessionId);
-                switchIdBtn.addEventListener('click', () => {
-                    const newId = newIdInput.value.trim();
-                    if (newId) {
-                        switchSessionId(newId);
-                    } else {
-                        showStatus('Masukkan ID Sesi yang valid.', true);
-                    }
+                // 3. Handle Authentication
+                // Use Promise to wait for the initial auth state check to complete
+                await new Promise((resolve, reject) => {
+                    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+                        unsubscribe(); // Stop listening after the first state change
+                        if (!user) {
+                            // User not logged in (first load)
+                            if (initialAuthToken) {
+                                await signInWithCustomToken(auth, initialAuthToken).catch(e => {
+                                    console.error("Error signing in with custom token:", e);
+                                    return signInAnonymously(auth); // Fallback
+                                });
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                        }
+                        
+                        // Set global references and user ID after successful auth
+                        window.db = db;
+                        window.auth = auth;
+                        window.appId = appId;
+                        currentUserId = auth.currentUser?.uid || 'anonymous';
+                        
+                        authInfoDisplayEl.className = 'p-2 bg-green-100 dark:bg-green-900/50 rounded-lg text-xs text-green-700 dark:text-green-300';
+                        currentUserIdEl.textContent = currentUserId;
+
+                        console.log("Firebase initialized. User ID:", currentUserId);
+
+                        resolve();
+                    }, (error) => {
+                        console.error("Auth state change error:", error);
+                        reject(error);
+                    });
                 });
-                newIdInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        switchIdBtn.click();
-                    }
-                });
-                renderSavedIds(); // Panggil render shortcut saat inisialisasi
 
-                // 5. Setup Filter Event Listeners
-                filterStatusActiveBtn.addEventListener('click', () => { currentFilterStatus = 'active'; updateFilterUI(); });
-                filterStatusIncompleteBtn.addEventListener('click', () => { currentFilterStatus = 'incomplete'; updateFilterUI(); });
-                filterStatusArchivedBtn.addEventListener('click', () => { currentFilterStatus = 'archived'; updateFilterUI(); });
-                filterDateAllBtn.addEventListener('click', () => { currentFilterDate = 'all'; updateFilterUI(); });
-                filterDateTodayBtn.addEventListener('click', () => { currentFilterDate = 'today'; updateFilterUI(); });
-                filterDateWeekBtn.addEventListener('click', () => { currentFilterDate = 'thisweek'; updateFilterUI(); });
-
-                // 6. Setup Search Event Listener
-                searchInput.addEventListener('input', () => { currentSearchTerm = searchInput.value; renderTasks(allTasksCache); });
-
-                // 7. Setup Tambah Tugas Event Listener
-                addTaskBtn.addEventListener('click', addTask);
-                taskInput.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        addTask();
-                    }
-                });
+                // 4. Lanjutkan inisialisasi aplikasi setelah autentikasi
+                await setupAppListeners();
 
             } catch (error) {
                 console.error("Kesalahan inisialisasi aplikasi:", error);
-                // Menampilkan error inisialisasi pada UI
                 authInfoDisplayEl.className = 'p-2 bg-red-100 dark:bg-red-900/50 rounded-lg text-xs text-red-700 dark:text-red-300';
-                currentUserIdEl.textContent = `Kesalahan: Gagal Memuat Firebase`;
+                currentUserIdEl.textContent = `Error: ${error.message}`;
                 addTaskBtn.disabled = true;
+                setLoading(false);
             }
         }
 
-        function setupRealtimeListener() {
-            if (!tasksCollectionRef) return;
+        function getTaskCollectionRef() {
+            if (!db || !currentUserId) {
+                console.error("Firestore DB or User ID not initialized.");
+                return null;
+            }
+            // Private data path: /artifacts/{appId}/users/{userId}/tasks
+            return collection(db, `artifacts/${appId}/users/${currentUserId}/tasks`);
+        }
 
-            loadingTasksEl.classList.remove('hidden');
+        // ====================================================================
+        // DATA ACCESS (CRUD)
+        // ====================================================================
 
-            const q = query(tasksCollectionRef); 
-
-            if (unsubscribeListener) {
-                unsubscribeListener();
-                unsubscribeListener = null;
+        async function fetchTasks() {
+            setLoading(true);
+            const tasksRef = getTaskCollectionRef();
+            if (!tasksRef) {
+                setLoading(false);
+                return;
             }
 
-            unsubscribeListener = onSnapshot(q, (snapshot) => {
-                const tasks = [];
-                snapshot.forEach((doc) => {
-                    tasks.push({ id: doc.id, ...doc.data() });
+            // Unsubscribe dari listener sebelumnya jika ada
+            if (unsubscribeTasks) {
+                unsubscribeTasks();
+            }
+            
+            // Query Firestore - tidak menggunakan orderBy untuk menghindari error indexing
+            const q = query(tasksRef);
+            
+            // Real-time listener
+            unsubscribeTasks = onSnapshot(q, (snapshot) => {
+                const tasks = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                // Sort data in memory by due date (descending completion, then ascending date)
+                tasks.sort((a, b) => {
+                    if (a.completed !== b.completed) {
+                        return a.completed ? 1 : -1; // Completed items last
+                    }
+                    const dateA = getDateFromTimestamp(a.dueDate);
+                    const dateB = getDateFromTimestamp(b.dueDate);
+                    if (dateA < dateB) return -1;
+                    if (dateA > dateB) return 1;
+                    return 0;
                 });
-                renderTasks(tasks); 
+                
+                allTasksCache = tasks;
+                renderTasks(tasks);
+                setLoading(false);
             }, (error) => {
-                console.error("Gagal mendengarkan perubahan tasks:", error);
-                showStatus('Gagal memuat tugas secara real-time. Cek konsol.', true);
+                console.error("Error fetching tasks:", error);
+                taskListEl.innerHTML = `<li class="text-red-500 text-center p-4">Gagal memuat tugas: ${error.message}.</li>`;
+                setLoading(false);
             });
         }
+
+        async function addTask() {
+            const taskText = taskInput.value.trim();
+            const dueDate = dueDateInput.value;
+            const location = locationInput.value.trim();
+
+            if (!taskText || !dueDate) {
+                validationMessageEl.classList.remove('hidden');
+                return;
+            }
+            validationMessageEl.classList.add('hidden');
+
+            const newTask = {
+                text: taskText,
+                dueDate: new Date(dueDate),
+                location: location || 'Umum',
+                completed: false,
+                createdAt: new Date(),
+                // Tambahkan userId untuk kemudahan debugging (meskipun sudah ada di path koleksi)
+                userId: currentUserId 
+            };
+
+            try {
+                const tasksRef = getTaskCollectionRef();
+                if (!tasksRef) return;
+                
+                await addDoc(tasksRef, newTask);
+                
+                // Reset input
+                taskInput.value = '';
+                dueDateInput.value = '';
+                locationInput.value = '';
+                addTaskBtn.disabled = true; // Nonaktifkan tombol setelah reset
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                showNotification(`Gagal menambahkan tugas: ${e.message}`, 'error');
+            }
+        }
+
+        async function updateTask(taskId, updates) {
+            try {
+                const tasksRef = getTaskCollectionRef();
+                if (!tasksRef) return;
+                
+                const taskDocRef = doc(tasksRef, taskId);
+                await updateDoc(taskDocRef, updates);
+            } catch (e) {
+                console.error("Error updating document: ", e);
+                showNotification(`Gagal memperbarui tugas: ${e.message}`, 'error');
+            }
+        }
+
+        async function deleteTask(taskId) {
+            try {
+                const tasksRef = getTaskCollectionRef();
+                if (!tasksRef) return;
+
+                const taskDocRef = doc(tasksRef, taskId);
+                await deleteDoc(taskDocRef);
+            } catch (e) {
+                console.error("Error deleting document: ", e);
+                showNotification(`Gagal menghapus tugas: ${e.message}`, 'error');
+            }
+        }
         
-        window.onload = initializeAppAndAuth;
+        // ====================================================================
+        // RENDER & FILTER UI
+        // ====================================================================
+
+        function showNotification(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            const baseClass = 'fixed bottom-5 left-1/2 transform -translate-x-1/2 p-4 rounded-lg shadow-xl z-50 text-white transition-opacity duration-300';
+            const typeClass = type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+            
+            alertDiv.className = `${baseClass} ${typeClass}`;
+            alertDiv.textContent = message;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.style.opacity = '0';
+                setTimeout(() => alertDiv.remove(), 300);
+            }, 3000);
+        }
+
+        function filterTasks(tasks) {
+            let filtered = tasks;
+
+            // 1. Filter Tanggal
+            const todayStr = getTodayDateString();
+            const startOfWeek = getStartOfWeek();
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6); // End of Sunday
+
+            filtered = filtered.filter(task => {
+                if (currentFilterDate === 'all') return true;
+                
+                const taskDateStr = getDateFromTimestamp(task.dueDate);
+                if (!taskDateStr) return false;
+
+                if (currentFilterDate === 'today') {
+                    return taskDateStr === todayStr;
+                }
+
+                if (currentFilterDate === 'week') {
+                    const taskDate = new Date(taskDateStr);
+                    // Check if taskDate is between startOfWeek (inclusive) and endOfWeek (inclusive)
+                    return taskDate >= startOfWeek && taskDate <= endOfWeek;
+                }
+
+                return true;
+            });
+
+            // 2. Filter Pencarian
+            if (currentSearchTerm) {
+                const searchLower = currentSearchTerm.toLowerCase();
+                filtered = filtered.filter(task => 
+                    task.text.toLowerCase().includes(searchLower) ||
+                    task.location.toLowerCase().includes(searchLower) ||
+                    getDateFromTimestamp(task.dueDate).includes(searchLower)
+                );
+            }
+
+            return filtered;
+        }
+
+        function renderTasks(tasks) {
+            taskListEl.innerHTML = '';
+            
+            const filteredTasks = filterTasks(tasks);
+
+            if (filteredTasks.length === 0) {
+                taskListEl.innerHTML = `<p class="text-center text-gray-500 dark:text-gray-400 p-4">Tidak ada tugas yang ditemukan.</p>`;
+                return;
+            }
+
+            filteredTasks.forEach(task => {
+                const taskItem = document.createElement('div');
+                const isCompleted = task.completed;
+                const dueDateStr = getDateFromTimestamp(task.dueDate);
+
+                // Styling berdasarkan status
+                const completionClass = isCompleted ? 'opacity-60 line-through bg-green-50 dark:bg-green-900/30' : 'bg-white dark:bg-gray-800 hover:shadow-lg';
+                
+                // Styling untuk tanggal yang sudah lewat/hari ini
+                const isOverdue = dueDateStr < getTodayDateString() && !isCompleted;
+                const dateClass = isOverdue ? 'text-red-500 font-bold' : (dueDateStr === getTodayDateString() ? 'text-blue-500 font-bold' : 'text-gray-500 dark:text-gray-400');
+
+
+                taskItem.className = `flex items-center p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md transition duration-200 ${completionClass}`;
+                taskItem.dataset.taskId = task.id;
+
+                taskItem.innerHTML = `
+                    <input type="checkbox" ${isCompleted ? 'checked' : ''} class="task-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:checked:bg-blue-500">
+                    
+                    <div class="flex-grow ml-4">
+                        <p class="text-lg font-medium text-gray-800 dark:text-gray-100 break-words">${task.text}</p>
+                        <div class="flex space-x-4 text-sm mt-1">
+                            <span class="${dateClass}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                ${dueDateStr}
+                            </span>
+                            <span class="text-gray-500 dark:text-gray-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                ${task.location}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <button class="delete-btn p-2 text-red-500 hover:text-red-700 dark:hover:text-red-300 rounded-full transition duration-150 ml-4 flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                `;
+
+                // Event listener for checkbox
+                taskItem.querySelector('.task-checkbox').addEventListener('change', (e) => {
+                    updateTask(task.id, { completed: e.target.checked });
+                });
+
+                // Event listener for delete button
+                taskItem.querySelector('.delete-btn').addEventListener('click', () => {
+                    deleteTask(task.id);
+                });
+
+                taskListEl.appendChild(taskItem);
+            });
+        }
+
+        function updateFilterUI() {
+            document.querySelectorAll('.filter-date-btn').forEach(btn => {
+                if (btn.dataset.filter === currentFilterDate) {
+                    btn.className = 'filter-date-btn px-4 py-2 text-sm bg-blue-500 text-white rounded-full transition duration-150 shadow-md hover:bg-blue-600';
+                } else {
+                    btn.className = 'filter-date-btn px-4 py-2 text-sm bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-full transition duration-150 hover:bg-gray-300 dark:hover:bg-gray-500';
+                }
+            });
+            // Memanggil renderTasks untuk menerapkan filter baru pada cache data
+            renderTasks(allTasksCache);
+        }
+
+        function validateInputs() {
+            const taskText = taskInput.value.trim();
+            const dueDate = dueDateInput.value;
+            
+            const isValid = taskText && dueDate;
+            addTaskBtn.disabled = !isValid;
+            validationMessageEl.classList.toggle('hidden', isValid);
+        }
+
+        // ====================================================================
+        // INITIALIZATION & EVENT LISTENERS
+        // ====================================================================
+
+        async function setupAppListeners() {
+            // 1. Theme Toggle
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+            // 2. Setup Filter Date Event Listeners
+            filterDateAllBtn.addEventListener('click', () => { currentFilterDate = 'all'; updateFilterUI(); });
+            filterDateTodayBtn.addEventListener('click', () => { currentFilterDate = 'today'; updateFilterUI(); });
+            filterDateWeekBtn.addEventListener('click', () => { currentFilterDate = 'week'; updateFilterUI(); });
+
+            // 3. Setup Search Event Listener
+            searchInput.addEventListener('input', () => { 
+                // Delay pencarian sedikit untuk performa yang lebih baik
+                setTimeout(() => {
+                    currentSearchTerm = searchInput.value; 
+                    renderTasks(allTasksCache);
+                }, 300);
+            });
+
+            // 4. Setup Tambah Tugas Event Listener
+            addTaskBtn.addEventListener('click', addTask);
+            taskInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !addTaskBtn.disabled) addTask();
+            });
+            
+            // 5. Validasi input
+            [taskInput, dueDateInput, locationInput].forEach(input => {
+                input.addEventListener('input', validateInputs);
+            });
+
+            // 6. Ambil data awal dan set listener Firestore
+            await fetchTasks();
+        }
+        
+        // Atur tanggal jatuh tempo default ke hari ini
+        dueDateInput.value = getTodayDateString();
+
+        window.onload = () => {
+            initializeTheme();
+            initializeAppAndAuth();
+        };
 
     </script>
 </body>
 </html>
-
