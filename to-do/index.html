@@ -224,17 +224,31 @@
     <!-- Memuat Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signOut, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // setLogLevel('Debug'); // Opsional: Untuk melihat log debug Firestore
 
-        // --- Variabel Global Canvas (WAJIB DIGUNAKAN) ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
+        /* * =====================================================================
+         * KONFIGURASI FIREBASE ANDA (Proyek: my-todo-2025-5d96b)
+         * =====================================================================
+         * PENTING: Menggunakan konfigurasi yang Anda sediakan.
+         */
+        const YOUR_FIREBASE_CONFIG = {
+          apiKey: "AIzaSyCpEzY-PnD-0g0EdhNzYyzPW_Jsp4h2fZU",
+          authDomain: "my-todo-2025-5d96b.firebaseapp.com",
+          projectId: "my-todo-2025-5d96b",
+          storageBucket: "my-todo-2025-5d96b.firebasestorage.app",
+          messagingSenderId: "36391204698",
+          appId: "1:36391204698:web:ab1142a99ad9926ce16563"
+        };
+        
+        // Cek variabel global yang disediakan oleh Canvas (jika ada)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : YOUR_FIREBASE_CONFIG.appId || 'default-app-id'; 
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : YOUR_FIREBASE_CONFIG;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; 
+        
         // --- Variabel Global Aplikasi ---
         let app;
         let db;
@@ -275,9 +289,9 @@
         const savedIdsListEl = document.getElementById('saved-ids-list'); 
 
         // Filter Buttons & Search Input
-        const filterStatusActiveBtn = document.getElementById('filter-status-active'); // Baru
+        const filterStatusActiveBtn = document.getElementById('filter-status-active'); 
         const filterStatusIncompleteBtn = document.getElementById('filter-status-incomplete');
-        const filterStatusArchivedBtn = document.getElementById('filter-status-archived'); // Baru
+        const filterStatusArchivedBtn = document.getElementById('filter-status-archived'); 
         const filterDateAllBtn = document.getElementById('filter-date-all');
         const filterDateTodayBtn = document.getElementById('filter-date-today');
         const filterDateWeekBtn = document.getElementById('filter-date-week');
@@ -304,7 +318,8 @@
 
         /**
          * Mengautentikasi pengguna, mengatur ID pengguna, dan memulai listener data.
-         * @param {string|null} token - Token kustom untuk otentikasi.
+         * Menggunakan signInWithCustomToken jika token ada, jika tidak, menggunakan signInAnonymously().
+         * @param {string|null} token - Token kustom.
          */
         async function authenticateUserAndSetupListener(token) {
             if (unsubscribeListener) {
@@ -313,26 +328,34 @@
             }
             
             try {
+                let uid;
                 if (token) {
-                    await signInWithCustomToken(auth, token);
+                    const userCredential = await signInWithCustomToken(auth, token);
+                    uid = userCredential.user.uid;
                 } else {
-                    await signInAnonymously(auth);
+                    const userCredential = await signInAnonymously(auth);
+                    uid = userCredential.user.uid;
                 }
+                
+                if (originalUserId === null) {
+                   originalUserId = uid;
+                }
+                
+                userId = uid; 
+                // Path koleksi standar: /artifacts/{appId}/users/{userId}/tasks
+                tasksCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/tasks`);
+                
+                currentUserIdEl.textContent = userId;
+                authInfoDisplayEl.classList.remove('bg-yellow-100', 'text-yellow-800', 'dark:bg-yellow-900/50', 'dark:text-yellow-300');
+                authInfoDisplayEl.classList.add('bg-indigo-50', 'text-indigo-700', 'dark:bg-indigo-900/50', 'dark:text-indigo-300');
+                addTaskBtn.disabled = false;
+                
+                setupRealtimeListener();
             } catch (error) {
                 console.error("Gagal melakukan otentikasi Firebase:", error);
-                throw new Error("Gagal mengotentikasi. Coba muat ulang.");
+                showStatus("Gagal mengotentikasi. Cek konfigurasi Firebase Anda.", true);
+                throw new Error("Gagal mengotentikasi.");
             }
-            
-            originalUserId = auth.currentUser?.uid || crypto.randomUUID(); 
-            userId = originalUserId; 
-            tasksCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/tasks`);
-            
-            currentUserIdEl.textContent = userId;
-            authInfoDisplayEl.classList.remove('bg-yellow-100', 'text-yellow-800', 'dark:bg-yellow-900/50', 'dark:text-yellow-300');
-            authInfoDisplayEl.classList.add('bg-indigo-50', 'text-indigo-700', 'dark:bg-indigo-900/50', 'dark:text-indigo-300');
-            addTaskBtn.disabled = false;
-            
-            setupRealtimeListener();
         }
 
         // --- Fungsi ID Sesi Baru & Shortcut ---
@@ -348,7 +371,8 @@
         }
 
         function saveIdShortcut(id) {
-            if (id === originalUserId && !getSavedIds().includes(id)) return; 
+            // Hanya simpan ID yang dimasukkan secara manual atau ID anonim jika originalUserId belum ada
+            if (originalUserId && id === originalUserId) return; 
 
             let ids = getSavedIds();
             ids = ids.filter(savedId => savedId !== id);
@@ -407,6 +431,7 @@
             }
             
             userId = newId.trim();
+            // Beralih ke koleksi untuk ID Sesi yang berbeda
             tasksCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/tasks`);
             
             currentUserIdEl.textContent = userId;
@@ -423,18 +448,15 @@
         }
         
         async function resetSessionId() {
-            if (userId === originalUserId) {
-                showStatus('Anda sudah menggunakan ID Sesi yang asli.', false);
-                return;
-            }
-            
             if (auth.currentUser) {
                 await signOut(auth);
             }
             
             try {
-                await authenticateUserAndSetupListener(initialAuthToken);
-                showStatus('ID Sesi berhasil direset ke ID asli.');
+                // Hapus originalUserId agar ID baru yang anonim menjadi originalUserId
+                originalUserId = null; 
+                await authenticateUserAndSetupListener(initialAuthToken); 
+                showStatus('ID Sesi berhasil direset ke ID anonim baru.');
             } catch (error) {
                 console.error("Gagal reset ID Sesi:", error);
                 showStatus('Gagal mereset ID. Cek konsol.', true);
@@ -669,7 +691,7 @@
 
             filteredAndSortedTasks.forEach(task => {
                 const isTaskCompleted = task.completed;
-                const isTaskArchived = task.archived; // NEW
+                const isTaskArchived = task.archived; 
                 
                 // --- LOGIC INDIKATOR KETERLAMBATAN (OVERDUE) ---
                 const now = new Date();
@@ -680,7 +702,7 @@
                 // --- PENYESUAIAN WARNA KOLOM TUGAS ---
                 let taskClass = 'bg-white border-l-4 border-indigo-600 dark:bg-gray-700 task-normal'; // Default
 
-                if (isTaskArchived) { // NEW: Kasus Arsip
+                if (isTaskArchived) { // Kasus Arsip
                     taskClass = 'bg-gray-200 border-l-4 border-gray-400 dark:bg-gray-800 task-archived';
                 } else if (isTaskCompleted) {
                     taskClass = 'bg-gray-100 border-l-4 border-green-400 dark:bg-gray-700 task-completed'; 
@@ -799,7 +821,7 @@
                                     type="checkbox"
                                     class="toggle-completed mr-3 w-5 h-5 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500"
                                     ${isTaskCompleted ? 'checked' : ''}
-                                    ${isTaskArchived ? 'disabled' : ''} <!-- NEW: Nonaktifkan jika diarsipkan -->
+                                    ${isTaskArchived ? 'disabled' : ''} 
                                 >
                                 <span id="name-editable-${task.id}" class="name-editable editable truncate ${textClass} text-lg" data-field="name" data-value="${task.name}">${task.name}</span>
                                 ${priorityBadge}
@@ -828,7 +850,7 @@
                 taskItem.querySelector('.delete-task')?.addEventListener('click', () => deleteTask(task.id));
                 taskItem.querySelector('.toggle-completed')?.addEventListener('change', (e) => toggleTaskCompleted(task.id, e.target.checked));
                 
-                // NEW: Archive/Unarchive Listeners
+                // Archive/Unarchive Listeners
                 taskItem.querySelector('.archive-task')?.addEventListener('click', () => toggleArchiveTask(task.id, true));
                 taskItem.querySelector('.unarchive-task')?.addEventListener('click', () => toggleArchiveTask(task.id, false));
 
@@ -894,7 +916,7 @@
             checkDueDatesAndNotify(filteredAndSortedTasks.filter(t => !t.archived)); // Hanya periksa yang aktif
         }
         
-        // --- Fungsi Pengarsipan (NEW) ---
+        // --- Fungsi Pengarsipan ---
 
         /**
          * Mengubah status archived sebuah tugas.
@@ -908,8 +930,6 @@
                 const taskDocRef = doc(db, `artifacts/${appId}/users/${userId}/tasks`, id);
                 await updateDoc(taskDocRef, { 
                     archived: shouldArchive,
-                    // Pastikan tugas yang diarsipkan juga ditandai selesai (opsional, tapi baik untuk kebersihan)
-                    // completed: shouldArchive ? true : allTasksCache.find(t => t.id === id)?.completed || false 
                 });
                 showStatus(`Tugas berhasil ${shouldArchive ? 'diarsipkan' : 'dipulihkan'}.`);
                 
@@ -962,13 +982,22 @@
         async function getTaskData(taskId) {
             if (!db || !userId) return null;
             const taskDocRef = doc(db, `artifacts/${appId}/users/${userId}/tasks`, taskId);
-            try {
-                const docSnap = await getDoc(taskDocRef);
-                return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
-            } catch (error) {
-                console.error("Gagal mengambil dokumen tugas:", error);
-                showStatus('Gagal membaca data tugas.', true);
-                return null;
+            // Implementasi backoff untuk fetch API Firestore
+            const MAX_RETRIES = 5;
+            for (let i = 0; i < MAX_RETRIES; i++) {
+                try {
+                    const docSnap = await getDoc(taskDocRef);
+                    return docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
+                } catch (error) {
+                    if (i < MAX_RETRIES - 1) {
+                        const delay = Math.pow(2, i) * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        continue;
+                    }
+                    console.error("Gagal mengambil dokumen tugas setelah beberapa kali coba:", error);
+                    showStatus('Gagal membaca data tugas.', true);
+                    return null;
+                }
             }
         }
         
@@ -1082,7 +1111,7 @@
                 await addDoc(tasksCollectionRef, { 
                     name: taskName,
                     completed: false,
-                    archived: false, // NEW: Status arsip default
+                    archived: false, 
                     dueDate: dueDate,
                     location: location,
                     priority: priority, 
@@ -1137,23 +1166,20 @@
 
         async function initializeAppAndAuth() {
             try {
-                if (Object.keys(firebaseConfig).length === 0) {
-                    throw new Error("Konfigurasi Firebase tidak ditemukan.");
-                }
-
+                // 1. Inisialisasi Firebase
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
 
-                // 1. Inisialisasi Dark Mode
+                // 2. Inisialisasi Dark Mode
                 initDarkMode(); 
                 darkModeToggleBtn.addEventListener('click', toggleDarkMode);
                 
-                // 2. Lakukan otentikasi awal dan setup listener
+                // 3. Lakukan otentikasi awal dan setup listener
                 currentUserIdEl.textContent = 'Menyiapkan koneksi...';
                 await authenticateUserAndSetupListener(initialAuthToken);
                 
-                // 3. Setup event listeners untuk fitur ID Sesi
+                // 4. Setup event listeners untuk fitur ID Sesi
                 resetIdBtn.addEventListener('click', resetSessionId);
                 switchIdBtn.addEventListener('click', () => {
                     const newId = newIdInput.value.trim();
@@ -1170,7 +1196,7 @@
                 });
                 renderSavedIds(); // Panggil render shortcut saat inisialisasi
 
-                // 4. Setup Filter Event Listeners
+                // 5. Setup Filter Event Listeners
                 filterStatusActiveBtn.addEventListener('click', () => { currentFilterStatus = 'active'; updateFilterUI(); });
                 filterStatusIncompleteBtn.addEventListener('click', () => { currentFilterStatus = 'incomplete'; updateFilterUI(); });
                 filterStatusArchivedBtn.addEventListener('click', () => { currentFilterStatus = 'archived'; updateFilterUI(); });
@@ -1178,10 +1204,10 @@
                 filterDateTodayBtn.addEventListener('click', () => { currentFilterDate = 'today'; updateFilterUI(); });
                 filterDateWeekBtn.addEventListener('click', () => { currentFilterDate = 'thisweek'; updateFilterUI(); });
 
-                // 5. Setup Search Event Listener
+                // 6. Setup Search Event Listener
                 searchInput.addEventListener('input', () => { currentSearchTerm = searchInput.value; renderTasks(allTasksCache); });
 
-                // 6. Setup Tambah Tugas Event Listener
+                // 7. Setup Tambah Tugas Event Listener
                 addTaskBtn.addEventListener('click', addTask);
                 taskInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
@@ -1189,12 +1215,11 @@
                     }
                 });
 
-
             } catch (error) {
                 console.error("Kesalahan inisialisasi aplikasi:", error);
-                // Menggunakan elemen display baru untuk error
+                // Menampilkan error inisialisasi pada UI
                 authInfoDisplayEl.className = 'p-2 bg-red-100 dark:bg-red-900/50 rounded-lg text-xs text-red-700 dark:text-red-300';
-                currentUserIdEl.textContent = `Kesalahan: ${error.message.substring(0, 20)}...`;
+                currentUserIdEl.textContent = `Kesalahan: Gagal Memuat Firebase`;
                 addTaskBtn.disabled = true;
             }
         }
