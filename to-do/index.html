@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Tugas (Task List)</title>
+    <title>AIC - To Do List</title>
     <!-- Memuat Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -12,7 +12,7 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
-            color: #1f2937; /* Default text color (Light Mode fallback) */
+            color: #1f2937;
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -28,552 +28,785 @@
         body.dark .border-gray-300 {
             border-color: #4b5563;
         }
-        body.dark .bg-white {
+        
+        .task-list-item {
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .task-list-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+        }
+
+        .completed-task .task-text {
+            text-decoration: line-through;
+            color: #9ca3af;
+        }
+
+        /* Scrollbar untuk daftar tugas */
+        #taskList {
+            max-height: 50vh; /* Setengah tinggi viewport */
+            overflow-y: auto;
+        }
+        #taskList::-webkit-scrollbar {
+            width: 8px;
+        }
+        #taskList::-webkit-scrollbar-thumb {
+            background-color: #d1d5db;
+            border-radius: 4px;
+        }
+        body.dark #taskList::-webkit-scrollbar-thumb {
             background-color: #4b5563;
         }
-        body.dark .text-gray-700 {
-            color: #d1d5db;
+        
+        /* Style untuk tombol filter aktif */
+        .filter-active {
+            background-color: #10b981; /* emerald-500 */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.5);
+            transform: translateY(-1px);
         }
-        body.dark .hover:bg-gray-100:hover {
-            background-color: #6b7280;
-        }
-        body.dark .text-blue-600 {
-            color: #93c5fd;
-        }
-        body.dark .text-green-600 {
-            color: #6ee7b7;
-        }
-        body.dark input[type="text"], body.dark input[type="date"] {
-            background-color: #374151;
-            color: #f3f4f6;
-            border-color: #4b5563;
-        }
+
     </style>
 </head>
-<body class="transition-colors duration-300">
-    <div id="app-container" class="max-w-xl mx-auto mt-8 p-6 bg-white rounded-xl shadow-2xl transition-all duration-300">
-        <h1 class="text-3xl font-bold mb-4 text-center text-gray-800 dark:text-gray-100">Daftar Tugas Saya</h1>
+<body class="p-4 sm:p-8 min-h-screen">
 
-        <!-- Info Autentikasi -->
-        <div id="auth-info" class="mb-4 text-center">
-            <div id="auth-info-display" class="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-xs text-blue-700 dark:text-blue-300">
-                Memuat autentikasi...
-                <span id="current-user-id" class="font-mono text-xs break-all"></span>
-            </div>
-        </div>
-
-        <!-- Bagian Input Tugas Baru -->
-        <div class="space-y-4 mb-6 p-4 border border-gray-200 dark:border-gray-700 rounded-lg shadow-inner bg-gray-50 dark:bg-gray-700/50">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-100">Tambah Tugas Baru</h2>
-            <input type="text" id="task-input" placeholder="Apa yang perlu Anda lakukan?" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100">
-            
-            <div class="flex space-x-3">
-                <input type="date" id="due-date-input" class="w-1/2 p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100">
-                <input type="text" id="location-input" placeholder="Lokasi (mis: Kantor, Rumah)" class="w-1/2 p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100">
-            </div>
-
-            <button id="add-task-btn" disabled class="w-full p-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
-                Tambah Tugas
+    <div id="app-container" class="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl transition-colors duration-300">
+        
+        <!-- Header dan Mode Gelap -->
+        <header class="flex justify-between items-center mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">
+                AIC - To Do List
+            </h1>
+            <button id="darkModeToggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150" aria-label="Toggle Dark Mode">
+                <svg id="sunIcon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <svg id="moonIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
             </button>
-            <div id="input-validation-message" class="text-sm text-red-500 mt-2 hidden">
-                Harap isi kolom tugas dan tanggal jatuh tempo.
+        </header>
+
+        <!-- Status Autentikasi/Loading -->
+        <div id="authInfoDisplay" class="mb-4 p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-xs text-blue-700 dark:text-blue-300 transition-colors duration-300">
+            <span id="loadingIndicator" class="animate-pulse">Memuat data dari Google Sheets...</span>
+            <span id="currentUserId">Menggunakan Google Apps Script API.</span>
+        </div>
+
+        <!-- Form Input Tugas -->
+        <div class="mb-8 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-inner dark:shadow-none bg-gray-50 dark:bg-gray-700/50">
+            <h2 class="text-xl font-semibold mb-3 dark:text-gray-200">Tambah Tugas Baru</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                
+                <div class="md:col-span-2">
+                    <input type="text" id="taskInput" placeholder="Teks Tugas (Misal: Selesaikan laporan bulanan)" 
+                           class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-800 dark:text-white transition duration-150" required>
+                </div>
+
+                <div>
+                    <input type="date" id="dueDateInput" title="Batas Waktu" 
+                           class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-800 dark:text-white transition duration-150">
+                </div>
+
+                <div>
+                    <input type="text" id="locationInput" placeholder="Lokasi (Opsional)" title="Lokasi Tugas" 
+                           class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-800 dark:text-white transition duration-150">
+                </div>
+
+                <div class="md:col-span-4">
+                    <button id="addTaskBtn" disabled
+                            class="w-full p-3 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 transition duration-150 shadow-md hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-emerald-500/50">
+                        Tambah Tugas
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Bagian Filter & Pencarian -->
-        <div class="mb-6 space-y-3">
-            <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-100">Filter & Pencarian</h2>
-            
-            <!-- Filter Tanggal -->
-            <div class="flex space-x-2">
-                <button id="filter-date-all" class="filter-date-btn px-4 py-2 text-sm bg-blue-500 text-white rounded-full transition duration-150 shadow-md hover:bg-blue-600" data-filter="all">Semua Tanggal</button>
-                <button id="filter-date-today" class="filter-date-btn px-4 py-2 text-sm bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-full transition duration-150 hover:bg-gray-300 dark:hover:bg-gray-500" data-filter="today">Hari Ini</button>
-                <button id="filter-date-week" class="filter-date-btn px-4 py-2 text-sm bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-full transition duration-150 hover:bg-gray-300 dark:hover:bg-gray-500" data-filter="week">Minggu Ini</button>
-            </div>
+        <!-- Bagian Filter dan Pencarian -->
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold mb-3 dark:text-gray-200">Filter Tugas</h2>
 
-            <!-- Pencarian -->
-            <input type="text" id="search-input" placeholder="Cari tugas..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100">
+            <!-- Filter Status -->
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button id="filterAllBtn" class="filter-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150 filter-active">Semua</button>
+                <button id="filterActiveBtn" class="filter-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150">Aktif</button>
+                <button id="filterCompletedBtn" class="filter-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150">Selesai</button>
+            </div>
+            
+            <!-- Filter Tanggal dan Pencarian -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                <button id="filterDateAllBtn" class="filter-date-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150 filter-active">Semua Waktu</button>
+                <button id="filterDateTodayBtn" class="filter-date-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150">Hari Ini</button>
+                <button id="filterDateWeekBtn" class="filter-date-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150">Minggu Ini</button>
+                <input type="text" id="searchInput" placeholder="Cari Tugas/Lokasi..." 
+                       class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-800 dark:text-white transition duration-150">
+            </div>
+        </div>
+
+        <!-- Daftar Tugas -->
+        <div id="taskList" class="space-y-3 pb-4">
+            <!-- Tugas akan dirender di sini -->
+            <div id="emptyState" class="text-center p-10 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-500 dark:text-gray-400">
+                <p class="text-lg font-medium">Tidak ada tugas ditemukan.</p>
+                <p>Coba tambahkan tugas baru atau sesuaikan filter Anda.</p>
+            </div>
+        </div>
+
+        <!-- Modal Konfirmasi Hapus -->
+        <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl max-w-md w-full">
+                <h3 class="text-xl font-bold mb-4 dark:text-white">Konfirmasi Hapus</h3>
+                <p class="mb-6 text-gray-700 dark:text-gray-300">Anda yakin ingin menghapus tugas ini secara permanen?</p>
+                <div class="flex justify-end space-x-3">
+                    <button id="cancelDeleteBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition">Batal</button>
+                    <button id="confirmDeleteBtn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">Hapus</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Edit Tugas -->
+        <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl max-w-md w-full">
+                <h3 class="text-xl font-bold mb-4 dark:text-white">Edit Tugas</h3>
+                <div class="space-y-4">
+                    <input type="text" id="editTaskText" placeholder="Teks Tugas" 
+                           class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white">
+                    <input type="date" id="editDueDate" title="Batas Waktu" 
+                           class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white">
+                    <input type="text" id="editLocation" placeholder="Lokasi (Opsional)" title="Lokasi Tugas" 
+                           class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white">
+                </div>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button id="cancelEditBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition">Batal</button>
+                    <button id="saveEditBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">Simpan</button>
+                </div>
+            </div>
         </div>
         
-        <!-- Daftar Tugas -->
-        <div id="task-list" class="space-y-3">
-            <!-- Tugas akan dimuat di sini -->
-        </div>
-
-        <!-- Status Loading -->
-        <div id="loading-spinner" class="text-center mt-6 hidden">
-            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-8 w-8 mx-auto" style="border-top-color: #3b82f6;"></div>
-            <p class="text-gray-500 mt-2">Memuat Tugas...</p>
-        </div>
-
-        <!-- Tombol Dark Mode -->
-        <div class="mt-6 text-center">
-            <button id="theme-toggle" class="p-2 text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition duration-150 rounded-full">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                <span class="ml-1">Ganti Tema</span>
-            </button>
-        </div>
     </div>
 
-    <script type="module">
-        // Import Firebase dari CDN
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <script>
+        // --- KONFIGURASI API ---
+        const MOCK_API_ENDPOINT = "https://script.google.com/macros/s/AKfycbxPu_354U8wzqYalUAKhvIaAGJqmZzM1bZYD9FQDsnuP0n4vmfFNQg6wxBuvzjEWffODw/exec";
+        // --- AKHIR KONFIGURASI API ---
 
-        // Variabel Global
-        let db;
-        let auth;
-        let appId;
-        let currentUserId;
-        let allTasksCache = []; // Cache untuk semua tugas
+        // --- Variabel Global & Cache ---
+        let allTasksCache = [];
+        let currentFilterStatus = 'all'; // 'all', 'active', 'completed'
         let currentFilterDate = 'all'; // 'all', 'today', 'week'
         let currentSearchTerm = '';
-        let unsubscribeTasks = null; // Untuk menyimpan fungsi unsubscribe onSnapshot
-
-        // Elemen DOM
-        const taskListEl = document.getElementById('task-list');
-        const taskInput = document.getElementById('task-input');
-        const dueDateInput = document.getElementById('due-date-input');
-        const locationInput = document.getElementById('location-input');
-        const addTaskBtn = document.getElementById('add-task-btn');
-        const loadingSpinner = document.getElementById('loading-spinner');
-        const authInfoDisplayEl = document.getElementById('auth-info-display');
-        const currentUserIdEl = document.getElementById('current-user-id');
-        const validationMessageEl = document.getElementById('input-validation-message');
-        const searchInput = document.getElementById('search-input');
+        let taskIdToDelete = null;
+        let taskIdToEdit = null;
         
-        const filterDateAllBtn = document.getElementById('filter-date-all');
-        const filterDateTodayBtn = document.getElementById('filter-date-today');
-        const filterDateWeekBtn = document.getElementById('filter-date-week');
+        // --- Elemen DOM ---
+        const taskListEl = document.getElementById('taskList');
+        const emptyStateEl = document.getElementById('emptyState');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const taskInput = document.getElementById('taskInput');
+        const dueDateInput = document.getElementById('dueDateInput');
+        const locationInput = document.getElementById('locationInput');
+        const searchInput = document.getElementById('searchInput');
+        const loadingIndicatorEl = document.getElementById('loadingIndicator');
+        const authInfoDisplayEl = document.getElementById('authInfoDisplay');
+        const currentUserIdEl = document.getElementById('currentUserId');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
 
-        // ====================================================================
-        // UTILITIES & TEMA
-        // ====================================================================
+        // Modal Elements
+        const deleteModal = document.getElementById('deleteModal');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+        const editModal = document.getElementById('editModal');
+        const saveEditBtn = document.getElementById('saveEditBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const editTaskText = document.getElementById('editTaskText');
+        const editDueDate = document.getElementById('editDueDate');
+        const editLocation = document.getElementById('editLocation');
 
+        // Filter Buttons
+        const filterStatusBtns = {
+            all: document.getElementById('filterAllBtn'),
+            active: document.getElementById('filterActiveBtn'),
+            completed: document.getElementById('filterCompletedBtn')
+        };
+        const filterDateBtns = {
+            all: document.getElementById('filterDateAllBtn'),
+            today: document.getElementById('filterDateTodayBtn'),
+            week: document.getElementById('filterDateWeekBtn')
+        };
+
+        // --- Helper Functions ---
+
+        /**
+         * Mengatur status loading aplikasi
+         * @param {boolean} isLoading 
+         */
         function setLoading(isLoading) {
-            loadingSpinner.classList.toggle('hidden', !isLoading);
-        }
-
-        function initializeTheme() {
-            const isDarkMode = localStorage.getItem('theme') === 'dark' || 
-                                (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            document.body.classList.toggle('dark', isDarkMode);
-        }
-
-        function toggleTheme() {
-            const isDarkMode = document.body.classList.toggle('dark');
-            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-        }
-
-        function getTodayDateString() {
-            return new Date().toISOString().split('T')[0];
-        }
-
-        function getDateFromTimestamp(timestamp) {
-            if (!timestamp) return null;
-            // Firestore timestamps often come as objects with seconds/nanoseconds
-            if (timestamp.seconds) {
-                return new Date(timestamp.seconds * 1000).toISOString().split('T')[0];
+            if (isLoading) {
+                loadingIndicatorEl.textContent = 'Memuat...';
+                addTaskBtn.disabled = true;
+                taskListEl.classList.add('opacity-50');
+            } else {
+                loadingIndicatorEl.textContent = '';
+                validateInputs(); // Re-enable button if inputs are valid
+                taskListEl.classList.remove('opacity-50');
             }
-            return new Date(timestamp).toISOString().split('T')[0]; // Fallback for standard JS Date/String
         }
 
-        function getStartOfWeek(date = new Date()) {
-            const day = date.getDay(); // 0 for Sunday, 6 for Saturday
-            const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Monday start
-            const startOfWeek = new Date(date.setDate(diff));
-            startOfWeek.setHours(0, 0, 0, 0);
-            return startOfWeek;
-        }
+        /**
+         * Panggilan API dengan mekanisme retry. Digunakan untuk POST.
+         * @param {object} payload Data yang akan dikirim (termasuk 'action', 'id', 'data', dll.).
+         * @returns {Promise<object>} Respon JSON dari Apps Script.
+         */
+        async function apiCall(payload) {
+            setLoading(true);
+            const maxRetries = 3;
 
-        // ====================================================================
-        // FIREBASE & AUTHENTICATION
-        // ====================================================================
-
-        async function initializeAppAndAuth() {
-            try {
-                // 1. Get Canvas Global Variables
-                appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-                if (!firebaseConfig.apiKey) {
-                    throw new Error("Firebase config is missing or invalid.");
-                }
-
-                // 2. Initialize Firebase Services
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                setLogLevel('debug');
-
-                // 3. Handle Authentication
-                // Use Promise to wait for the initial auth state check to complete
-                await new Promise((resolve, reject) => {
-                    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-                        unsubscribe(); // Stop listening after the first state change
-                        if (!user) {
-                            // User not logged in (first load)
-                            if (initialAuthToken) {
-                                await signInWithCustomToken(auth, initialAuthToken).catch(e => {
-                                    console.error("Error signing in with custom token:", e);
-                                    return signInAnonymously(auth); // Fallback
-                                });
-                            } else {
-                                await signInAnonymously(auth);
-                            }
-                        }
-                        
-                        // Set global references and user ID after successful auth
-                        window.db = db;
-                        window.auth = auth;
-                        window.appId = appId;
-                        currentUserId = auth.currentUser?.uid || 'anonymous';
-                        
-                        authInfoDisplayEl.className = 'p-2 bg-green-100 dark:bg-green-900/50 rounded-lg text-xs text-green-700 dark:text-green-300';
-                        currentUserIdEl.textContent = currentUserId;
-
-                        console.log("Firebase initialized. User ID:", currentUserId);
-
-                        resolve();
-                    }, (error) => {
-                        console.error("Auth state change error:", error);
-                        reject(error);
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(MOCK_API_ENDPOINT, {
+                        method: 'POST',
+                        // Menghapus header 'Content-Type: application/json' untuk mempermudah CORS dengan GAS
+                        body: JSON.stringify(payload)
                     });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.status === 'success') {
+                        setLoading(false);
+                        return data;
+                    } else {
+                        // Ini adalah error yang berasal dari Apps Script
+                        const errorMessage = data.message || `Apps Script Error: Status ${response.status}`;
+                        throw new Error(errorMessage);
+                    }
+                } catch (error) {
+                    if (i === maxRetries - 1) {
+                        setLoading(false);
+                        // Lempar error jika ini adalah percobaan terakhir
+                        throw new Error(`Gagal berinteraksi dengan API setelah ${maxRetries} kali coba: ${error.message}`);
+                    }
+                    // Logging dan Backoff
+                    console.warn(`Fetch attempt ${i + 1} failed: ${error.message}. Retrying...`);
+                    const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+        /**
+         * Mengubah format tanggal menjadi YYYY-MM-DD.
+         * @param {Date} dateObj 
+         * @returns {string} Tanggal dalam format string YYYY-MM-DD.
+         */
+        function formatDate(dateObj) {
+            if (!dateObj || dateObj.toString() === 'Invalid Date') return '';
+            const d = new Date(dateObj);
+            // Tambahkan padding nol jika angka < 10
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        /**
+         * Membandingkan tanggal (hanya bagian hari, bulan, tahun).
+         * @param {Date|string} d1 
+         * @param {Date|string} d2 
+         * @returns {boolean} True jika tanggal sama.
+         */
+        function isSameDay(d1, d2) {
+            const date1 = new Date(d1);
+            const date2 = new Date(d2);
+            return date1.getFullYear() === date2.getFullYear() &&
+                   date1.getMonth() === date2.getMonth() &&
+                   date1.getDate() === date2.getDate();
+        }
+
+        /**
+         * Menghitung tanggal seminggu dari sekarang.
+         * @returns {Date}
+         */
+        function getOneWeekFromNow() {
+            const now = new Date();
+            const oneWeek = new Date(now);
+            oneWeek.setDate(now.getDate() + 7);
+            return oneWeek;
+        }
+
+        /**
+         * Memastikan input teks tugas tidak kosong.
+         */
+        function validateInputs() {
+            addTaskBtn.disabled = taskInput.value.trim() === "";
+        }
+
+        // --- CRUD & API Interaksi ---
+
+        /**
+         * Mengambil semua tugas dari Google Sheets via Apps Script API.
+         */
+        async function fetchTasks() {
+            setLoading(true);
+            const maxRetries = 3;
+
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    // Gunakan GET dengan parameter action=read
+                    const response = await fetch(MOCK_API_ENDPOINT + '?action=read');
+                    const result = await response.json();
+
+                    if (response.ok && result.status === 'success') {
+                        // Mapping dan normalisasi data dari Sheets
+                        allTasksCache = result.data.map(task => ({
+                            id: task.id.toString(),
+                            text: task.text,
+                            dueDate: task.dueDate ? formatDate(task.dueDate) : '',
+                            location: task.location || '',
+                            completed: task.completed === true || task.completed === 'TRUE', // Menangani konversi tipe
+                            createdAt: task.createdAt // Biarkan seperti adanya
+                        }));
+                        renderTasks(allTasksCache);
+                        setLoading(false);
+                        return; // Berhasil, keluar dari loop
+                    } else {
+                        throw new Error(result.message || 'Gagal mengambil data tugas.');
+                    }
+                } catch (error) {
+                    if (i === maxRetries - 1) {
+                        setLoading(false);
+                        console.error("Error fetching tasks:", error);
+                        authInfoDisplayEl.textContent = `Gagal memuat data: ${error.message}`;
+                        return; // Gagal, keluar dari loop
+                    }
+                    console.warn(`Fetch attempt ${i + 1} failed: ${error.message}. Retrying...`);
+                    const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        }
+
+        /**
+         * Menambah tugas baru ke Google Sheets.
+         */
+        async function addTask() {
+            const text = taskInput.value.trim();
+            const dueDate = dueDateInput.value || '';
+            const location = locationInput.value.trim() || '';
+
+            if (text === "") return;
+
+            const newTask = {
+                id: Date.now().toString(), // ID unik menggunakan timestamp
+                text: text,
+                dueDate: dueDate,
+                location: location,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                // Panggil API untuk menambahkan tugas
+                await apiCall({
+                    action: "add",
+                    data: newTask
+                });
+                
+                // Refresh data setelah berhasil
+                await fetchTasks();
+
+                // Bersihkan input
+                taskInput.value = '';
+                dueDateInput.value = '';
+                locationInput.value = '';
+                validateInputs();
+
+            } catch (error) {
+                // Kesalahan ditangani di apiCall
+            }
+        }
+
+        /**
+         * Mengubah status 'completed' tugas di Sheets.
+         * @param {string} id ID tugas.
+         */
+        async function toggleTask(id) {
+            const task = allTasksCache.find(t => t.id === id);
+            if (!task) return;
+
+            const newCompletedStatus = !task.completed;
+
+            try {
+                // Panggil API untuk update status
+                await apiCall({
+                    action: "update",
+                    id: id,
+                    updates: {
+                        completed: newCompletedStatus // Kirim nilai boolean
+                    }
                 });
 
-                // 4. Lanjutkan inisialisasi aplikasi setelah autentikasi
-                await setupAppListeners();
+                // Update cache lokal
+                task.completed = newCompletedStatus;
+                
+                // Re-render daftar tugas
+                renderTasks(allTasksCache);
+
+            } catch (error) {
+                // Kesalahan ditangani di apiCall
+            }
+        }
+
+        /**
+         * Menghapus tugas dari Sheets.
+         * @param {string} id ID tugas.
+         */
+        async function removeTask(id) {
+            try {
+                // Panggil API untuk menghapus tugas
+                await apiCall({
+                    action: "delete",
+                    id: id
+                });
+                
+                // Refresh data setelah berhasil
+                await fetchTasks();
+
+            } catch (error) {
+                // Kesalahan ditangani di apiCall
+            }
+        }
+        
+        /**
+         * Menyimpan perubahan tugas (dari modal edit) ke Sheets.
+         */
+        async function saveEditedTask() {
+            const id = taskIdToEdit;
+            if (!id) return;
+            
+            const newText = editTaskText.value.trim();
+            const newDueDate = editDueDate.value || '';
+            const newLocation = editLocation.value.trim() || '';
+
+            if (newText === "") {
+                alert("Teks tugas tidak boleh kosong.");
+                return;
+            }
+
+            try {
+                // Panggil API untuk update detail tugas
+                await apiCall({
+                    action: "update",
+                    id: id,
+                    updates: {
+                        text: newText,
+                        dueDate: newDueDate,
+                        location: newLocation
+                    }
+                });
+
+                // Refresh data setelah berhasil
+                await fetchTasks();
+
+                // Tutup modal
+                editModal.classList.add('hidden');
+                taskIdToEdit = null;
+
+            } catch (error) {
+                // Kesalahan ditangani di apiCall
+            }
+        }
+        
+        // --- Filtering dan Rendering ---
+
+        /**
+         * Menerapkan filter dan merender daftar tugas.
+         * @param {Array<object>} tasks 
+         */
+        function renderTasks(tasks) {
+            // 1. Filter berdasarkan status
+            let filteredTasks = tasks.filter(task => {
+                if (currentFilterStatus === 'active') return !task.completed;
+                if (currentFilterStatus === 'completed') return task.completed;
+                return true; // 'all'
+            });
+
+            // 2. Filter berdasarkan tanggal
+            const now = new Date();
+            const oneWeekFromNow = getOneWeekFromNow();
+            
+            filteredTasks = filteredTasks.filter(task => {
+                if (currentFilterDate === 'today') {
+                    if (!task.dueDate) return false;
+                    return isSameDay(task.dueDate, now);
+                }
+                if (currentFilterDate === 'week') {
+                    if (!task.dueDate) return false;
+                    const dueDate = new Date(task.dueDate);
+                    // Filter antara hari ini (inklusif) dan seminggu dari sekarang (eksklusif)
+                    return dueDate >= new Date(formatDate(now)) && dueDate < oneWeekFromNow;
+                }
+                return true; // 'all'
+            });
+
+
+            // 3. Filter berdasarkan pencarian
+            const searchTerm = currentSearchTerm.toLowerCase();
+            if (searchTerm) {
+                filteredTasks = filteredTasks.filter(task => 
+                    task.text.toLowerCase().includes(searchTerm) || 
+                    task.location.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            // 4. Urutkan: Tugas aktif yang jatuh tempo lebih dulu di atas
+            filteredTasks.sort((a, b) => {
+                // Tugas yang belum selesai selalu di atas yang sudah selesai
+                if (a.completed !== b.completed) {
+                    return a.completed ? 1 : -1;
+                }
+
+                // Setelah itu, urutkan berdasarkan tanggal jatuh tempo (paling cepat duluan)
+                const dateA = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+                const dateB = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+                return dateA - dateB;
+            });
+
+            // 5. Render
+            taskListEl.innerHTML = '';
+            
+            if (filteredTasks.length === 0) {
+                emptyStateEl.classList.remove('hidden');
+            } else {
+                emptyStateEl.classList.add('hidden');
+                
+                filteredTasks.forEach(task => {
+                    const taskEl = createTaskElement(task);
+                    taskListEl.appendChild(taskEl);
+                });
+            }
+        }
+
+        /**
+         * Membuat elemen DOM untuk satu tugas.
+         * @param {object} task Objek tugas.
+         * @returns {HTMLElement} Elemen list item.
+         */
+        function createTaskElement(task) {
+            const item = document.createElement('div');
+            item.className = `task-list-item flex items-center p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 ${task.completed ? 'completed-task bg-gray-100 dark:bg-gray-700/70' : 'bg-white dark:bg-gray-800'}`;
+            item.setAttribute('data-id', task.id);
+
+            const isDueToday = task.dueDate && isSameDay(task.dueDate, new Date());
+            
+            // Checkbox
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = task.completed;
+            checkbox.className = 'w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 dark:focus:ring-emerald-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600 mr-4 flex-shrink-0';
+            checkbox.onclick = (e) => {
+                e.stopPropagation();
+                toggleTask(task.id);
+            };
+
+            // Task Content
+            const content = document.createElement('div');
+            content.className = 'flex-grow min-w-0';
+
+            const text = document.createElement('p');
+            text.className = `task-text font-medium text-lg truncate ${task.completed ? 'text-gray-500' : 'dark:text-white'}`;
+            text.textContent = task.text;
+            content.appendChild(text);
+
+            const meta = document.createElement('div');
+            meta.className = 'flex flex-wrap items-center text-sm mt-1 text-gray-500 dark:text-gray-400';
+
+            // Due Date
+            if (task.dueDate) {
+                const dateText = document.createElement('span');
+                dateText.className = `mr-3 flex items-center ${isDueToday && !task.completed ? 'text-red-500 font-semibold' : ''}`;
+                dateText.innerHTML = `<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                      ${task.dueDate}${isDueToday ? ' (Hari Ini!)' : ''}`;
+                meta.appendChild(dateText);
+            }
+
+            // Location
+            if (task.location) {
+                const locationText = document.createElement('span');
+                locationText.className = 'mr-3 flex items-center';
+                locationText.innerHTML = `<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                          ${task.location}`;
+                meta.appendChild(locationText);
+            }
+            
+            content.appendChild(meta);
+            
+            // Action Buttons Container
+            const actions = document.createElement('div');
+            actions.className = 'flex-shrink-0 ml-4 space-x-2 flex';
+
+            // Edit Button
+            const editBtn = document.createElement('button');
+            editBtn.className = 'p-2 rounded-full text-blue-500 hover:bg-blue-100 dark:hover:bg-gray-700 transition duration-150';
+            editBtn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-7 1l-2 2L18 9l2-2 2.585 2.585zm1.414-2.586a2 2 0 012.828 0l2.586 2.586a2 2 0 010 2.828l-10.4 10.4L5 19l2.828-2.828 10.4-10.4z"></path></svg>`;
+            editBtn.title = "Edit Tugas";
+            editBtn.onclick = (e) => {
+                e.stopPropagation();
+                openEditModal(task.id);
+            };
+
+            // Delete Button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'p-2 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-gray-700 transition duration-150';
+            deleteBtn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`;
+            deleteBtn.title = "Hapus Tugas";
+            deleteBtn.onclick = (e) => {
+                e.stopPropagation();
+                openDeleteModal(task.id);
+            };
+
+            actions.appendChild(editBtn);
+            actions.appendChild(deleteBtn);
+
+            item.appendChild(checkbox);
+            item.appendChild(content);
+            item.appendChild(actions);
+
+            return item;
+        }
+
+        // --- Event Handlers & Initialisation ---
+
+        /**
+         * Mengubah tampilan tombol filter status.
+         * @param {string} newStatus 'all', 'active', atau 'completed'
+         */
+        function updateFilterStatusUI(newStatus) {
+            currentFilterStatus = newStatus;
+            Object.keys(filterStatusBtns).forEach(status => {
+                filterStatusBtns[status].classList.remove('filter-active');
+                if (status === newStatus) {
+                    filterStatusBtns[status].classList.add('filter-active');
+                }
+            });
+            renderTasks(allTasksCache);
+        }
+
+        /**
+         * Mengubah tampilan tombol filter tanggal.
+         * @param {string} newDateFilter 'all', 'today', atau 'week'
+         */
+        function updateFilterDateUI(newDateFilter) {
+            currentFilterDate = newDateFilter;
+            Object.keys(filterDateBtns).forEach(dateFilter => {
+                filterDateBtns[dateFilter].classList.remove('filter-active');
+                if (dateFilter === newDateFilter) {
+                    filterDateBtns[dateFilter].classList.add('filter-active');
+                }
+            });
+            renderTasks(allTasksCache);
+        }
+
+        // --- Modal Logic ---
+        
+        function openDeleteModal(id) {
+            taskIdToDelete = id;
+            deleteModal.classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            deleteModal.classList.add('hidden');
+            taskIdToDelete = null;
+        }
+
+        function openEditModal(id) {
+            const task = allTasksCache.find(t => t.id === id);
+            if (!task) return;
+            
+            taskIdToEdit = id;
+            editTaskText.value = task.text;
+            editDueDate.value = task.dueDate;
+            editLocation.value = task.location;
+
+            editModal.classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            editModal.classList.add('hidden');
+            taskIdToEdit = null;
+        }
+
+
+        /**
+         * Inisialisasi Aplikasi dan Auth
+         */
+        async function initializeApp() {
+            try {
+                // 1. Setup Dark Mode
+                const isDarkMode = localStorage.getItem('darkMode') === 'true';
+                if (isDarkMode) {
+                    document.body.classList.add('dark');
+                    sunIcon.classList.remove('hidden');
+                    moonIcon.classList.add('hidden');
+                } else {
+                    sunIcon.classList.add('hidden');
+                    moonIcon.classList.remove('hidden');
+                }
+                
+                darkModeToggle.addEventListener('click', () => {
+                    document.body.classList.toggle('dark');
+                    const isDark = document.body.classList.contains('dark');
+                    localStorage.setItem('darkMode', isDark);
+                    sunIcon.classList.toggle('hidden');
+                    moonIcon.classList.toggle('hidden');
+                });
+
+                // 2. Setup Modal Listeners
+                confirmDeleteBtn.addEventListener('click', () => {
+                    if (taskIdToDelete) {
+                        removeTask(taskIdToDelete);
+                        closeDeleteModal();
+                    }
+                });
+                cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+                saveEditBtn.addEventListener('click', saveEditedTask);
+                cancelEditBtn.addEventListener('click', closeEditModal);
+                
+                // 3. Setup Filter Status Listeners
+                filterStatusBtns.all.addEventListener('click', () => updateFilterStatusUI('all'));
+                filterStatusBtns.active.addEventListener('click', () => updateFilterStatusUI('active'));
+                filterStatusBtns.completed.addEventListener('click', () => updateFilterStatusUI('completed'));
+
+                // 4. Setup Filter Date Listeners
+                filterDateBtns.all.addEventListener('click', () => updateFilterDateUI('all'));
+                filterDateBtns.today.addEventListener('click', () => updateFilterDateUI('today'));
+                filterDateBtns.week.addEventListener('click', () => updateFilterDateUI('week'));
+
+                // 5. Setup Search Event Listener
+                searchInput.addEventListener('input', () => { currentSearchTerm = searchInput.value; renderTasks(allTasksCache); });
+
+                // 6. Setup Tambah Tugas Event Listener
+                addTaskBtn.addEventListener('click', addTask);
+                taskInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !addTaskBtn.disabled) addTask();
+                });
+                
+                // 7. Validasi input
+                [taskInput, dueDateInput, locationInput].forEach(input => {
+                    input.addEventListener('input', validateInputs);
+                });
+
+                // 8. Ambil data awal
+                await fetchTasks();
 
             } catch (error) {
                 console.error("Kesalahan inisialisasi aplikasi:", error);
                 authInfoDisplayEl.className = 'p-2 bg-red-100 dark:bg-red-900/50 rounded-lg text-xs text-red-700 dark:text-red-300';
-                currentUserIdEl.textContent = `Error: ${error.message}`;
+                currentUserIdEl.textContent = `Error inisialisasi: ${error.message}`;
                 addTaskBtn.disabled = true;
                 setLoading(false);
             }
         }
-
-        function getTaskCollectionRef() {
-            if (!db || !currentUserId) {
-                console.error("Firestore DB or User ID not initialized.");
-                return null;
-            }
-            // Private data path: /artifacts/{appId}/users/{userId}/tasks
-            return collection(db, `artifacts/${appId}/users/${currentUserId}/tasks`);
-        }
-
-        // ====================================================================
-        // DATA ACCESS (CRUD)
-        // ====================================================================
-
-        async function fetchTasks() {
-            setLoading(true);
-            const tasksRef = getTaskCollectionRef();
-            if (!tasksRef) {
-                setLoading(false);
-                return;
-            }
-
-            // Unsubscribe dari listener sebelumnya jika ada
-            if (unsubscribeTasks) {
-                unsubscribeTasks();
-            }
-            
-            // Query Firestore - tidak menggunakan orderBy untuk menghindari error indexing
-            const q = query(tasksRef);
-            
-            // Real-time listener
-            unsubscribeTasks = onSnapshot(q, (snapshot) => {
-                const tasks = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                // Sort data in memory by due date (descending completion, then ascending date)
-                tasks.sort((a, b) => {
-                    if (a.completed !== b.completed) {
-                        return a.completed ? 1 : -1; // Completed items last
-                    }
-                    const dateA = getDateFromTimestamp(a.dueDate);
-                    const dateB = getDateFromTimestamp(b.dueDate);
-                    if (dateA < dateB) return -1;
-                    if (dateA > dateB) return 1;
-                    return 0;
-                });
-                
-                allTasksCache = tasks;
-                renderTasks(tasks);
-                setLoading(false);
-            }, (error) => {
-                console.error("Error fetching tasks:", error);
-                taskListEl.innerHTML = `<li class="text-red-500 text-center p-4">Gagal memuat tugas: ${error.message}.</li>`;
-                setLoading(false);
-            });
-        }
-
-        async function addTask() {
-            const taskText = taskInput.value.trim();
-            const dueDate = dueDateInput.value;
-            const location = locationInput.value.trim();
-
-            if (!taskText || !dueDate) {
-                validationMessageEl.classList.remove('hidden');
-                return;
-            }
-            validationMessageEl.classList.add('hidden');
-
-            const newTask = {
-                text: taskText,
-                dueDate: new Date(dueDate),
-                location: location || 'Umum',
-                completed: false,
-                createdAt: new Date(),
-                // Tambahkan userId untuk kemudahan debugging (meskipun sudah ada di path koleksi)
-                userId: currentUserId 
-            };
-
-            try {
-                const tasksRef = getTaskCollectionRef();
-                if (!tasksRef) return;
-                
-                await addDoc(tasksRef, newTask);
-                
-                // Reset input
-                taskInput.value = '';
-                dueDateInput.value = '';
-                locationInput.value = '';
-                addTaskBtn.disabled = true; // Nonaktifkan tombol setelah reset
-            } catch (e) {
-                console.error("Error adding document: ", e);
-                showNotification(`Gagal menambahkan tugas: ${e.message}`, 'error');
-            }
-        }
-
-        async function updateTask(taskId, updates) {
-            try {
-                const tasksRef = getTaskCollectionRef();
-                if (!tasksRef) return;
-                
-                const taskDocRef = doc(tasksRef, taskId);
-                await updateDoc(taskDocRef, updates);
-            } catch (e) {
-                console.error("Error updating document: ", e);
-                showNotification(`Gagal memperbarui tugas: ${e.message}`, 'error');
-            }
-        }
-
-        async function deleteTask(taskId) {
-            try {
-                const tasksRef = getTaskCollectionRef();
-                if (!tasksRef) return;
-
-                const taskDocRef = doc(tasksRef, taskId);
-                await deleteDoc(taskDocRef);
-            } catch (e) {
-                console.error("Error deleting document: ", e);
-                showNotification(`Gagal menghapus tugas: ${e.message}`, 'error');
-            }
-        }
         
-        // ====================================================================
-        // RENDER & FILTER UI
-        // ====================================================================
-
-        function showNotification(message, type = 'info') {
-            const alertDiv = document.createElement('div');
-            const baseClass = 'fixed bottom-5 left-1/2 transform -translate-x-1/2 p-4 rounded-lg shadow-xl z-50 text-white transition-opacity duration-300';
-            const typeClass = type === 'error' ? 'bg-red-500' : 'bg-blue-500';
-            
-            alertDiv.className = `${baseClass} ${typeClass}`;
-            alertDiv.textContent = message;
-            
-            document.body.appendChild(alertDiv);
-            
-            setTimeout(() => {
-                alertDiv.style.opacity = '0';
-                setTimeout(() => alertDiv.remove(), 300);
-            }, 3000);
-        }
-
-        function filterTasks(tasks) {
-            let filtered = tasks;
-
-            // 1. Filter Tanggal
-            const todayStr = getTodayDateString();
-            const startOfWeek = getStartOfWeek();
-            const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(startOfWeek.getDate() + 6); // End of Sunday
-
-            filtered = filtered.filter(task => {
-                if (currentFilterDate === 'all') return true;
-                
-                const taskDateStr = getDateFromTimestamp(task.dueDate);
-                if (!taskDateStr) return false;
-
-                if (currentFilterDate === 'today') {
-                    return taskDateStr === todayStr;
-                }
-
-                if (currentFilterDate === 'week') {
-                    const taskDate = new Date(taskDateStr);
-                    // Check if taskDate is between startOfWeek (inclusive) and endOfWeek (inclusive)
-                    return taskDate >= startOfWeek && taskDate <= endOfWeek;
-                }
-
-                return true;
-            });
-
-            // 2. Filter Pencarian
-            if (currentSearchTerm) {
-                const searchLower = currentSearchTerm.toLowerCase();
-                filtered = filtered.filter(task => 
-                    task.text.toLowerCase().includes(searchLower) ||
-                    task.location.toLowerCase().includes(searchLower) ||
-                    getDateFromTimestamp(task.dueDate).includes(searchLower)
-                );
-            }
-
-            return filtered;
-        }
-
-        function renderTasks(tasks) {
-            taskListEl.innerHTML = '';
-            
-            const filteredTasks = filterTasks(tasks);
-
-            if (filteredTasks.length === 0) {
-                taskListEl.innerHTML = `<p class="text-center text-gray-500 dark:text-gray-400 p-4">Tidak ada tugas yang ditemukan.</p>`;
-                return;
-            }
-
-            filteredTasks.forEach(task => {
-                const taskItem = document.createElement('div');
-                const isCompleted = task.completed;
-                const dueDateStr = getDateFromTimestamp(task.dueDate);
-
-                // Styling berdasarkan status
-                const completionClass = isCompleted ? 'opacity-60 line-through bg-green-50 dark:bg-green-900/30' : 'bg-white dark:bg-gray-800 hover:shadow-lg';
-                
-                // Styling untuk tanggal yang sudah lewat/hari ini
-                const isOverdue = dueDateStr < getTodayDateString() && !isCompleted;
-                const dateClass = isOverdue ? 'text-red-500 font-bold' : (dueDateStr === getTodayDateString() ? 'text-blue-500 font-bold' : 'text-gray-500 dark:text-gray-400');
-
-
-                taskItem.className = `flex items-center p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-md transition duration-200 ${completionClass}`;
-                taskItem.dataset.taskId = task.id;
-
-                taskItem.innerHTML = `
-                    <input type="checkbox" ${isCompleted ? 'checked' : ''} class="task-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:checked:bg-blue-500">
-                    
-                    <div class="flex-grow ml-4">
-                        <p class="text-lg font-medium text-gray-800 dark:text-gray-100 break-words">${task.text}</p>
-                        <div class="flex space-x-4 text-sm mt-1">
-                            <span class="${dateClass}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                                ${dueDateStr}
-                            </span>
-                            <span class="text-gray-500 dark:text-gray-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                ${task.location}
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <button class="delete-btn p-2 text-red-500 hover:text-red-700 dark:hover:text-red-300 rounded-full transition duration-150 ml-4 flex-shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                    </button>
-                `;
-
-                // Event listener for checkbox
-                taskItem.querySelector('.task-checkbox').addEventListener('change', (e) => {
-                    updateTask(task.id, { completed: e.target.checked });
-                });
-
-                // Event listener for delete button
-                taskItem.querySelector('.delete-btn').addEventListener('click', () => {
-                    deleteTask(task.id);
-                });
-
-                taskListEl.appendChild(taskItem);
-            });
-        }
-
-        function updateFilterUI() {
-            document.querySelectorAll('.filter-date-btn').forEach(btn => {
-                if (btn.dataset.filter === currentFilterDate) {
-                    btn.className = 'filter-date-btn px-4 py-2 text-sm bg-blue-500 text-white rounded-full transition duration-150 shadow-md hover:bg-blue-600';
-                } else {
-                    btn.className = 'filter-date-btn px-4 py-2 text-sm bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-full transition duration-150 hover:bg-gray-300 dark:hover:bg-gray-500';
-                }
-            });
-            // Memanggil renderTasks untuk menerapkan filter baru pada cache data
-            renderTasks(allTasksCache);
-        }
-
-        function validateInputs() {
-            const taskText = taskInput.value.trim();
-            const dueDate = dueDateInput.value;
-            
-            const isValid = taskText && dueDate;
-            addTaskBtn.disabled = !isValid;
-            validationMessageEl.classList.toggle('hidden', isValid);
-        }
-
-        // ====================================================================
-        // INITIALIZATION & EVENT LISTENERS
-        // ====================================================================
-
-        async function setupAppListeners() {
-            // 1. Theme Toggle
-            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-
-            // 2. Setup Filter Date Event Listeners
-            filterDateAllBtn.addEventListener('click', () => { currentFilterDate = 'all'; updateFilterUI(); });
-            filterDateTodayBtn.addEventListener('click', () => { currentFilterDate = 'today'; updateFilterUI(); });
-            filterDateWeekBtn.addEventListener('click', () => { currentFilterDate = 'week'; updateFilterUI(); });
-
-            // 3. Setup Search Event Listener
-            searchInput.addEventListener('input', () => { 
-                // Delay pencarian sedikit untuk performa yang lebih baik
-                setTimeout(() => {
-                    currentSearchTerm = searchInput.value; 
-                    renderTasks(allTasksCache);
-                }, 300);
-            });
-
-            // 4. Setup Tambah Tugas Event Listener
-            addTaskBtn.addEventListener('click', addTask);
-            taskInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !addTaskBtn.disabled) addTask();
-            });
-            
-            // 5. Validasi input
-            [taskInput, dueDateInput, locationInput].forEach(input => {
-                input.addEventListener('input', validateInputs);
-            });
-
-            // 6. Ambil data awal dan set listener Firestore
-            await fetchTasks();
-        }
-        
-        // Atur tanggal jatuh tempo default ke hari ini
-        dueDateInput.value = getTodayDateString();
-
-        window.onload = () => {
-            initializeTheme();
-            initializeAppAndAuth();
-        };
+        window.onload = initializeApp;
 
     </script>
 </body>
