@@ -871,52 +871,96 @@ var pp = {"ajax_url":"https:\/\/web.menujuacara.id\/wp-admin\/admin-ajax.php"};
 
 
 
-<section id="ucapan">
-  <div class="cui-wrapper cui-golden cui-border" style="overflow:hidden; border-radius:8px;">
-    <form id="waForm" class="cui-container-form cui-no-login">
-      <input type="text" id="nama" class="cui-input" placeholder="Nama" required>
-      <textarea id="pesan" class="cui-textarea" placeholder="Ucapan" rows="3" required></textarea>
-      <select id="status" class="cui-select" required>
-        <option value="" disabled selected>Konfirmasi Kehadiran</option>
-        <option value="Hadir">Hadir</option>
-        <option value="Tidak Hadir">Tidak Hadir</option>
-        <option value="Masih Ragu">Masih Ragu</option>
-      </select>
-      <button type="submit" class="cui-form-btn">Kirim</button>
-    </form>
-  </div>
-</section>
+
+
+
+<div class="elementor-element elementor-element-form-ucapan elementor-widget elementor-widget-html anim fadeup elementor-invisible" data-id="form-ucapan" data-element_type="widget" data-settings="{&quot;_animation&quot;:&quot;fadeInUp&quot;}" data-widget_type="html.default">
+    <div class="elementor-widget-container" style="padding: 20px; background-color: #f7f7f7; border-radius: 10px; max-width: 600px; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+        <form id="google-sheet-form" style="display: grid; gap: 15px;">
+            
+            <input type="text" name="nama" id="nama-pengirim" placeholder="Nama Anda" required 
+                style="padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; background-color: white;">
+            
+            <textarea name="ucapan" placeholder="Ucapan & Doa Terbaik Anda" rows="5" required 
+                style="padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; background-color: white; resize: vertical;"></textarea>
+            
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label style="font-size: 14px; color: #555; font-weight: 500;">Konfirmasi Kehadiran:</label>
+                <select name="kehadiran" required 
+                    style="padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; background-color: white;">
+                    <option value="">-- Pilih Kehadiran --</option>
+                    <option value="Hadir">Hadir</option>
+                    <option value="Tidak Hadir">Tidak Hadir</option>
+                    <option value="Masih Ragu">Masih Ragu</option>
+                </select>
+            </div>
+
+            <button type="submit" style="background-color: #2b5b53; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 18px; transition: background-color 0.3s ease;">
+                <i class="fa fa-paper-plane"></i> Kirim Ucapan
+            </button>
+            <p id="form-message" style="text-align: center; font-weight: bold; margin-top: 10px; display: none;"></p>
+        </form>
+    </div>
+</div>
 
 <script>
-  const form = document.getElementById("waForm");
-  form.addEventListener("submit", function(e) {
-    e.preventDefault();
-    const nama = document.getElementById("nama").value.trim();
-    const pesan = document.getElementById("pesan").value.trim();
-    const status = document.getElementById("status").value;
+    // *** PENTING: GANTI URL INI DENGAN URL APPS SCRIPT WEB APP ANDA ***
+    const GOOGLE_FORM_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwFSsDFd-ykujePlidqVQOphUsycWRaUXEmbVP9k45EGT8Vyz5SKkk9mWYbcIHmZcn5/exec'; 
 
-    // Nomor WhatsApp tujuan (format internasional)
-    const phone = "628875254020"; 
+    document.getElementById('google-sheet-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+        const formMessage = document.getElementById('form-message');
 
-    // Format pesan
-    const text = `Halo, saya ${nama}. Status: ${status}. Ucapan: ${pesan}`;
+        formMessage.style.display = 'block';
+        formMessage.style.color = '#555';
+        formMessage.textContent = 'Mengirim... Mohon Tunggu...';
 
-    // Encode pesan agar aman di URL
-    const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+        fetch(GOOGLE_FORM_ENDPOINT, {
+            method: 'POST',
+            body: formData,
+            mode: 'no-cors' 
+        })
+        .then(() => {
+    form.reset();
+    formMessage.style.color = '#3D9A62'; // Hijau untuk Sukses
+    formMessage.textContent = '✅ Terima kasih! Ucapan & Konfirmasi Anda sudah terkirim. Memuat daftar ucapan terbaru...';
+    loadWishes();
+    setTimeout(() => { formMessage.style.display = 'none'; }, 5000);
+})
+        .catch(error => {
+            formMessage.style.color = '#d90a11'; 
+            formMessage.textContent = '❌ Gagal mengirim. Pastikan jaringan Anda stabil.';
+            console.error('Error:', error);
+        });
+    });
 
-    // Redirect ke WhatsApp
-    window.open(url, "_blank");
-  });
+    document.addEventListener("DOMContentLoaded", function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const toParam = urlParams.get("to");
+        const namaField = document.getElementById("nama-pengirim");
+        if (toParam && namaField) {
+            const safeName = decodeURIComponent(toParam).replace(/\+/g, ' ');
+            namaField.value = safeName;
+        }
+    });
 </script>
 
 
 
 
-
-
-
-
-
+<div class="elementor-element elementor-element-daftar-ucapan elementor-widget elementor-widget-html anim fadeup elementor-invisible" data-id="daftar-ucapan" data-element_type="widget" data-settings="{&quot;_animation&quot;:&quot;fadeInUp&quot;,&quot;animation_delay&quot;:200}" data-widget_type="html.default">
+    <div class="elementor-widget-container" style="max-width: 600px; margin: 30px auto 0;">
+        <h3 style="text-align: center; color: #333; margin-bottom: 20px;">
+            <i class="fas fa-comments"></i> <span id="wishes-count">0</span> Ucapan dan Doa
+        </h3>
+        <div id="wishes-list" style="display: grid; gap: 15px;">
+            </div>
+        <p id="wishes-loading" style="text-align: center; color: #555;">Memuat ucapan...</p>
+        <p id="wishes-error" style="text-align: center; color: red; display: none;">Gagal memuat ucapan.</p>
+    </div>
+</div>
 
 
 
@@ -1537,6 +1581,104 @@ var ppCoupons = {"copied_text":"Copied"};
 <div class="watermark"><center><h3> </h3></center></div>
 
 
+	
+	
+	
+	
+	<script>
+    // URL Web App Anda (Sama dengan yang digunakan untuk POST)
+    const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFSsDFd-ykujePlidqVQOphUsycWRaUXEmbVP9k45EGT8Vyz5SKkk9mWYbcIHmZcn5/exec'; 
+    const wishesList = document.getElementById('wishes-list');
+    const wishesLoading = document.getElementById('wishes-loading');
+    const wishesError = document.getElementById('wishes-error');
+    const wishesCountEl = document.getElementById('wishes-count');
+
+    // Fungsi untuk memformat tanggal (misalnya: 16 Nov 2025)
+    function formatDate(timestamp) {
+        const date = new Date(timestamp);
+        return date.toLocaleDateString('id-ID', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    // Fungsi untuk membuat HTML card ucapan
+    function createWishCard(wish) {
+        const isAttending = wish.kehadiran === 'Hadir';
+        const statusColor = isAttending ? '#3D9A62' : (wish.kehadiran === 'Tidak Hadir' ? '#d90a11' : '#f9a825');
+        const statusIcon = isAttending ? 'fa-check-circle' : 'fa-info-circle';
+
+        // Styling social media card
+        return `
+            <div style="background-color: white; padding: 15px; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 5px solid ${statusColor};">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <strong style="color: #2b5b53; font-size: 1.1em;">
+                        <i class="fas fa-user-circle"></i> ${wish.nama}
+                    </strong>
+                    <span style="font-size: 0.8em; color: ${statusColor}; font-weight: bold;">
+                        <i class="fas ${statusIcon}"></i> ${wish.kehadiran}
+                    </span>
+                </div>
+
+                <p style="margin: 0 0 10px 0; color: #444; line-height: 1.5;">
+                    ${wish.ucapan.replace(/\n/g, '<br>')}
+                </p>
+
+                <span style="font-size: 0.75em; color: #999;">
+                    <i class="fas fa-clock"></i> ${formatDate(wish.timestamp)}
+                </span>
+            </div>
+        `;
+    }
+
+    // Fungsi utama untuk memuat dan merender ucapan
+    function loadWishes() {
+        wishesList.innerHTML = '';
+        wishesLoading.style.display = 'block';
+        wishesError.style.display = 'none';
+
+        // Panggil endpoint GET dengan parameter action=getWishes
+        fetch(`${GOOGLE_APPS_SCRIPT_URL}?action=getWishes`)
+            .then(res => res.json())
+            .then(wishes => {
+                wishesLoading.style.display = 'none';
+                wishesCountEl.textContent = wishes.length;
+
+                if (wishes.length === 0) {
+                    wishesList.innerHTML = '<p style="text-align: center; color: #555;">Jadilah orang pertama yang memberikan ucapan!</p>';
+                    return;
+                }
+
+                wishes.forEach(wish => {
+                    wishesList.innerHTML += createWishCard(wish);
+                });
+            })
+            .catch(error => {
+                console.error("Error loading wishes:", error);
+                wishesLoading.style.display = 'none';
+                wishesError.style.display = 'block';
+            });
+    }
+
+    // Panggil fungsi loadWishes saat halaman selesai dimuat
+    document.addEventListener("DOMContentLoaded", loadWishes);
+
+    // MODIFIKASI: Panggil loadWishes setelah pengiriman formulir sukses
+    // Ganti bagian 'then' pada fetch POST yang sudah ada:
+
+    /* .then(() => {
+        // ... (kode reset form yang sudah ada) ...
+        // Tambahkan ini:
+        loadWishes(); 
+    }) 
+    */
+</script>
+	
+	
 	
 	
 	
