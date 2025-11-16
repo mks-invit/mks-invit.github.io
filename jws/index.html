@@ -154,7 +154,7 @@
                         aria-label="Toggle Terjemahan"
                         onclick="toggleTranslation()">
                     <svg id="translation-eye-open" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                    <svg id="translation-eye-closed" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7 1.274-4.057 5.065-7 9.542-7 1.05 0 2.083.178 3.064.51M12 16a4 4 0 00-4-4m-2.828 2.828l1.414 1.414M17.657 6.343l-1.414 1.414m-1.414 4.242l1.414 1.414m-4.242-8.484l1.414 1.414"></path></svg>
+                    <svg id="translation-eye-closed" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7 1.274-4.057 5.065 7 9.542 7 1.05 0 2.083.178 3.064.51M12 16a4 4 0 00-4-4m-2.828 2.828l1.414 1.414M17.657 6.343l-1.414 1.414m-1.414 4.242l1.414 1.414m-4.242-8.484l1.414 1.414"></path></svg>
                 </button>
                 
                 <button id="darkModeToggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150" aria-label="Toggle Dark Mode">
@@ -179,9 +179,18 @@
                 <div id="loading" class="col-span-2 text-center p-6 text-gray-500 dark:text-gray-400">Memuat aplikasi...</div>
             </div>
 
-            <p class="text-center text-sm text-gray-500 dark:text-gray-400 pt-4 border-t border-gray-200 dark:border-gray-700">Lokasi: Pallangga Gowa</p>
+            <p class="text-center text-sm text-gray-500 dark:text-gray-400 pt-4 border-t border-gray-200 dark:border-gray-700">Lokasi: <span id="location-display">Makassar</span></p>
             
-            <div class="flex justify-center mt-4">
+            <div class="mt-4 flex space-x-2">
+                <input type="text" id="location-input" placeholder="Ganti Lokasi (e.g., Jakarta)"
+                       class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:ring-emerald-500 focus:border-emerald-500 transition duration-150">
+                <button id="location-change-button"
+                        class="py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition duration-200">
+                    Ubah
+                </button>
+            </div>
+            
+            <div class="flex justify-center mt-6"> 
                 <button id="toggle-view-button" 
                         class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition duration-200">
                     Baca Qur'an
@@ -289,7 +298,6 @@
                                 console.error("Gagal masuk secara anonim:", e);
                             }
                         }
-                        document.getElementById('loading')?.classList.add('hidden');
                         startApp(); 
                     });
 
@@ -298,26 +306,148 @@
                     }
                 } else {
                     console.error("Firebase config tidak ditemukan. Berjalan dalam mode statis.");
-                    document.getElementById('loading')?.classList.add('hidden');
                     startApp();
                 }
 
             } catch (error) {
                 console.error("Kesalahan fatal saat inisialisasi Firebase atau autentikasi:", error);
-                document.getElementById('loading')?.classList.add('hidden');
+                const loadingEl = document.getElementById('loading');
+                if (loadingEl) {
+                    loadingEl.textContent = 'Kesalahan Inisialisasi Firebase.';
+                    loadingEl.classList.remove('hidden');
+                }
                 document.getElementById('error-message')?.classList.remove('hidden');
             }
         }
         
-        // --- Data Waktu Sholat Statis (Mock) ---
-        const PRAYER_TIMES = [
-            { name: "Imsak", time: "03:45" },
-            { name: "Subuh", time: "04:00" },
-            { name: "Dzuhur", time: "11:35" },
-            { name: "Ashar", time: "14:50" },
-            { name: "Maghrib", time: "17:45" },
-            { name: "Isya", time: "18:55" }
-        ];
+        // ====================================================================
+        // === [PERUBAHAN UTAMA: JADWAL SHOLAT DINAMIS] ===
+        // ====================================================================
+
+        // --- Data Waktu Sholat Dinamis (dari API) ---
+        let PRAYER_TIMES = []; // Akan diisi oleh API
+        let LOKASI_KOTA = "Makassar"; // Lokasi default
+        let prayerInterval; // Variabel untuk menyimpan interval timer
+
+        /**
+         * [PERBAIKAN] Mengambil jadwal sholat dari API myQuran.com (sumber Kemenag)
+         * @param {HTMLElement} loadingEl - Elemen DOM untuk menampilkan status loading/error
+         */
+        async function fetchPrayerTimes(loadingEl) {
+            try {
+                const now = new Date();
+                const tahun = now.getFullYear();
+                const bulan = (now.getMonth() + 1).toString().padStart(2, '0');
+                const tanggal = now.getDate().toString().padStart(2, '0');
+
+                // 1. Cari ID Kota
+                const cityResponse = await fetch(`https://api.myquran.com/v2/sholat/kota/cari/${LOKASI_KOTA}`);
+                if (!cityResponse.ok) throw new Error(`Gagal mencari ID kota (status: ${cityResponse.status})`);
+                
+                const cityData = await cityResponse.json();
+                if (!cityData.data || cityData.data.length === 0) {
+                    throw new Error(`Kota "${LOKASI_KOTA}" tidak ditemukan`);
+                }
+                const idKota = cityData.data[0].id;
+                
+                LOKASI_KOTA = cityData.data[0].lokasi; // Update nama lokasi (e.g., "KOTA MAKASSAR")
+                document.getElementById('location-display').textContent = LOKASI_KOTA;
+
+                // 2. Ambil Jadwal Sholat
+                const scheduleResponse = await fetch(`https://api.myquran.com/v2/sholat/jadwal/${idKota}/${tahun}/${bulan}/${tanggal}`);
+                if (!scheduleResponse.ok) throw new Error(`Gagal mengambil jadwal (status: ${scheduleResponse.status})`);
+                
+                const scheduleData = await scheduleResponse.json();
+                if (!scheduleData.data || !scheduleData.data.jadwal) {
+                     throw new Error('Data jadwal tidak valid dari API');
+                }
+                
+                const jadwal = scheduleData.data.jadwal;
+                
+                // 3. Format data
+                PRAYER_TIMES = [
+                    { name: "Imsak", time: jadwal.imsak },
+                    { name: "Subuh", time: jadwal.subuh },
+                    { name: "Dzuhur", time: jadwal.dzuhur },
+                    { name: "Ashar", time: jadwal.ashar },
+                    { name: "Maghrib", time: jadwal.maghrib },
+                    { name: "Isya", time: jadwal.isya }
+                ];
+                
+                return true; // Sukses
+
+            } catch (error) {
+                console.error("Gagal mengambil jadwal sholat:", error);
+                
+                // [PERBAIKAN] Gunakan 'loadingEl' yang di-pass sebagai argumen
+                if (loadingEl) { 
+                    loadingEl.textContent = `Gagal memuat jadwal: ${error.message}.`;
+                    loadingEl.classList.remove('hidden'); // Pastikan terlihat
+                }
+                
+                PRAYER_TIMES = []; // Pastikan data kosong jika gagal
+                return false; // Gagal
+            }
+        }
+        
+        /**
+         * [PERBAIKAN] Fungsi untuk memuat (atau memuat ulang) jadwal sholat berdasarkan LOKASI_KOTA
+         */
+        async function loadPrayerTimesForLocation() {
+            const listContainer = document.getElementById('prayer-times-list');
+            
+            // 1. Reset UI dan Tampilkan Loading
+            PRAYER_TIMES = []; // Kosongkan jadwal lama
+            
+            // [PERBAIKAN] Langsung set innerHTML container menjadi loading message
+            // Ini akan menghapus jadwal lama DAN 'loadingEl' lama (jika ada), lalu membuat 'loadingEl' yang BARU.
+            listContainer.innerHTML = `<div id="loading" class="col-span-2 text-center p-6 text-gray-500 dark:text-gray-400"></div>`;
+            
+            // Ambil elemen 'loading' yang BARU saja kita buat
+            const loadingEl = document.getElementById('loading');
+            loadingEl.textContent = `Memuat jadwal sholat untuk ${LOKASI_KOTA}...`;
+
+            document.getElementById('location-display').textContent = LOKASI_KOTA;
+            document.getElementById('next-prayer-display').innerHTML = `Menunggu data jadwal sholat...`;
+
+            // 2. Panggil API dan kirimkan 'loadingEl' yang baru untuk penanganan error
+            const success = await fetchPrayerTimes(loadingEl);
+            
+            if (success) {
+                // loadingEl.classList.add('hidden'); // Tidak perlu, renderPrayerList akan menghapusnya
+                updateUI(); // Lakukan render pertama kali dengan data baru
+            }
+            // Jika gagal, fetchPrayerTimes SUDAH mengisi 'loadingEl' dengan pesan error
+        }
+        
+        /**
+         * [BARU] Fungsi yang dipanggil saat tombol "Ubah" lokasi diklik
+         */
+        async function handleChangeLocation() {
+            const inputEl = document.getElementById('location-input');
+            const newLocation = inputEl.value.trim();
+            
+            // Cek jika input tidak kosong dan berbeda dari lokasi saat ini
+            if (newLocation && newLocation.toLowerCase() !== LOKASI_KOTA.toLowerCase()) {
+                LOKASI_KOTA = newLocation; // Update variabel global
+                inputEl.value = ''; // Kosongkan input field
+                
+                stopAudioPlayback(); // Hentikan audio jika sedang diputar
+                
+                // [PERBAIKAN] Hentikan interval lama sebelum memuat data baru
+                if (prayerInterval) clearInterval(prayerInterval);
+                
+                await loadPrayerTimesForLocation(); // Muat ulang jadwal
+                
+                // [PERBAIKAN] Mulai lagi interval SETELAH data baru dimuat
+                prayerInterval = setInterval(updateUI, 1000);
+            }
+        }
+        
+        // ====================================================================
+        // === [AKHIR PERUBAHAN UTAMA] ===
+        // ====================================================================
+
 
         /**
          * Menghitung waktu sholat berikutnya dan sisa waktunya.
@@ -325,6 +455,11 @@
          * @returns {object} Objek berisi { nextPrayer, timeRemainingMs }.
          */
         function getNextPrayerTime(now) {
+            // Pengecekan jika PRAYER_TIMES masih kosong (saat loading/error)
+            if (PRAYER_TIMES.length === 0) {
+                return { nextPrayer: null, timeRemainingMs: 0 };
+            }
+
             const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
             let nextPrayer = null;
             let minTimeDiff = Infinity;
@@ -345,7 +480,7 @@
             }
 
             if (!nextPrayer) {
-                nextPrayer = PRAYER_TIMES[0];
+                nextPrayer = PRAYER_TIMES[0]; 
             }
             
             const nextPrayerTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 
@@ -382,22 +517,49 @@
         function renderPrayerList(nextPrayerName) {
             const listContainer = document.getElementById('prayer-times-list');
             if (!listContainer) return;
-            listContainer.innerHTML = ''; 
+            
+            if (PRAYER_TIMES.length === 0) return;
 
+            // [PERBAIKAN] Cek 'loadingEl' berdasarkan ID. Jika ada, hapus.
+            const loadingEl = document.getElementById('loading');
+            if (loadingEl) {
+                // Hapus loadingEl, atau reset container
+                listContainer.innerHTML = '';
+            }
+            
+            // Jika loadingEl tidak ada (karena sudah di-render),
+            // kita tetap perlu 'listContainer.innerHTML = ''' jika HANYA highlight yang berubah.
+            // Namun, kita cek dulu apakah elemennya sudah ada
+            
+            const existingPrayerItem = document.getElementById(`prayer-${PRAYER_TIMES[0].name}`);
+            if (!existingPrayerItem) {
+                 listContainer.innerHTML = ''; // Hanya hapus jika daftar belum di-render
+            }
+            
             PRAYER_TIMES.forEach(prayer => {
                 const isNext = prayer.name === nextPrayerName;
                 const nextClass = isNext 
                     ? 'is-next-prayer' 
                     : 'bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-700';
 
-                const itemHtml = `
-                    <div id="prayer-${prayer.name}" 
-                         class="prayer-list-item p-2 rounded-xl shadow-md flex flex-col items-center justify-center text-center ${nextClass}">
-                        <span class="prayer-name text-sm font-medium text-gray-900 dark:text-gray-200">${prayer.name}</span>
-                        <span class="prayer-time text-lg font-bold text-emerald-600 dark:text-emerald-400">${prayer.time}</span>
-                    </div>
-                `;
-                listContainer.insertAdjacentHTML('beforeend', itemHtml);
+                // Cek apakah elemen sudah ada
+                let itemEl = document.getElementById(`prayer-${prayer.name}`);
+                if (!itemEl) {
+                    // Buat elemen baru jika belum ada
+                    const itemHtml = `
+                        <div id="prayer-${prayer.name}" 
+                             class="prayer-list-item p-2 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
+                            <span class="prayer-name text-sm font-medium text-gray-900 dark:text-gray-200">${prayer.name}</span>
+                            <span class="prayer-time text-lg font-bold text-emerald-600 dark:text-emerald-400">${prayer.time}</span>
+                        </div>
+                    `;
+                    listContainer.insertAdjacentHTML('beforeend', itemHtml);
+                    itemEl = document.getElementById(`prayer-${prayer.name}`); // Ambil lagi setelah dibuat
+                }
+                
+                // Update class (highlight)
+                // Hapus class lama, tambahkan class baru
+                itemEl.className = `prayer-list-item p-2 rounded-xl shadow-md flex flex-col items-center justify-center text-center ${nextClass}`;
             });
         }
 
@@ -420,6 +582,12 @@
 
             // 2. Tentukan Waktu Sholat Berikutnya
             const { nextPrayer, timeRemainingMs } = getNextPrayerTime(now);
+            
+            // Handle jika nextPrayer belum siap (sedang loading atau error)
+            if (!nextPrayer) {
+                return; 
+            }
+
             const timeRemainingFormatted = formatTimeRemaining(timeRemainingMs);
 
             // 3. Perbarui Tampilan Waktu Sholat Berikutnya (Kartu Kuning)
@@ -433,6 +601,7 @@
             }
 
             // 4. Perbarui Daftar Sholat (Highlight)
+            // [PERBAIKAN] Kita panggil renderPrayerList untuk mengurus highlight
             renderPrayerList(nextPrayer.name);
         }
         
@@ -557,9 +726,6 @@
             }
         }
 
-        // ====================================================================
-        // === [PERUBAHAN UTAMA DI SINI] ===
-        // ====================================================================
         /**
          * Menggambar daftar surah (dapat difilter).
          * @param {Array<object>} surahs Array objek surah.
@@ -597,7 +763,6 @@
                 
                 const surahAudioUrl = `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${surah.id}.mp3`;
 
-                // [PERUBAHAN] Urutan Tombol Play dan Teks Arab ditukar
                 button.innerHTML = `
                     <div class="flex flex-col items-start">
                         <span class="font-bold text-base text-emerald-700 dark:text-emerald-300">${surah.id}. ${surah.name_simple}</span>
@@ -625,8 +790,6 @@
                     renderSurahDetails(surah.id, surah.name_simple, surah.name_arabic);
                 });
 
-                // [BARU] Tambahkan event listener untuk tombol play surah
-                // (Logika ini tetap sama, hanya posisinya di HTML yang berubah)
                 const playButton = button.querySelector('.surah-play-button');
                 if (playButton) {
                     playButton.addEventListener('click', (e) => {
@@ -640,9 +803,6 @@
             
             surahListEl.scrollTop = 0; 
         }
-        // ====================================================================
-        // === [AKHIR PERUBAHAN UTAMA] ===
-        // ====================================================================
         
         /**
          * Fungsi untuk memfilter daftar surah berdasarkan input pencarian.
@@ -697,8 +857,6 @@
 
 
             try {
-                // [PERUBAHAN] API untuk mendapatkan teks & terjemahan saja.
-                // Kita tidak meminta field 'audio' lagi.
                 const apiUrl = `${BASE_QURAN_API}/verses/by_chapter/${surahId}?fields=text_uthmani&translations=33&per_page=all`;
                 
                 const response = await fetch(apiUrl);
@@ -747,10 +905,6 @@
                 const arabicText = verse.text_uthmani;
                 const translationText = verse.translations ? verse.translations[0].text : 'Terjemahan tidak tersedia.';
                 
-                // [PERUBAHAN UTAMA] Ganti sumber audio ke everyayah.com
-                // Kita buat URL-nya secara manual.
-                // Qari: Alafasy 128kbps
-                // Format: {Surah: 3-digit}{Ayah: 3-digit}.mp3 (Contoh: 001001.mp3)
                 const surahPad = currentSurahId.toString().padStart(3, '0');
                 const ayahPad = verse.verse_number.toString().padStart(3, '0');
                 const ayahAudioUrl = `https://everyayah.com/data/Alafasy_128kbps/${surahPad}${ayahPad}.mp3`;
@@ -760,7 +914,6 @@
                 
                 const translationClass = isTranslationVisible ? 'translation-text' : 'translation-text hidden';
 
-                // HTML ini tidak perlu diubah, karena sudah siap menerima ayahAudioUrl
                 ayahDiv.innerHTML = `
                     <div class="flex justify-between items-center mb-3 pb-3 border-b border-gray-200 dark:border-gray-600">
                         <span class="text-base font-bold text-emerald-700 dark:text-emerald-300">Ayat ${verse.verse_number}</span>
@@ -779,7 +932,6 @@
                     </p>
                 `;
                 
-                // Event listener ini juga tidak perlu diubah
                 const playButton = ayahDiv.querySelector('.ayah-play-button');
                 if (playButton) {
                     playButton.addEventListener('click', (e) => {
@@ -978,16 +1130,31 @@
         /**
          * Memulai logika aplikasi setelah inisialisasi Firebase/Auth.
          */
-        function startApp() {
-            updateUI();
-            setInterval(updateUI, 1000);
+        async function startApp() {
+            
+            // Hentikan interval lama jika ada (untuk keamanan)
+            if (prayerInterval) clearInterval(prayerInterval);
+            
+            // Muat lokasi default
+            await loadPrayerTimesForLocation(); 
+            
+            // Mulai timer jam SETELAH load pertama selesai
+            prayerInterval = setInterval(updateUI, 1000); 
 
             // Setup Event Listeners
             document.getElementById('toggle-view-button')?.addEventListener('click', toggleView);
             document.getElementById('back-to-prayer-icon')?.addEventListener('click', handleHeaderBack);
             
+            // Event listener untuk ganti lokasi
+            document.getElementById('location-change-button')?.addEventListener('click', handleChangeLocation);
+            document.getElementById('location-input')?.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    handleChangeLocation();
+                }
+            });
+            
              if (surahListCache.length === 0) {
-                fetchSurahList();
+                // (fetchSurahList dipanggil saat tombol "Baca Qur'an" diklik)
              }
              
              updateTranslationButtonUI();
@@ -1024,6 +1191,7 @@
         window.onload = () => {
              setupDarkMode(); 
              initializeFirebaseAndAuth(); 
+             // startApp() akan dipanggil oleh initializeFirebaseAndAuth setelah selesai
         }
 
     </script>
