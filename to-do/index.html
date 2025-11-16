@@ -74,8 +74,8 @@
     <div id="app-container" class="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl transition-colors duration-300">
         
         <!-- Header dan Mode Gelap -->
-        <header class="flex justify-between items-center mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">
+        <header class="flex flex-col sm:flex-row sm:justify-between items-center gap-4 sm:gap-0 mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white text-center sm:text-left">
                 AIC - To Do List
             </h1>
             <button id="darkModeToggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150" aria-label="Toggle Dark Mode">
@@ -84,15 +84,11 @@
             </button>
         </header>
 
-        <!-- Status Autentikasi/Loading -->
-        <div id="authInfoDisplay" class="mb-4 p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-xs text-blue-700 dark:text-blue-300 transition-colors duration-300">
-            <span id="loadingIndicator" class="animate-pulse">Memuat data dari Google Sheets...</span>
-            <span id="currentUserId">Menggunakan Google Apps Script API.</span>
-        </div>
-
+        <!-- Status Autentikasi/Loading (Dihapus dari sini) -->
+        
         <!-- Form Input Tugas -->
         <div class="mb-8 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-inner dark:shadow-none bg-gray-50 dark:bg-gray-700/50">
-            <h2 class="text-xl font-semibold mb-3 dark:text-gray-200">Tambah Tugas Baru</h2>
+            <h2 class="text-xl font-semibold mb-3 dark:text-gray-200 text-center">Tambah Tugas Baru</h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                 
                 <div class="md:col-span-2">
@@ -121,23 +117,26 @@
 
         <!-- Bagian Filter dan Pencarian -->
         <div class="mb-6">
-            <h2 class="text-xl font-semibold mb-3 dark:text-gray-200">Filter Tugas</h2>
+            <h2 class="text-xl font-semibold mb-3 dark:text-gray-200 text-center">Filter & Cari Tugas</h2>
 
             <!-- Filter Status -->
-            <div class="flex flex-wrap gap-2 mb-4">
+            <div class="flex flex-wrap justify-center gap-2 mb-4">
                 <button id="filterAllBtn" class="filter-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150 filter-active">Semua</button>
                 <button id="filterActiveBtn" class="filter-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150">Aktif</button>
                 <button id="filterCompletedBtn" class="filter-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150">Selesai</button>
             </div>
             
-            <!-- Filter Tanggal dan Pencarian -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                <button id="filterDateAllBtn" class="filter-date-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150 filter-active">Semua Waktu</button>
-                <button id="filterDateTodayBtn" class="filter-date-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150">Hari Ini</button>
-                <button id="filterDateWeekBtn" class="filter-date-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150">Minggu Ini</button>
+            <!-- Pencarian -->
+            <div class="grid grid-cols-1 gap-3 justify-items-center">
                 <input type="text" id="searchInput" placeholder="Cari Tugas/Lokasi..." 
-                       class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-800 dark:text-white transition duration-150">
+                       class="w-full max-w-md p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-800 dark:text-white transition duration-150">
             </div>
+        </div>
+
+        <!-- Status Autentikasi/Loading (Dipindahkan ke sini) -->
+        <div id="authInfoDisplay" class="mb-4 p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-xs text-blue-700 dark:text-blue-300 transition-colors duration-300 text-center">
+            <span id="loadingIndicator" class="animate-pulse">Memuat data dari Google Sheets...</span>
+            <span id="currentUserId">Menggunakan Google Apps Script API.</span>
         </div>
 
         <!-- Daftar Tugas -->
@@ -152,9 +151,9 @@
         <!-- Modal Konfirmasi Hapus -->
         <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4">
             <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl max-w-md w-full">
-                <h3 class="text-xl font-bold mb-4 dark:text-white">Konfirmasi Hapus</h3>
-                <p class="mb-6 text-gray-700 dark:text-gray-300">Anda yakin ingin menghapus tugas ini secara permanen?</p>
-                <div class="flex justify-end space-x-3">
+                <h3 class="text-xl font-bold mb-4 dark:text-white text-center">Konfirmasi Hapus</h3>
+                <p class="mb-6 text-gray-700 dark:text-gray-300 text-center">Anda yakin ingin menghapus tugas ini secara permanen?</p>
+                <div class="flex justify-center space-x-3">
                     <button id="cancelDeleteBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition">Batal</button>
                     <button id="confirmDeleteBtn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">Hapus</button>
                 </div>
@@ -164,7 +163,7 @@
         <!-- Modal Edit Tugas -->
         <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4">
             <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl max-w-md w-full">
-                <h3 class="text-xl font-bold mb-4 dark:text-white">Edit Tugas</h3>
+                <h3 class="text-xl font-bold mb-4 dark:text-white text-center">Edit Tugas</h3>
                 <div class="space-y-4">
                     <input type="text" id="editTaskText" placeholder="Teks Tugas" 
                            class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white">
@@ -173,7 +172,7 @@
                     <input type="text" id="editLocation" placeholder="Lokasi (Opsional)" title="Lokasi Tugas" 
                            class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white">
                 </div>
-                <div class="flex justify-end space-x-3 mt-6">
+                <div class="flex justify-center space-x-3 mt-6">
                     <button id="cancelEditBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition">Batal</button>
                     <button id="saveEditBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">Simpan</button>
                 </div>
@@ -190,7 +189,7 @@
         // --- Variabel Global & Cache ---
         let allTasksCache = [];
         let currentFilterStatus = 'all'; // 'all', 'active', 'completed'
-        let currentFilterDate = 'all'; // 'all', 'today', 'week'
+        // currentFilterDate dihapus
         let currentSearchTerm = '';
         let taskIdToDelete = null;
         let taskIdToEdit = null;
@@ -227,11 +226,7 @@
             active: document.getElementById('filterActiveBtn'),
             completed: document.getElementById('filterCompletedBtn')
         };
-        const filterDateBtns = {
-            all: document.getElementById('filterDateAllBtn'),
-            today: document.getElementById('filterDateTodayBtn'),
-            week: document.getElementById('filterDateWeekBtn')
-        };
+        // filterDateBtns dihapus
 
         // --- Helper Functions ---
 
@@ -321,16 +316,7 @@
                    date1.getDate() === date2.getDate();
         }
 
-        /**
-         * Menghitung tanggal seminggu dari sekarang.
-         * @returns {Date}
-         */
-        function getOneWeekFromNow() {
-            const now = new Date();
-            const oneWeek = new Date(now);
-            oneWeek.setDate(now.getDate() + 7);
-            return oneWeek;
-        }
+        // Fungsi getOneWeekFromNow() dihapus
 
         /**
          * Memastikan input teks tugas tidak kosong.
@@ -529,25 +515,8 @@
                 return true; // 'all'
             });
 
-            // 2. Filter berdasarkan tanggal
-            const now = new Date();
-            const oneWeekFromNow = getOneWeekFromNow();
+            // 2. Filter berdasarkan tanggal (DIHAPUS)
             
-            filteredTasks = filteredTasks.filter(task => {
-                if (currentFilterDate === 'today') {
-                    if (!task.dueDate) return false;
-                    return isSameDay(task.dueDate, now);
-                }
-                if (currentFilterDate === 'week') {
-                    if (!task.dueDate) return false;
-                    const dueDate = new Date(task.dueDate);
-                    // Filter antara hari ini (inklusif) dan seminggu dari sekarang (eksklusif)
-                    return dueDate >= new Date(formatDate(now)) && dueDate < oneWeekFromNow;
-                }
-                return true; // 'all'
-            });
-
-
             // 3. Filter berdasarkan pencarian
             const searchTerm = currentSearchTerm.toLowerCase();
             if (searchTerm) {
@@ -690,20 +659,7 @@
             renderTasks(allTasksCache);
         }
 
-        /**
-         * Mengubah tampilan tombol filter tanggal.
-         * @param {string} newDateFilter 'all', 'today', atau 'week'
-         */
-        function updateFilterDateUI(newDateFilter) {
-            currentFilterDate = newDateFilter;
-            Object.keys(filterDateBtns).forEach(dateFilter => {
-                filterDateBtns[dateFilter].classList.remove('filter-active');
-                if (dateFilter === newDateFilter) {
-                    filterDateBtns[dateFilter].classList.add('filter-active');
-                }
-            });
-            renderTasks(allTasksCache);
-        }
+        // Fungsi updateFilterDateUI() dihapus
 
         // --- Modal Logic ---
         
@@ -775,11 +731,8 @@
                 filterStatusBtns.active.addEventListener('click', () => updateFilterStatusUI('active'));
                 filterStatusBtns.completed.addEventListener('click', () => updateFilterStatusUI('completed'));
 
-                // 4. Setup Filter Date Listeners
-                filterDateBtns.all.addEventListener('click', () => updateFilterDateUI('all'));
-                filterDateBtns.today.addEventListener('click', () => updateFilterDateUI('today'));
-                filterDateBtns.week.addEventListener('click', () => updateFilterDateUI('week'));
-
+                // 4. Setup Filter Date Listeners (DIHAPUS)
+                
                 // 5. Setup Search Event Listener
                 searchInput.addEventListener('input', () => { currentSearchTerm = searchInput.value; renderTasks(allTasksCache); });
 
