@@ -275,6 +275,32 @@
         </a>
     </footer>
 
+
+
+    
+    
+    <div id="mini-player" 
+         class="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md mx-auto bg-gray-900 dark:bg-gray-200 text-white dark:text-gray-900 p-3 pr-2 rounded-xl shadow-2xl flex items-center justify-between space-x-3 transition-all duration-300 ease-out transform translate-y-24 opacity-0 z-50"
+         role="dialog" aria-label="Pemutar Audio" style="display: none;">
+        
+        <button id="mini-player-toggle" class="p-2 rounded-full bg-emerald-500 text-white hover:bg-emerald-600 transition-all flex-shrink-0" aria-label="Putar/Jeda">
+            </button>
+        
+        <div class="flex-grow min-w-0">
+            <p class="text-sm font-medium truncate" id="mini-player-title">Sedang memutar...</p>
+            <p class="text-xs text-gray-400 dark:text-gray-600" id="mini-player-subtitle">Audio</p>
+        </div>
+        
+        <button id="mini-player-close" class="p-2 rounded-full text-gray-500 dark:text-gray-700 hover:bg-gray-700 dark:hover:bg-gray-300 transition-all flex-shrink-0" aria-label="Tutup Pemutar">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+    </div>
+
+
+
+
+        
+    
     <script type="module">
         // Import modul Firebase yang diperlukan (boilerplate wajib)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
