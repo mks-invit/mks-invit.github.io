@@ -1,14 +1,10 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-R-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIC - To Do List</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#10b981">
-    
     <style>
         /* Menggunakan font Inter */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
@@ -26,7 +22,7 @@
         }
         body.dark #app-container {
             background-color: #374151;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+            /* box-shadow dihapus untuk layout full-screen */
         }
         body.dark .border-gray-300 {
             border-color: #4b5563;
@@ -45,17 +41,10 @@
             text-decoration: line-through;
             color: #9ca3af;
         }
-        
-        /* (Baru) Style untuk item yang sedang disinkronisasi */
-        .pending-delete {
-            opacity: 0.5;
-            text-decoration: line-through;
-            font-style: italic;
-        }
 
-        /* Scrollbar untuk daftar tugas (DIUBAH) */
+        /* Scrollbar untuk daftar tugas */
         #taskList {
-            /* max-height: 50vh; Dihapus untuk layout flex-1 */
+            /* max-height: 50vh; DIHAPUS untuk layout flex-1 */
             overflow-y: auto;
         }
         #taskList::-webkit-scrollbar {
@@ -79,28 +68,17 @@
 
     </style>
 </head>
-<body class="h-screen overflow-hidden p-4 sm:p-8 flex items-center justify-center">
+<body class="min-h-screen h-screen">
 
-    <div id="offline-status" class="hidden fixed bottom-0 left-0 right-0 p-3 bg-yellow-400 dark:bg-yellow-600 text-center text-black dark:text-white font-semibold z-50 shadow-lg">
-        You are offline. Syncing later.
-    </div>
-
-    <div id="app-container" class="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl transition-colors duration-300 h-full w-full flex flex-col overflow-hidden">
+    <div id="app-container" class="w-full h-full bg-white dark:bg-gray-800 p-4 sm:p-8 transition-colors duration-300 flex flex-col">
         
-        <header class="grid grid-cols-3 items-center mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
-            <div></div>
-            
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white text-center col-span-1">
+        <header class="flex flex-col sm:flex-row sm:justify-center items-center gap-4 sm:gap-0 mb-6 border-b border-gray-200 dark:border-gray-700 pb-4 flex-shrink-0">
+            <h1 class="text-xl font-semibold text-gray-900 dark:text-white text-center">
                 AIC - To Do List
             </h1>
-            
-            <button id="darkModeToggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150 col-span-1 justify-self-end" aria-label="Toggle Dark Mode">
-                <svg id="sunIcon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                <svg id="moonIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-            </button>
         </header>
         
-        <div class="mb-8 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-inner dark:shadow-none bg-gray-50 dark:bg-gray-700/50">
+        <div class="mb-8 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-inner dark:shadow-none bg-gray-50 dark:bg-gray-700/50 flex-shrink-0">
             <h2 class="text-xl font-semibold mb-3 dark:text-gray-200 text-center">Tambah Tugas Baru</h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
                 
@@ -128,35 +106,36 @@
             </div>
         </div>
 
-        <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-            
-            <div class="flex flex-wrap justify-center sm:justify-start gap-2">
+        <div class="mb-6 flex-shrink-0">
+            <div class="flex flex-wrap justify-center gap-2 mb-4">
                 <button id="filterAllBtn" class="filter-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150 filter-active">Semua</button>
                 <button id="filterActiveBtn" class="filter-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150">Aktif</button>
                 <button id="filterCompletedBtn" class="filter-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150">Selesai</button>
+                <button id="filterTodayBtn" class="filter-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150">Hari Ini</button>
             </div>
             
-            <input type="text" id="searchInput" placeholder="Cari Tugas/Lokasi..." 
-                   class="w-full sm:w-auto md:w-64 p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-800 dark:text-white transition duration-150">
+            <div class="grid grid-cols-1 gap-3 justify-items-center">
+                <input type="text" id="searchInput" placeholder="Cari Tugas/Lokasi..." 
+                       class="w-full max-w-md p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-800 dark:text-white transition duration-150">
+            </div>
         </div>
 
-
-        <div id="taskList" class="space-y-3 pb-4 flex-1">
+        <div id="taskList" class="space-y-3 pb-4 flex-1 overflow-y-auto">
             <div id="emptyState" class="text-center p-10 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-500 dark:text-gray-400">
                 <p class="text-lg font-medium">Tidak ada tugas ditemukan.</p>
                 <p>Coba tambahkan tugas baru atau sesuaikan filter Anda.</p>
             </div>
         </div>
 
-        <div id="authInfoDisplay" class="mt-4 p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-xs text-blue-700 dark:text-blue-300 transition-colors duration-300 text-center">
-            <span id="loadingIndicator" class="animate-pulse">Memuat data...</span>
+        <div id="authInfoDisplay" class="mt-4 p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-xs text-blue-700 dark:text-blue-300 transition-colors duration-300 text-center flex-shrink-0">
+            <span id="loadingIndicator" class="animate-pulse">Memuat data dari Google Sheets...</span>
             <span id="currentUserId">Menggunakan Google Apps Script API.</span>
         </div>
 
         <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4">
             <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl max-w-md w-full">
                 <h3 class="text-xl font-bold mb-4 dark:text-white text-center">Konfirmasi Hapus</h3>
-                <p class="mb-6 text-gray-700 dark:text-gray-300 text-center">Anda yakin ingin menghapus tugas ini? Ini akan disinkronkan saat online.</p>
+                <p class="mb-6 text-gray-700 dark:text-gray-300 text-center">Anda yakin ingin menghapus tugas ini secara permanen?</p>
                 <div class="flex justify-center space-x-3">
                     <button id="cancelDeleteBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition">Batal</button>
                     <button id="confirmDeleteBtn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">Hapus</button>
@@ -187,16 +166,12 @@
     <script>
         // --- KONFIGURASI API ---
         const MOCK_API_ENDPOINT = "https://script.google.com/macros/s/AKfycbxPu_354U8wzqYalUAKhvIaAGJqmZzM1bZYD9FQDsnuP0n4vmfFNQg6wxBuvzjEWffODw/exec";
-        
-        // --- (BARU) Kunci LocalStorage ---
-        const TASKS_CACHE_KEY = 'tasksCache';
-        const SYNC_QUEUE_KEY = 'syncQueue';
+        // --- AKHIR KONFIGURASI API ---
 
         // --- Variabel Global & Cache ---
         let allTasksCache = [];
-        let syncQueue = []; // (BARU) Antrian untuk sinkronisasi offline
-        let isSyncing = false; // (BARU) Flag untuk mencegah sinkronisasi ganda
-        let currentFilterStatus = 'all'; // 'all', 'active', 'completed'
+        let currentFilterStatus = 'all'; // 'all', 'active', 'completed', 'today'
+        // currentFilterDate dihapus
         let currentSearchTerm = '';
         let taskIdToDelete = null;
         let taskIdToEdit = null;
@@ -212,10 +187,9 @@
         const loadingIndicatorEl = document.getElementById('loadingIndicator');
         const authInfoDisplayEl = document.getElementById('authInfoDisplay');
         const currentUserIdEl = document.getElementById('currentUserId');
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        const sunIcon = document.getElementById('sunIcon');
-        const moonIcon = document.getElementById('moonIcon');
-        const offlineStatusEl = document.getElementById('offline-status');
+        const darkModeToggle = document.getElementById('darkModeToggle'); // Masih ada di JS, tapi tidak masalah
+        const sunIcon = document.getElementById('sunIcon'); // Masih ada di JS
+        const moonIcon = document.getElementById('moonIcon'); // Masih ada di JS
 
         // Modal Elements
         const deleteModal = document.getElementById('deleteModal');
@@ -228,85 +202,24 @@
         const editDueDate = document.getElementById('editDueDate');
         const editLocation = document.getElementById('editLocation');
 
-        // Filter Buttons
+        // Filter Buttons (filterTodayBtn DITAMBAHKAN)
         const filterStatusBtns = {
             all: document.getElementById('filterAllBtn'),
             active: document.getElementById('filterActiveBtn'),
-            completed: document.getElementById('filterCompletedBtn')
+            completed: document.getElementById('filterCompletedBtn'),
+            today: document.getElementById('filterTodayBtn')
         };
+        // filterDateBtns dihapus
 
-        // --- (BARU) Helper Fungsi Penyimpanan ---
-
-        /**
-         * Memuat data tugas dan antrian sinkronisasi dari localStorage.
-         */
-        function loadFromStorage() {
-            try {
-                allTasksCache = JSON.parse(localStorage.getItem(TASKS_CACHE_KEY) || '[]');
-                syncQueue = JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY) || '[]');
-            } catch (e) {
-                console.error("Gagal memuat cache", e);
-                allTasksCache = [];
-                syncQueue = [];
-                localStorage.removeItem(TASKS_CACHE_KEY);
-                localStorage.removeItem(SYNC_QUEUE_KEY);
-            }
-        }
-
-        /**
-         * Menyimpan data tugas dan antrian sinkronisasi ke localStorage.
-         */
-        function saveToStorage() {
-            try {
-                localStorage.setItem(TASKS_CACHE_KEY, JSON.stringify(allTasksCache));
-                localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(syncQueue));
-            } catch (e) {
-                console.warn("Gagal menyimpan ke localStorage:", e);
-            }
-        }
-
-        /**
-         * Menambahkan item ke antrian sinkronisasi dan menyimpannya.
-         * @param {object} item Item aksi (misal: {action: 'add', data: ...})
-         */
-        function addToSyncQueue(item) {
-            // (Logika V1 Sederhana): Langsung tambahkan ke antrian.
-            // (V2 lebih kompleks akan menggabungkan update atau membatalkan add+delete)
-            
-            // (BARU) Logika V1.1: Jika mengedit item yg baru ditambah (temp-id),
-            // kita cukup modifikasi data 'add' di antrian.
-            if (item.action === 'update' && item.id.startsWith('temp-')) {
-                const addActionIndex = syncQueue.findIndex(q => q.action === 'add' && q.data.id === item.id);
-                if (addActionIndex > -1) {
-                    // Update data di 'add' action
-                    syncQueue[addActionIndex].data = { ...syncQueue[addActionIndex].data, ...item.updates };
-                    saveToStorage();
-                    return; // Jangan tambahkan 'update' terpisah
-                }
-            }
-            
-            // (BARU) Logika V1.2: Jika menghapus item yg baru ditambah (temp-id)
-            if (item.action === 'delete' && item.id.startsWith('temp-')) {
-                // Hapus 'add' action dari antrian
-                syncQueue = syncQueue.filter(q => !(q.action === 'add' && q.data.id === item.id));
-                saveToStorage();
-                return; // Jangan tambahkan 'delete' action
-            }
-
-            syncQueue.push(item);
-            saveToStorage();
-        }
-
-        // --- Helper Functions (Lainnya) ---
+        // --- Helper Functions ---
 
         /**
          * Mengatur status loading aplikasi
          * @param {boolean} isLoading 
-         * @param {string} message Pesan loading
          */
-        function setLoading(isLoading, message = 'Memuat...') {
+        function setLoading(isLoading) {
             if (isLoading) {
-                loadingIndicatorEl.textContent = message;
+                loadingIndicatorEl.textContent = 'Memuat...';
                 addTaskBtn.disabled = true;
                 taskListEl.classList.add('opacity-50');
             } else {
@@ -315,42 +228,6 @@
                 taskListEl.classList.remove('opacity-50');
             }
         }
-        
-        /**
-         * Mengatur UI berdasarkan status online/offline (Diperbarui)
-         * @param {boolean} isOnline
-         */
-        function updateOnlineStatus(isOnline) {
-            offlineStatusEl.classList.toggle('hidden', isOnline);
-            validateInputs(); // Validasi ulang tombol tambah
-            
-            if (isOnline) {
-                // (BARU) Coba proses antrian saat kembali online
-                processSyncQueue();
-            }
-        }
-
-        /**
-         * Menampilkan status sinkronisasi/info di bar status. (Baru)
-         */
-        function showSyncStatus(message, isError = false) {
-            currentUserIdEl.textContent = message;
-            authInfoDisplayEl.classList.remove('bg-blue-100', 'bg-red-100', 'bg-yellow-100', 'dark:bg-blue-900/50', 'dark:bg-red-900/50', 'dark:bg-yellow-900/50');
-            if (isError) {
-                authInfoDisplayEl.classList.add('bg-red-100', 'dark:bg-red-900/50');
-            } else {
-                authInfoDisplayEl.classList.add('bg-yellow-100', 'dark:bg-yellow-900/50'); // Kuning untuk sinkronisasi
-            }
-        }
-
-        /**
-         * Menyembunyikan status sinkronisasi dan kembali normal. (Baru)
-         */
-        function hideSyncStatus() {
-            currentUserIdEl.textContent = 'Menggunakan Google Apps Script API.';
-            authInfoDisplayEl.classList.remove('bg-red-100', 'bg-yellow-100', 'dark:bg-red-900/50', 'dark:bg-yellow-900/50');
-            authInfoDisplayEl.classList.add('bg-blue-100', 'dark:bg-blue-900/50');
-        }
 
         /**
          * Panggilan API dengan mekanisme retry. Digunakan untuk POST.
@@ -358,17 +235,14 @@
          * @returns {Promise<object>} Respon JSON dari Apps Script.
          */
         async function apiCall(payload) {
-            if (!navigator.onLine) {
-                throw new Error("Offline. Tidak dapat melakukan panggilan API.");
-            }
-            
-            setLoading(true, 'Menghubungi server...'); // Pesan loading lebih spesifik
+            setLoading(true);
             const maxRetries = 3;
 
             for (let i = 0; i < maxRetries; i++) {
                 try {
                     const response = await fetch(MOCK_API_ENDPOINT, {
                         method: 'POST',
+                        // Menghapus header 'Content-Type: application/json' untuk mempermudah CORS dengan GAS
                         body: JSON.stringify(payload)
                     });
 
@@ -376,32 +250,47 @@
 
                     if (response.ok && data.status === 'success') {
                         setLoading(false);
-                        return data; // Kembalikan data (penting untuk 'add')
+                        return data;
                     } else {
+                        // Ini adalah error yang berasal dari Apps Script
                         const errorMessage = data.message || `Apps Script Error: Status ${response.status}`;
                         throw new Error(errorMessage);
                     }
                 } catch (error) {
                     if (i === maxRetries - 1) {
                         setLoading(false);
+                        // Lempar error jika ini adalah percobaan terakhir
                         throw new Error(`Gagal berinteraksi dengan API setelah ${maxRetries} kali coba: ${error.message}`);
                     }
+                    // Logging dan Backoff
                     console.warn(`Fetch attempt ${i + 1} failed: ${error.message}. Retrying...`);
-                    const delay = Math.pow(2, i) * 1000;
+                    const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
                     await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
         }
 
-        // ... (Fungsi formatDate dan isSameDay tidak berubah) ...
+        /**
+         * Mengubah format tanggal menjadi YYYY-MM-DD.
+         * @param {Date} dateObj 
+         * @returns {string} Tanggal dalam format string YYYY-MM-DD.
+         */
         function formatDate(dateObj) {
             if (!dateObj || dateObj.toString() === 'Invalid Date') return '';
             const d = new Date(dateObj);
+            // Tambahkan padding nol jika angka < 10
             const year = d.getFullYear();
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
+        
+        /**
+         * Membandingkan tanggal (hanya bagian hari, bulan, tahun).
+         * @param {Date|string} d1 
+         * @param {Date|string} d2 
+         * @returns {boolean} True jika tanggal sama.
+         */
         function isSameDay(d1, d2) {
             const date1 = new Date(d1);
             const date2 = new Date(d2);
@@ -410,108 +299,43 @@
                    date1.getDate() === date2.getDate();
         }
 
+        // Fungsi getOneWeekFromNow() dihapus
+
         /**
-         * Memastikan input teks tugas tidak kosong. (Diperbarui)
+         * Memastikan input teks tugas tidak kosong.
          */
         function validateInputs() {
-            const isInputValid = taskInput.value.trim() !== "";
-            // Tidak lagi memeriksa status online!
-            addTaskBtn.disabled = !isInputValid;
+            addTaskBtn.disabled = taskInput.value.trim() === "";
         }
 
-        // --- (BARU) Logika Sinkronisasi ---
-
-        /**
-         * Memproses antrian sinkronisasi, mengirim perubahan ke API.
-         */
-        async function processSyncQueue() {
-            if (isSyncing || !navigator.onLine || syncQueue.length === 0) {
-                return;
-            }
-            
-            isSyncing = true;
-            showSyncStatus(`Sinkronisasi ${syncQueue.length} perubahan...`);
-            
-            const queueToProcess = [...syncQueue]; // Salin antrian
-            syncQueue = []; // Kosongkan antrian utama (optimistic)
-            saveToStorage(); // Simpan antrian kosong
-            
-            let failedItems = [];
-            
-            for (const item of queueToProcess) {
-                try {
-                    // **PENTING:** Jika item 'update' atau 'delete'
-                    // mengacu pada temp-id, item itu tidak perlu dikirim
-                    // karena sudah ditangani oleh logika 'add'
-                    if ((item.action === 'update' || item.action === 'delete') && item.id.startsWith('temp-')) {
-                        continue; // Lewati
-                    }
-
-                    await apiCall(item);
-                } catch (error) {
-                    console.error("Gagal sinkronisasi item:", item, error);
-                    failedItems.push(item); // Kumpulkan item yg gagal
-                }
-            }
-            
-            // Taruh kembali item yang gagal ke antrian
-            syncQueue = [...failedItems, ...syncQueue]; // Taruh di depan
-            saveToStorage();
-
-            isSyncing = false;
-            
-            if (failedItems.length > 0) {
-                showSyncStatus(`Gagal sinkronisasi ${failedItems.length} item.`, true);
-            } else {
-                hideSyncStatus();
-            }
-
-            // **WAJIB:** Ambil data baru dari server untuk rekonsiliasi
-            // Ini akan mengambil ID asli, menghapus item yg terhapus di server, dll.
-            await fetchTasks();
-        }
-
-
-        // --- CRUD & API Interaksi (Diperbarui) ---
+        // --- CRUD & API Interaksi ---
 
         /**
          * Mengambil semua tugas dari Google Sheets via Apps Script API.
          */
         async function fetchTasks() {
-            // (BARU) Jangan fetch jika sedang sinkronisasi atau offline dan ada antrian
-            if (isSyncing || (!navigator.onLine && syncQueue.length > 0)) {
-                return;
-            }
-            
-            setLoading(true, 'Menyegarkan data...');
-            
-            if (!navigator.onLine) {
-                loadingIndicatorEl.textContent = 'Offline. Menampilkan data dari cache.';
-                setLoading(false);
-                return; // Jangan coba fetch jika offline
-            }
-            
+            setLoading(true);
             const maxRetries = 3;
 
             for (let i = 0; i < maxRetries; i++) {
                 try {
+                    // Gunakan GET dengan parameter action=read
                     const response = await fetch(MOCK_API_ENDPOINT + '?action=read');
                     const result = await response.json();
 
                     if (response.ok && result.status === 'success') {
+                        // Mapping dan normalisasi data dari Sheets
                         allTasksCache = result.data.map(task => ({
                             id: task.id.toString(),
                             text: task.text,
                             dueDate: task.dueDate ? formatDate(task.dueDate) : '',
                             location: task.location || '',
-                            completed: task.completed === true || task.completed === 'TRUE',
-                            createdAt: task.createdAt
+                            completed: task.completed === true || task.completed === 'TRUE', // Menangani konversi tipe
+                            createdAt: task.createdAt // Biarkan seperti adanya
                         }));
-                        
-                        saveToStorage(); // Simpan cache baru
                         renderTasks(allTasksCache);
                         setLoading(false);
-                        return; // Berhasil
+                        return; // Berhasil, keluar dari loop
                     } else {
                         throw new Error(result.message || 'Gagal mengambil data tugas.');
                     }
@@ -519,18 +343,18 @@
                     if (i === maxRetries - 1) {
                         setLoading(false);
                         console.error("Error fetching tasks:", error);
-                        showSyncStatus(`Gagal memuat data: ${error.message}.`, true);
-                        return; // Gagal
+                        authInfoDisplayEl.textContent = `Gagal memuat data: ${error.message}`;
+                        return; // Gagal, keluar dari loop
                     }
                     console.warn(`Fetch attempt ${i + 1} failed: ${error.message}. Retrying...`);
-                    const delay = Math.pow(2, i) * 1000;
+                    const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
                     await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
         }
 
         /**
-         * Menambah tugas baru (logika offline-first).
+         * Menambah tugas baru ke Google Sheets.
          */
         async function addTask() {
             const text = taskInput.value.trim();
@@ -540,7 +364,7 @@
             if (text === "") return;
 
             const newTask = {
-                id: `temp-${Date.now().toString()}`, // ID unik sementara
+                id: Date.now().toString(), // ID unik menggunakan timestamp
                 text: text,
                 dueDate: dueDate,
                 location: location,
@@ -548,30 +372,29 @@
                 createdAt: new Date().toISOString()
             };
 
-            // Update UI/Cache segera
-            allTasksCache.unshift(newTask); // Tambah di awal daftar
-            addToSyncQueue({
-                action: "add",
-                data: newTask
-            });
-            // saveToStorage() sudah dipanggil di dalam addToSyncQueue
+            try {
+                // Panggil API untuk menambahkan tugas
+                await apiCall({
+                    action: "add",
+                    data: newTask
+                });
+                
+                // Refresh data setelah berhasil
+                await fetchTasks();
 
-            renderTasks(allTasksCache);
+                // Bersihkan input
+                taskInput.value = '';
+                dueDateInput.value = '';
+                locationInput.value = '';
+                validateInputs();
 
-            // Bersihkan input
-            taskInput.value = '';
-            dueDateInput.value = '';
-            locationInput.value = '';
-            validateInputs();
-
-            // Coba sinkronisasi segera jika online
-            if (navigator.onLine) {
-                processSyncQueue();
+            } catch (error) {
+                // Kesalahan ditangani di apiCall
             }
         }
 
         /**
-         * Mengubah status 'completed' tugas (logika offline-first).
+         * Mengubah status 'completed' tugas di Sheets.
          * @param {string} id ID tugas.
          */
         async function toggleTask(id) {
@@ -579,100 +402,109 @@
             if (!task) return;
 
             const newCompletedStatus = !task.completed;
-            task.completed = newCompletedStatus; // Modifikasi cache langsung
 
-            addToSyncQueue({
-                action: "update",
-                id: id,
-                updates: {
-                    completed: newCompletedStatus
-                }
-            });
-            
-            renderTasks(allTasksCache); // Render ulang UI
+            try {
+                // Panggil API untuk update status
+                await apiCall({
+                    action: "update",
+                    id: id,
+                    updates: {
+                        completed: newCompletedStatus // Kirim nilai boolean
+                    }
+                });
 
-            if (navigator.onLine) {
-                processSyncQueue();
+                // Update cache lokal
+                task.completed = newCompletedStatus;
+                
+                // Re-render daftar tugas
+                renderTasks(allTasksCache);
+
+            } catch (error) {
+                // Kesalahan ditangani di apiCall
             }
         }
 
         /**
-         * Menghapus tugas (logika offline-first).
+         * Menghapus tugas dari Sheets.
          * @param {string} id ID tugas.
          */
         async function removeTask(id) {
-            // Hapus dari cache/UI
-            allTasksCache = allTasksCache.filter(t => t.id !== id); 
+            try {
+                // Panggil API untuk menghapus tugas
+                await apiCall({
+                    action: "delete",
+                    id: id
+                });
+                
+                // Refresh data setelah berhasil
+                await fetchTasks();
 
-            addToSyncQueue({
-                action: "delete",
-                id: id
-            });
-            
-            renderTasks(allTasksCache);
-
-            if (navigator.onLine) {
-                processSyncQueue();
+            } catch (error) {
+                // Kesalahan ditangani di apiCall
             }
         }
         
         /**
-         * Menyimpan perubahan tugas (dari modal edit) (logika offline-first).
+         * Menyimpan perubahan tugas (dari modal edit) ke Sheets.
          */
         async function saveEditedTask() {
             const id = taskIdToEdit;
             if (!id) return;
             
-            const task = allTasksCache.find(t => t.id === id);
-            if (!task) return;
-
             const newText = editTaskText.value.trim();
             const newDueDate = editDueDate.value || '';
             const newLocation = editLocation.value.trim() || '';
 
             if (newText === "") {
-                console.error("Teks tugas tidak boleh kosong.");
+                alert("Teks tugas tidak boleh kosong.");
                 return;
             }
 
-            const updates = {
-                text: newText,
-                dueDate: newDueDate,
-                location: newLocation
-            };
+            try {
+                // Panggil API untuk update detail tugas
+                await apiCall({
+                    action: "update",
+                    id: id,
+                    updates: {
+                        text: newText,
+                        dueDate: newDueDate,
+                        location: newLocation
+                    }
+                });
 
-            // Terapkan update ke cache
-            Object.assign(task, updates);
+                // Refresh data setelah berhasil
+                await fetchTasks();
 
-            addToSyncQueue({
-                action: "update",
-                id: id,
-                updates: updates
-            });
+                // Tutup modal
+                editModal.classList.add('hidden');
+                taskIdToEdit = null;
 
-            renderTasks(allTasksCache);
-            closeEditModal();
-
-            if (navigator.onLine) {
-                processSyncQueue();
+            } catch (error) {
+                // Kesalahan ditangani di apiCall
             }
         }
         
-        // --- Filtering dan Rendering (Diperbarui) ---
+        // --- Filtering dan Rendering ---
 
         /**
          * Menerapkan filter dan merender daftar tugas.
          * @param {Array<object>} tasks 
          */
         function renderTasks(tasks) {
-            // 1. Filter status
+            // 1. Filter berdasarkan status (Logika "today" DITAMBAHKAN)
             let filteredTasks = tasks.filter(task => {
                 if (currentFilterStatus === 'active') return !task.completed;
                 if (currentFilterStatus === 'completed') return task.completed;
+                if (currentFilterStatus === 'today') {
+                    // Tampilkan tugas yang jatuh tempo hari ini DAN belum selesai
+                    return task.dueDate && isSameDay(task.dueDate, new Date()) && !task.completed;
+                }
                 return true; // 'all'
             });
 
-            // 2. Filter pencarian
+            // 2. Filter berdasarkan tanggal (DIHAPUS)
+            
+            // 3. Filter berdasarkan pencarian
             const searchTerm = currentSearchTerm.toLowerCase();
             if (searchTerm) {
                 filteredTasks = filteredTasks.filter(task => 
@@ -681,17 +513,20 @@
                 );
             }
 
-            // 3. Urutkan
+            // 4. Urutkan: Tugas aktif yang jatuh tempo lebih dulu di atas
             filteredTasks.sort((a, b) => {
+                // Tugas yang belum selesai selalu di atas yang sudah selesai
                 if (a.completed !== b.completed) {
                     return a.completed ? 1 : -1;
                 }
+
+                // Setelah itu, urutkan berdasarkan tanggal jatuh tempo (paling cepat duluan)
                 const dateA = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
                 const dateB = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
                 return dateA - dateB;
             });
 
-            // 4. Render
+            // 5. Render
             taskListEl.innerHTML = '';
             
             if (filteredTasks.length === 0) {
@@ -707,7 +542,7 @@
         }
 
         /**
-         * Membuat elemen DOM untuk satu tugas. (Diperbarui)
+         * Membuat elemen DOM untuk satu tugas.
          * @param {object} task Objek tugas.
          * @returns {HTMLElement} Elemen list item.
          */
@@ -718,18 +553,11 @@
 
             const isDueToday = task.dueDate && isSameDay(task.dueDate, new Date());
             
-            // (BARU) Cek status pending
-            const pendingAction = syncQueue.find(item => item.id === task.id || (item.data && item.data.id === task.id));
-            if (pendingAction && pendingAction.action === 'delete') {
-                item.classList.add('pending-delete');
-            }
-
             // Checkbox
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.checked = task.completed;
             checkbox.className = 'w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 dark:focus:ring-emerald-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600 mr-4 flex-shrink-0';
-            // Tidak ada lagi 'disabled' berdasarkan status online
             checkbox.onclick = (e) => {
                 e.stopPropagation();
                 toggleTask(task.id);
@@ -746,21 +574,6 @@
 
             const meta = document.createElement('div');
             meta.className = 'flex flex-wrap items-center text-sm mt-1 text-gray-500 dark:text-gray-400';
-
-            // (BARU) Ikon Pending
-            if (pendingAction) {
-                const pendingEl = document.createElement('span');
-                pendingEl.title = "Menunggu sinkronisasi";
-                let actionText = 'Menunggu...';
-                if (pendingAction.action === 'add') actionText = 'Menunggu ditambah';
-                if (pendingAction.action === 'update') actionText = 'Menunggu diupdate';
-                if (pendingAction.action === 'delete') actionText = 'Menunggu dihapus';
-                
-                pendingEl.innerHTML = `<svg class="w-4 h-4 mr-1 text-yellow-500 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2.586a10.001 10.001 0 00-15.356-2.586m0 0V3.582M20 20v-5h-.582m-15.356-2.586a10.001 10.001 0 0015.356 2.586m0 0v4.418"></path></svg>`;
-                pendingEl.className = 'flex items-center text-xs mr-3';
-                pendingEl.appendChild(document.createTextNode(actionText));
-                meta.appendChild(pendingEl);
-            }
 
             // Due Date
             if (task.dueDate) {
@@ -808,13 +621,6 @@
 
             actions.appendChild(editBtn);
             actions.appendChild(deleteBtn);
-            
-            // (BARU) Nonaktifkan tombol jika sedang menunggu dihapus
-            if (pendingAction && pendingAction.action === 'delete') {
-                checkbox.disabled = true;
-                editBtn.disabled = true;
-                deleteBtn.disabled = true;
-            }
 
             item.appendChild(checkbox);
             item.appendChild(content);
@@ -827,6 +633,7 @@
 
         /**
          * Mengubah tampilan tombol filter status.
+         * @param {string} newStatus 'all', 'active', 'completed', atau 'today'
          */
         function updateFilterStatusUI(newStatus) {
             currentFilterStatus = newStatus;
@@ -838,6 +645,8 @@
             });
             renderTasks(allTasksCache);
         }
+
+        // Fungsi updateFilterDateUI() dihapus
 
         // --- Modal Logic ---
         
@@ -870,93 +679,71 @@
 
 
         /**
-         * Inisialisasi Aplikasi dan Auth (Diperbarui)
+         * Inisialisasi Aplikasi dan Auth
          */
         async function initializeApp() {
             try {
-                // Daftarkan Service Worker
-                if ('serviceWorker' in navigator) {
-                    window.addEventListener('load', () => {
-                        navigator.serviceWorker.register('sw.js')
-                            .then(registration => console.log('Service Worker registered:', registration))
-                            .catch(error => console.log('Service Worker registration failed:', error));
-                    });
-                }
-                
-                // Setup Online/Offline Listeners
-                window.addEventListener('online', () => updateOnlineStatus(true));
-                window.addEventListener('offline', () => updateOnlineStatus(false));
-                
-                // Setup Dark Mode
+                // 1. Setup Dark Mode (Bagian ini masih ada di JS, tapi tombolnya di HTML sudah dihapus)
                 const isDarkMode = localStorage.getItem('darkMode') === 'true';
                 if (isDarkMode) {
                     document.body.classList.add('dark');
-                    sunIcon.classList.remove('hidden');
-                    moonIcon.classList.add('hidden');
+                    if (sunIcon) sunIcon.classList.remove('hidden');
+                    if (moonIcon) moonIcon.classList.add('hidden');
                 } else {
-                    sunIcon.classList.add('hidden');
-                    moonIcon.classList.remove('hidden');
+                    if (sunIcon) sunIcon.classList.add('hidden');
+                    if (moonIcon) moonIcon.classList.remove('hidden');
                 }
-                darkModeToggle.addEventListener('click', () => {
-                    document.body.classList.toggle('dark');
-                    const isDark = document.body.classList.contains('dark');
-                    localStorage.setItem('darkMode', isDark);
-                    sunIcon.classList.toggle('hidden');
-                    moonIcon.classList.toggle('hidden');
-                });
+                
+                if (darkModeToggle) {
+                    darkModeToggle.addEventListener('click', () => {
+                        document.body.classList.toggle('dark');
+                        const isDark = document.body.classList.contains('dark');
+                        localStorage.setItem('darkMode', isDark);
+                        sunIcon.classList.toggle('hidden');
+                        moonIcon.classList.toggle('hidden');
+                    });
+                }
 
-                // Setup Modal Listeners
+                // 2. Setup Modal Listeners
                 confirmDeleteBtn.addEventListener('click', () => {
                     if (taskIdToDelete) {
-                        removeTask(taskIdToDelete); // Logika offline-first
+                        removeTask(taskIdToDelete);
                         closeDeleteModal();
                     }
                 });
                 cancelDeleteBtn.addEventListener('click', closeDeleteModal);
-                saveEditBtn.addEventListener('click', saveEditedTask); // Logika offline-first
+                saveEditBtn.addEventListener('click', saveEditedTask);
                 cancelEditBtn.addEventListener('click', closeEditModal);
                 
-                // Setup Filter Status Listeners
+                // 3. Setup Filter Status Listeners (Listener "today" DITAMBAHKAN)
                 filterStatusBtns.all.addEventListener('click', () => updateFilterStatusUI('all'));
                 filterStatusBtns.active.addEventListener('click', () => updateFilterStatusUI('active'));
                 filterStatusBtns.completed.addEventListener('click', () => updateFilterStatusUI('completed'));
+                filterStatusBtns.today.addEventListener('click', () => updateFilterStatusUI('today'));
+
+                // 4. Setup Filter Date Listeners (DIHAPUS)
                 
-                // Setup Search Event Listener
+                // 5. Setup Search Event Listener
                 searchInput.addEventListener('input', () => { currentSearchTerm = searchInput.value; renderTasks(allTasksCache); });
 
-                // Setup Tambah Tugas Event Listener
+                // 6. Setup Tambah Tugas Event Listener
                 addTaskBtn.addEventListener('click', addTask);
                 taskInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter' && !addTaskBtn.disabled) addTask();
                 });
                 
-                // Validasi input
+                // 7. Validasi input
                 [taskInput, dueDateInput, locationInput].forEach(input => {
                     input.addEventListener('input', validateInputs);
                 });
-                
-                // (BARU) Logika Muat Data
-                // 1. Muat data lokal dulu
-                loadFromStorage();
-                
-                // 2. Render UI dari data lokal
-                renderTasks(allTasksCache);
-                
-                // 3. Atur status online & UI
-                updateOnlineStatus(navigator.onLine); // Ini akan memanggil processSyncQueue() jika online
 
-                // 4. Jika online dan tidak ada antrian, ambil data baru
-                // Jika ada antrian, processSyncQueue() akan mengambil data setelah selesai.
-                if (navigator.onLine && syncQueue.length === 0) {
-                    await fetchTasks();
-                } else if (!navigator.onLine) {
-                    setLoading(false);
-                    loadingIndicatorEl.textContent = 'Offline. Menampilkan data cache.';
-                }
+                // 8. Ambil data awal
+                await fetchTasks();
 
             } catch (error) {
                 console.error("Kesalahan inisialisasi aplikasi:", error);
-                showSyncStatus(`Error inisialisasi: ${error.message}`, true);
+                authInfoDisplayEl.className = 'p-2 bg-red-100 dark:bg-red-900/50 rounded-lg text-xs text-red-700 dark:text-red-300';
+                currentUserIdEl.textContent = `Error inisialisasi: ${error.message}`;
                 addTaskBtn.disabled = true;
                 setLoading(false);
             }
