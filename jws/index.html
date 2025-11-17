@@ -290,6 +290,21 @@
         // --- State Audio Global ---
         let globalAudioPlayer = new Audio();
         let currentPlayingButton = null; // Melacak tombol yang sedang memutar audio
+        
+        // --- [MODIFIKASI] Variabel untuk Audio Resume ---
+        let restoredAudioSrc = null;
+        let restoredAudioTime = 0;
+
+        // --- [MODIFIKASI] Simpan state audio saat meninggalkan halaman ---
+        window.addEventListener('beforeunload', () => {
+            // Simpan state HANYA jika audio sedang aktif diputar
+            if (globalAudioPlayer && !globalAudioPlayer.paused && globalAudioPlayer.currentTime > 0) {
+                sessionStorage.setItem('lastAudioSrc', globalAudioPlayer.src);
+                sessionStorage.setItem('lastAudioTime', globalAudioPlayer.currentTime);
+            }
+        });
+        // --- END MODIFIKASI ---
+
 
         // --- SVG Ikon untuk Tombol Audio ---
         const playIconSvg = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>`;
@@ -647,39 +662,90 @@
         // --- Logika Pemutar Audio ---
 
         /**
-         * Fungsi terpusat untuk memutar/menghentikan audio.
+         * [MODIFIKASI TOTAL] Fungsi terpusat untuk memutar/menghentikan audio.
          * @param {string} audioUrl URL file audio
          * @param {HTMLElement} buttonElement Tombol yang diklik
          */
         function playAudio(audioUrl, buttonElement) {
-            // Cek apakah audio yang sama sedang diputar
+            // [MODIFIKASI] Hapus animasi pulse jika ada
+            buttonElement.classList.remove('animate-pulse');
+
+            // [MODIFIKASI] Kasus 1: Mengklik audio yang bisa di-resume (dari storage)
+            if (restoredAudioSrc === audioUrl && globalAudioPlayer.src === restoredAudioSrc) {
+                
+                // Bersihkan status pemulihan
+                restoredAudioSrc = null;
+                restoredAudioTime = 0;
+
+                // Hentikan tombol lain jika ada
+                if (currentPlayingButton && currentPlayingButton !== buttonElement) {
+                    currentPlayingButton.innerHTML = playIconSvg;
+                    currentPlayingButton.disabled = false;
+                }
+                
+                buttonElement.innerHTML = loadingIconSvg; // Tampilkan loading
+                buttonElement.disabled = true;
+
+                // globalAudioPlayer.src dan .currentTime sudah di-set di window.onload
+                
+                globalAudioPlayer.play().then(() => {
+                    buttonElement.innerHTML = pauseIconSvg; // Ganti ke ikon pause
+                    buttonElement.disabled = false;
+                }).catch(error => {
+                    console.error("Error playing restored audio:", error);
+                    buttonElement.innerHTML = playIconSvg;
+                    buttonElement.disabled = false;
+                });
+
+                currentPlayingButton = buttonElement;
+                return; 
+            }
+
+            // [LOGIKA ASLI] Kasus 2: Audio yang sama sedang diputar -> Jeda (Pause)
             if (globalAudioPlayer.src === audioUrl && !globalAudioPlayer.paused) {
-                // Audio yang sama sedang diputar -> Jeda
                 globalAudioPlayer.pause();
-                buttonElement.innerHTML = playIconSvg; // Kembalikan ke ikon play
-                currentPlayingButton = null;
+                buttonElement.innerHTML = playIconSvg; 
+                currentPlayingButton = null; 
+
+                // [MODIFIKASI] Simpan state saat di-pause manual
+                if (globalAudioPlayer.currentTime > 0 && !globalAudioPlayer.ended) {
+                     sessionStorage.setItem('lastAudioSrc', globalAudioPlayer.src);
+                     sessionStorage.setItem('lastAudioTime', globalAudioPlayer.currentTime);
+                }
+                
             } else {
-                // Audio berbeda ATAU audio dijeda -> Putar baru
+                // [LOGIKA ASLI] Kasus 3: Audio berbeda ATAU audio dijeda -> Putar (Play)
                 
                 // Hentikan audio sebelumnya (jika ada) dan reset ikonnya
                 if (currentPlayingButton) {
                     currentPlayingButton.innerHTML = playIconSvg;
+                    currentPlayingButton.disabled = false;
                 }
                 
                 // Hentikan pemutar global jika sedang memutar sesuatu
                 globalAudioPlayer.pause();
                 
-                // Atur sumber baru dan tombol saat ini
-                globalAudioPlayer.src = audioUrl;
+                // [MODIFIKASI] Cek apakah ini resume dari pause manual (src sama) atau play baru
+                if (globalAudioPlayer.src !== audioUrl) {
+                    // Ini adalah play baru, set src baru
+                    globalAudioPlayer.src = audioUrl;
+                }
+                // Jika src-nya sama (resume dari pause), kita tidak perlu set apa-apa,
+                // .play() di bawah akan melanjutkannya.
+
                 currentPlayingButton = buttonElement;
                 
                 // Tampilkan ikon loading
                 buttonElement.innerHTML = loadingIconSvg;
-                buttonElement.disabled = true; // Nonaktifkan tombol saat loading
+                buttonElement.disabled = true; 
+
+                // [MODIFIKASI] Hapus data simpanan karena kita memulai play
+                sessionStorage.removeItem('lastAudioSrc');
+                sessionStorage.removeItem('lastAudioTime');
 
                 globalAudioPlayer.play().then(() => {
                     // Berhasil diputar, ganti ikon ke pause
-                    if (currentPlayingButton === buttonElement) { // Pastikan masih tombol yang sama
+                    if (currentPlayingButton === buttonElement) { 
                         buttonElement.innerHTML = pauseIconSvg;
                     }
                     buttonElement.disabled = false;
@@ -704,9 +770,8 @@
         // Event listener untuk saat audio dijeda (secara manual oleh pengguna)
         globalAudioPlayer.onpause = () => {
             if (currentPlayingButton && !globalAudioPlayer.ended) {
-                currentPlayingButton.innerHTML = playIconSvg;
-                currentPlayingButton.disabled = false;
-                currentPlayingButton = null;
+                // Jangan lakukan apa-apa di sini, logika dipindahkan ke dalam playAudio()
+                // untuk membedakan antara pause manual dan akhir audio
             }
         };
 
@@ -714,6 +779,11 @@
         function stopAudioPlayback() {
             if (!globalAudioPlayer.paused) {
                 globalAudioPlayer.pause();
+                // [MODIFIKASI] Simpan state saat navigasi paksa
+                if (globalAudioPlayer.currentTime > 0 && !globalAudioPlayer.ended) {
+                    sessionStorage.setItem('lastAudioSrc', globalAudioPlayer.src);
+                    sessionStorage.setItem('lastAudioTime', globalAudioPlayer.currentTime);
+                }
             }
             if (currentPlayingButton) {
                 currentPlayingButton.innerHTML = playIconSvg;
@@ -793,6 +863,24 @@
                 
                 const surahAudioUrl = `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${surah.id}.mp3`;
 
+                // --- [MODIFIKASI] Buat tombol play secara dinamis ---
+                let playButtonClass = "surah-play-button p-2 rounded-full text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-gray-600 transition";
+                let playButtonIcon = playIconSvg; // Default
+
+                if (restoredAudioSrc === surahAudioUrl) {
+                    playButtonClass += " animate-pulse"; // Tambahkan pulse
+                }
+
+                const playButtonHtml = `
+                    <button type="button" 
+                            class="${playButtonClass}" 
+                            data-audio-url="${surahAudioUrl}" 
+                            aria-label="Putar Surah ${surah.name_simple}">
+                        ${playButtonIcon}
+                    </button>
+                `;
+                // --- Akhir Modifikasi ---
+
                 button.innerHTML = `
                     <div class="flex flex-col items-start">
                         <span class="font-bold text-base text-emerald-700 dark:text-emerald-300">${surah.id}. ${surah.name_simple}</span>
@@ -801,16 +889,8 @@
                     </div>
                     
                     <div class="flex items-center space-x-3">
-                        
                         <span class="ayah-arabic text-xl text-emerald-600 dark:text-emerald-400">${surah.name_arabic}</span>
-                        
-                        <button type="button" 
-                                class="surah-play-button p-2 rounded-full text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-gray-600 transition" 
-                                data-audio-url="${surahAudioUrl}" 
-                                aria-label="Putar Surah ${surah.name_simple}">
-                            ${playIconSvg}
-                        </button>
-                        
+                        ${playButtonHtml}
                     </div>
                 `;
                 
@@ -946,6 +1026,13 @@
                 const surahPad = currentSurahId.toString().padStart(3, '0');
                 const ayahPad = verse.verse_number.toString().padStart(3, '0');
                 const ayahAudioUrl = `https://everyayah.com/data/Alafasy_128kbps/${surahPad}${ayahPad}.mp3`;
+                
+                // --- [MODIFIKASI] Cek dan beri pulse pada tombol play ayat ---
+                let playButtonClass = "ayah-play-button p-1 rounded-full text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-gray-600 transition";
+                if (restoredAudioSrc === ayahAudioUrl) {
+                    playButtonClass += " animate-pulse";
+                }
+                // --- Akhir Modifikasi ---
 
                 const ayahDiv = document.createElement('div');
                 ayahDiv.className = 'p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl shadow-md border-b border-gray-200 dark:border-gray-700';
@@ -956,7 +1043,7 @@
                     <div class="flex justify-between items-center mb-3 pb-3 border-b border-gray-200 dark:border-gray-600">
                         <span class="text-base font-bold text-emerald-700 dark:text-emerald-300">Ayat ${verse.verse_number}</span>
                         
-                        <button class="ayah-play-button p-1 rounded-full text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-gray-600 transition" 
+                        <button class="${playButtonClass}" 
                                 data-audio-url="${ayahAudioUrl}" 
                                 aria-label="Putar Ayat ${verse.verse_number}">
                             ${playIconSvg}
@@ -1229,6 +1316,8 @@
                     document.getElementById('surah-list')?.classList.remove('hidden');
                     document.getElementById('ayah-details')?.classList.add('hidden');
                     searchContainerEl.classList.remove('hidden'); 
+                    // [MODIFIKASI] Render ulang daftar surah untuk menampilkan pulse
+                    renderSurahList(surahListCache);
                 }
                 
                 // [BARU] Cek dan tampilkan tombol "Lanjutkan"
@@ -1346,7 +1435,25 @@
         }
 
         // Inisialisasi Firebase, Auth, dan Dark Mode saat jendela dimuat
+        // --- [MODIFIKASI] untuk 'resume' audio ---
         window.onload = () => {
+             // [MODIFIKASI] Logika baru untuk memulihkan audio
+             const savedSrc = sessionStorage.getItem('lastAudioSrc');
+             const savedTime = sessionStorage.getItem('lastAudioTime');
+
+             if (savedSrc && savedTime) {
+                restoredAudioSrc = savedSrc;
+                restoredAudioTime = parseFloat(savedTime);
+                
+                // Pra-muat audio ke pemutar global
+                globalAudioPlayer.src = restoredAudioSrc;
+                globalAudioPlayer.currentTime = restoredAudioTime;
+
+                // Hapus dari storage agar tidak digunakan lagi
+                sessionStorage.removeItem('lastAudioSrc');
+                sessionStorage.removeItem('lastAudioTime');
+             }
+
              setupDarkMode(); 
              initializeFirebaseAndAuth(); 
              // startApp() akan dipanggil oleh initializeFirebaseAndAuth setelah selesai
