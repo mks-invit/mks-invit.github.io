@@ -3,19 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-
-
     <title>aic | jws</title>
-    
+
     <meta name="theme-color" content="#10b981">
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-
-
-    
-    
         /* Menggunakan font Inter */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
         body {
@@ -274,10 +267,6 @@
             aL-Ihsan Computer
         </a>
     </footer>
-
-
-
-    
     
     <div id="mini-player" 
          class="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md mx-auto bg-gray-900 dark:bg-gray-200 text-white dark:text-gray-900 p-3 pr-2 rounded-xl shadow-2xl flex items-center justify-between space-x-3 transition-all duration-300 ease-out transform translate-y-24 opacity-0 z-50"
@@ -295,12 +284,6 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
     </div>
-
-
-
-
-        
-    
     <script type="module">
         // Import modul Firebase yang diperlukan (boilerplate wajib)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -326,11 +309,18 @@
         let globalAudioPlayer = new Audio();
         let currentPlayingButton = null; // Melacak tombol yang sedang memutar audio
         
-        // --- [MODIFIKASI] Variabel untuk Audio Resume ---
+        // [BARU] Mini Player Elements
+        let miniPlayer = null;
+        let miniPlayerTitle = null;
+        let miniPlayerSubtitle = null;
+        let miniPlayerToggle = null;
+        let miniPlayerClose = null;
+
+        // --- Variabel untuk Audio Resume ---
         let restoredAudioSrc = null;
         let restoredAudioTime = 0;
 
-        // --- [MODIFIKASI] Simpan state audio saat meninggalkan halaman ---
+        // Simpan state audio saat meninggalkan halaman
         window.addEventListener('beforeunload', () => {
             // Simpan state HANYA jika audio sedang aktif diputar
             if (globalAudioPlayer && !globalAudioPlayer.paused && globalAudioPlayer.currentTime > 0) {
@@ -338,7 +328,6 @@
                 sessionStorage.setItem('lastAudioTime', globalAudioPlayer.currentTime);
             }
         });
-        // --- END MODIFIKASI ---
 
 
         // --- SVG Ikon untuk Tombol Audio ---
@@ -679,9 +668,29 @@
          */
         function playAudio(audioUrl, buttonElement) {
             buttonElement.classList.remove('animate-pulse');
+            
+            // [BARU] Ambil info trek dari aria-label
+            let trackTitle = "Audio";
+            let trackSubtitle = "Sedang memutar...";
+            if (buttonElement.ariaLabel) {
+                if (buttonElement.ariaLabel.startsWith("Putar Surah")) {
+                    trackTitle = buttonElement.ariaLabel.replace("Putar Surah ", "");
+                    trackSubtitle = "Surah";
+                } else if (buttonElement.ariaLabel.startsWith("Putar Ayat")) {
+                    const surahTitle = document.getElementById('header-surah-title')?.textContent;
+                    if (surahTitle) {
+                        trackTitle = surahTitle.split('(')[0].trim(); // e.g., "Al-Baqarah"
+                        trackSubtitle = buttonElement.ariaLabel.replace("Putar ", ""); // e.g., "Ayat 1"
+                    } else {
+                        trackTitle = buttonElement.ariaLabel.replace("Putar ", ""); // Fallback
+                        trackSubtitle = "Ayat";
+                    }
+                }
+            }
+            // [AKHIR BARU]
 
             if (restoredAudioSrc === audioUrl && globalAudioPlayer.src === restoredAudioSrc) {
-                
+                // --- Logika restore audio ---
                 restoredAudioSrc = null;
                 restoredAudioTime = 0;
 
@@ -693,13 +702,19 @@
                 buttonElement.innerHTML = loadingIconSvg; 
                 buttonElement.disabled = true;
                 
+                // [BARU] Tampilkan dan update mini player
+                showMiniPlayer(trackTitle, trackSubtitle);
+                if (miniPlayerToggle) miniPlayerToggle.innerHTML = loadingIconSvg;
+                
                 globalAudioPlayer.play().then(() => {
                     buttonElement.innerHTML = pauseIconSvg; 
                     buttonElement.disabled = false;
+                    if (miniPlayerToggle) miniPlayerToggle.innerHTML = pauseIconSvg; // [BARU]
                 }).catch(error => {
                     console.error("Error playing restored audio:", error);
                     buttonElement.innerHTML = playIconSvg;
                     buttonElement.disabled = false;
+                    if (miniPlayerToggle) miniPlayerToggle.innerHTML = playIconSvg; // [BARU]
                 });
 
                 currentPlayingButton = buttonElement;
@@ -707,9 +722,13 @@
             }
 
             if (globalAudioPlayer.src === audioUrl && !globalAudioPlayer.paused) {
+                // --- Menjeda Audio ---
                 globalAudioPlayer.pause();
                 buttonElement.innerHTML = playIconSvg; 
                 currentPlayingButton = null; 
+                
+                if (miniPlayerToggle) miniPlayerToggle.innerHTML = playIconSvg; // [BARU]
+                // Jangan sembunyikan player, biarkan dalam status jeda
 
                 if (globalAudioPlayer.currentTime > 0 && !globalAudioPlayer.ended) {
                      sessionStorage.setItem('lastAudioSrc', globalAudioPlayer.src);
@@ -717,7 +736,7 @@
                 }
                 
             } else {
-                
+                // --- Memutar Audio Baru (atau yang dijeda) ---
                 if (currentPlayingButton) {
                     currentPlayingButton.innerHTML = playIconSvg;
                     currentPlayingButton.disabled = false;
@@ -728,11 +747,16 @@
                 if (globalAudioPlayer.src !== audioUrl) {
                     globalAudioPlayer.src = audioUrl;
                 }
+                
+                // [BARU] Tampilkan dan update mini player
+                showMiniPlayer(trackTitle, trackSubtitle);
 
                 currentPlayingButton = buttonElement;
                 
                 buttonElement.innerHTML = loadingIconSvg;
                 buttonElement.disabled = true; 
+                
+                if (miniPlayerToggle) miniPlayerToggle.innerHTML = loadingIconSvg; // [BARU]
 
                 sessionStorage.removeItem('lastAudioSrc');
                 sessionStorage.removeItem('lastAudioTime');
@@ -742,32 +766,100 @@
                         buttonElement.innerHTML = pauseIconSvg;
                     }
                     buttonElement.disabled = false;
+                    if (miniPlayerToggle) miniPlayerToggle.innerHTML = pauseIconSvg; // [BARU]
                 }).catch(error => {
                     console.error("Gagal memutar audio:", error); 
                     buttonElement.innerHTML = playIconSvg; 
                     currentPlayingButton = null;
                     buttonElement.disabled = false;
+                    if (miniPlayerToggle) miniPlayerToggle.innerHTML = playIconSvg; // [BARU]
+                    hideMiniPlayer(); // [BARU] Sembunyikan jika gagal total
                 });
             }
         }
 
-        // Event listener untuk saat audio selesai
+
+        // [MODIFIKASI] Event listener untuk audio, terhubung ke mini-player
         globalAudioPlayer.onended = () => {
             if (currentPlayingButton) {
                 currentPlayingButton.innerHTML = playIconSvg;
                 currentPlayingButton.disabled = false;
                 currentPlayingButton = null;
             }
+            if (miniPlayerToggle) { 
+                miniPlayerToggle.innerHTML = playIconSvg;
+            }
         };
 
-        // Event listener untuk saat audio dijeda (secara manual oleh pengguna)
         globalAudioPlayer.onpause = () => {
             if (currentPlayingButton && !globalAudioPlayer.ended) {
                 // (logika dipindahkan ke dalam playAudio())
             }
+            if (miniPlayerToggle && globalAudioPlayer.src) { 
+                miniPlayerToggle.innerHTML = playIconSvg;
+            }
         };
 
-        // Fungsi untuk menghentikan audio secara paksa (saat navigasi)
+        globalAudioPlayer.onplay = () => {
+            if (miniPlayerToggle) {
+                miniPlayerToggle.innerHTML = pauseIconSvg;
+            }
+            if (currentPlayingButton) {
+                currentPlayingButton.innerHTML = pauseIconSvg;
+            }
+        };
+
+        globalAudioPlayer.onwaiting = () => {
+            if (miniPlayerToggle) {
+                miniPlayerToggle.innerHTML = loadingIconSvg;
+            }
+            if (currentPlayingButton) {
+                currentPlayingButton.innerHTML = loadingIconSvg;
+            }
+        };
+        
+        globalAudioPlayer.oncanplay = () => {
+            if (!globalAudioPlayer.paused) {
+                 if (miniPlayerToggle) {
+                    miniPlayerToggle.innerHTML = pauseIconSvg;
+                 }
+                 if (currentPlayingButton) {
+                    currentPlayingButton.innerHTML = pauseIconSvg;
+                 }
+            }
+        };
+        // [AKHIR MODIFIKASI]
+
+        /**
+         * [BARU] Menampilkan mini player dengan info trek
+         */
+        function showMiniPlayer(title, subtitle) {
+            if (!miniPlayer || !miniPlayerTitle || !miniPlayerSubtitle) return;
+            
+            miniPlayerTitle.textContent = title;
+            miniPlayerSubtitle.textContent = subtitle;
+            
+            miniPlayer.style.display = 'flex'; // Hapus 'display: none'
+            
+            setTimeout(() => {
+                miniPlayer.classList.remove('translate-y-24', 'opacity-0');
+            }, 10);
+        }
+
+        /**
+         * [BARU] Menyembunyikan mini player
+         */
+        function hideMiniPlayer() {
+            if (!miniPlayer) return;
+            
+            miniPlayer.classList.add('translate-y-24', 'opacity-0');
+            
+            setTimeout(() => {
+                miniPlayer.style.display = 'none';
+            }, 300); // duration-300
+        }
+
+        // [MODIFIKASI] Fungsi untuk menghentikan audio secara paksa (saat navigasi)
         function stopAudioPlayback() {
             if (!globalAudioPlayer.paused) {
                 globalAudioPlayer.pause();
@@ -781,6 +873,8 @@
                 currentPlayingButton.disabled = false;
                 currentPlayingButton = null;
             }
+            
+            hideMiniPlayer(); // [BARU] Sembunyikan mini-player
         }
 
 
@@ -959,14 +1053,13 @@
             headerSurahTitleEl.classList.remove('hidden');
 
             // --- [MODIFIKASI HISTORY API] ---
-            // Tambahkan state ke history HANYA jika ini navigasi BARU (bukan navigasi popstate)
             if (!isHistoryNavigation) {
                 history.pushState({
                     view: 'ayahDetail',
                     surahId: surahId,
                     simpleName: simpleName,
                     arabicName: arabicName,
-                    startPage: currentPage // `currentPage` sudah di-set dari `startPage`
+                    startPage: currentPage 
                 }, `${simpleName}`, `#surah/${surahId}`);
             }
             // --- AKHIR MODIFIKASI ---
@@ -986,7 +1079,7 @@
                 allVerses = data.verses;
                 totalPages = Math.ceil(allVerses.length / VERSES_PER_PAGE);
 
-                renderAyahPage(); // Ini akan me-render halaman 'currentPage' (yang sudah di-set ke startPage)
+                renderAyahPage(); 
                 
                 const scrollContainer = document.getElementById('scrollable-ayah-container');
                 if (scrollContainer) {
@@ -1140,12 +1233,9 @@
         }
         
         // ====================================================================
-        // === [BARU] FUNGSI BOOKMARK ===
+        // === FUNGSI BOOKMARK ===
         // ====================================================================
         
-        /**
-         * [BARU] Menyimpan lokasi (surah & halaman) saat ini ke localStorage.
-         */
         function saveBookmark() {
             if (!currentSurahId) return;
 
@@ -1180,9 +1270,6 @@
             checkAndDisplayBookmarkButton(); 
         }
 
-        /**
-         * [BARU] Memeriksa localStorage dan menampilkan tombol "Lanjutkan Baca".
-         */
         function checkAndDisplayBookmarkButton() {
             const container = document.getElementById('load-bookmark-container');
             const button = document.getElementById('load-bookmark-button');
@@ -1202,9 +1289,6 @@
             }
         }
 
-        /**
-         * [BARU] Memuat surah dan halaman dari bookmark.
-         */
         function loadBookmark() {
             const bookmarkData = localStorage.getItem('quranBookmark');
             if (!bookmarkData) return;
@@ -1218,9 +1302,6 @@
             }
         }
         
-        /**
-         * [BARU] Menghapus bookmark dari localStorage.
-         */
         window.clearBookmark = (event) => {
             event.stopPropagation(); 
             localStorage.removeItem('quranBookmark');
@@ -1342,10 +1423,8 @@
         // --- [MODIFIKASI HISTORY API] ---
         /**
          * Mengelola fungsi tombol kembali di header (panah kiri).
-         * SEKARANG HANYA MEMICU HISTORY.BACK()
          */
         function handleHeaderBack() {
-            // Memicu event popstate, yang akan ditangani oleh listener
             history.back();
         }
         
@@ -1360,52 +1439,39 @@
             const toggleButton = document.getElementById('toggle-view-button');
             const backToPrayerIcon = document.getElementById('back-to-prayer-icon');
             
-            // Ambil state default (prayer) jika state null
             const view = state ? state.view : 'prayer';
 
             if (view === 'ayahDetail') {
-                // Tampilkan Tampilan Detail Ayat
-                // Memastikan data state lengkap sebelum me-render
                 if (state.surahId && state.simpleName && state.arabicName) {
-                    // Panggil renderSurahDetails dengan flag 'true' agar tidak pushState lagi
                     renderSurahDetails(state.surahId, state.simpleName, state.arabicName, state.startPage, true);
                 } else {
-                    // Fallback jika state tidak lengkap -> kembali ke daftar surah
                     handleHistoryChange({ view: 'quranList' }); 
                 }
                 
             } else if (view === 'quranList') {
-                // Tampilkan Tampilan Daftar Surah
                 prayerView.classList.add('hidden');
                 quranView.classList.remove('hidden');
                 toggleButton.classList.add('hidden');
                 backToPrayerIcon.classList.remove('invisible');
                 
-                // Panggil fungsi yang HANYA mengubah UI ke daftar surah
                 backToSurahList(); 
                 
-                // (backToSurahList sudah memanggil checkAndDisplayBookmarkButton)
-                
-                // Pastikan daftar surah dimuat jika belum
                 if (surahListCache.length === 0) {
                     fetchSurahList();
                 } else {
-                    renderSurahList(surahListCache); // Untuk update audio pulse
+                    renderSurahList(surahListCache); 
                 }
                 
             } else { // 'prayer'
-                // Tampilkan Tampilan Sholat (Default)
                 quranView.classList.add('hidden');
                 prayerView.classList.remove('hidden');
                 toggleButton.classList.remove('hidden');
                 backToPrayerIcon.classList.add('invisible');
 
-                // Pastikan UI quran view di-reset
                 document.getElementById('surah-list')?.classList.remove('hidden');
                 document.getElementById('search-container')?.classList.remove('hidden');
                 document.getElementById('ayah-details')?.classList.add('hidden');
                 
-                // Sembunyikan tombol header
                 document.getElementById('header-surah-title')?.classList.add('hidden');
                 translationToggleButton?.classList.add('hidden');
                 bookmarkButton?.classList.add('hidden');
@@ -1420,11 +1486,36 @@
         async function startApp() {
             
             // --- [MODIFIKASI HISTORY API] ---
-            // Setup listener popstate
             window.addEventListener('popstate', (event) => {
                 handleHistoryChange(event ? event.state : null);
             });
             // --- AKHIR MODIFIKASI ---
+            
+            // [BARU] Inisialisasi Mini Player
+            miniPlayer = document.getElementById('mini-player');
+            miniPlayerTitle = document.getElementById('mini-player-title');
+            miniPlayerSubtitle = document.getElementById('mini-player-subtitle');
+            miniPlayerToggle = document.getElementById('mini-player-toggle');
+            miniPlayerClose = document.getElementById('mini-player-close');
+            
+            if (miniPlayerToggle) {
+                miniPlayerToggle.innerHTML = playIconSvg; // Set ikon awal
+                miniPlayerToggle.addEventListener('click', () => {
+                    if (!globalAudioPlayer.src) return; 
+                    
+                    if (!globalAudioPlayer.paused) {
+                        globalAudioPlayer.pause();
+                    } else {
+                        globalAudioPlayer.play();
+                    }
+                });
+            }
+            if (miniPlayerClose) {
+                miniPlayerClose.addEventListener('click', () => {
+                    stopAudioPlayback(); // Ini akan menghentikan audio DAN menyembunyikan player
+                });
+            }
+            // [AKHIR BARU]
 
             
             // Hentikan interval lama jika ada (untuk keamanan)
@@ -1457,21 +1548,16 @@
              // --- [BARU] Event Listener Bookmark ---
              document.getElementById('bookmark-button')?.addEventListener('click', saveBookmark);
              document.getElementById('load-bookmark-button')?.addEventListener('click', loadBookmark);
-             checkAndDisplayBookmarkButton(); // Cek saat aplikasi pertama kali dimuat
+             checkAndDisplayBookmarkButton(); 
              
              // --- [MODIFIKASI HISTORY API] ---
-             // Handle initial page state (deep link) dan set initial state
              const hash = window.location.hash;
              
-             // Selalu set state awal ke 'prayer'
              history.replaceState({ view: 'prayer' }, 'Waktu Sholat', window.location.pathname);
              
              if (hash === '#quran') {
-                 // Jika hash #quran, langsung panggil toggleView()
-                 // Ini akan `pushState('quranList')`, membuat stack jadi [prayer, quranList]
                  toggleView(); 
              } 
-             // (Kita tidak mendukung deep link #surah/ on load, jadi 'else' tidak diperlukan)
              // --- AKHIR MODIFIKASI ---
         }
 
@@ -1524,8 +1610,7 @@
         }
 
     </script>
-
-
+    
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -1539,7 +1624,5 @@
             });
         }
     </script>
-
-    
-</body>
+    </body>
 </html>
