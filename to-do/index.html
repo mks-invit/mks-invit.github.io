@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-R-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIC - To Do List</title>
-    <!-- Memuat Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- PWA Manifest & Theme -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#10b981">
     
@@ -55,9 +53,9 @@
             font-style: italic;
         }
 
-        /* Scrollbar untuk daftar tugas */
+        /* Scrollbar untuk daftar tugas (DIUBAH) */
         #taskList {
-            max-height: 50vh; /* Setengah tinggi viewport */
+            /* max-height: 50vh; Dihapus untuk layout flex-1 */
             overflow-y: auto;
         }
         #taskList::-webkit-scrollbar {
@@ -81,27 +79,27 @@
 
     </style>
 </head>
-<body class="p-4 sm:p-8 min-h-screen">
+<body class="h-screen overflow-hidden p-4 sm:p-8 flex items-center justify-center">
 
-    <!-- Status Offline (Diperbarui) -->
     <div id="offline-status" class="hidden fixed bottom-0 left-0 right-0 p-3 bg-yellow-400 dark:bg-yellow-600 text-center text-black dark:text-white font-semibold z-50 shadow-lg">
         You are offline. Syncing later.
     </div>
 
-    <div id="app-container" class="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl transition-colors duration-300 sm:mt-0">
+    <div id="app-container" class="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl transition-colors duration-300 h-full w-full flex flex-col overflow-hidden">
         
-        <!-- Header dan Mode Gelap -->
-        <header class="flex flex-col sm:flex-row sm:justify-between items-center gap-4 sm:gap-0 mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white text-center sm:text-left">
+        <header class="grid grid-cols-3 items-center mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
+            <div></div>
+            
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white text-center col-span-1">
                 AIC - To Do List
             </h1>
-            <button id="darkModeToggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150" aria-label="Toggle Dark Mode">
+            
+            <button id="darkModeToggle" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150 col-span-1 justify-self-end" aria-label="Toggle Dark Mode">
                 <svg id="sunIcon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                 <svg id="moonIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
             </button>
         </header>
         
-        <!-- Form Input Tugas -->
         <div class="mb-8 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-inner dark:shadow-none bg-gray-50 dark:bg-gray-700/50">
             <h2 class="text-xl font-semibold mb-3 dark:text-gray-200 text-center">Tambah Tugas Baru</h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
@@ -130,40 +128,31 @@
             </div>
         </div>
 
-        <!-- Bagian Filter dan Pencarian -->
-        <div class="mb-6">
-            <h2 class="text-xl font-semibold mb-3 dark:text-gray-200 text-center">Filter & Cari Tugas</h2>
-
-            <!-- Filter Status -->
-            <div class="flex flex-wrap justify-center gap-2 mb-4">
+        <div class="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            
+            <div class="flex flex-wrap justify-center sm:justify-start gap-2">
                 <button id="filterAllBtn" class="filter-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150 filter-active">Semua</button>
                 <button id="filterActiveBtn" class="filter-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150">Aktif</button>
                 <button id="filterCompletedBtn" class="filter-btn p-2 text-sm font-medium rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition duration-150">Selesai</button>
             </div>
             
-            <!-- Pencarian -->
-            <div class="grid grid-cols-1 gap-3 justify-items-center">
-                <input type="text" id="searchInput" placeholder="Cari Tugas/Lokasi..." 
-                       class="w-full max-w-md p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-800 dark:text-white transition duration-150">
-            </div>
+            <input type="text" id="searchInput" placeholder="Cari Tugas/Lokasi..." 
+                   class="w-full sm:w-auto md:w-64 p-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-800 dark:text-white transition duration-150">
         </div>
 
-        <!-- Status Autentikasi/Loading -->
-        <div id="authInfoDisplay" class="mb-4 p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-xs text-blue-700 dark:text-blue-300 transition-colors duration-300 text-center">
-            <span id="loadingIndicator" class="animate-pulse">Memuat data...</span>
-            <span id="currentUserId">Menggunakan Google Apps Script API.</span>
-        </div>
 
-        <!-- Daftar Tugas -->
-        <div id="taskList" class="space-y-3 pb-4">
-            <!-- Tugas akan dirender di sini -->
+        <div id="taskList" class="space-y-3 pb-4 flex-1">
             <div id="emptyState" class="text-center p-10 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-500 dark:text-gray-400">
                 <p class="text-lg font-medium">Tidak ada tugas ditemukan.</p>
                 <p>Coba tambahkan tugas baru atau sesuaikan filter Anda.</p>
             </div>
         </div>
 
-        <!-- Modal Konfirmasi Hapus -->
+        <div id="authInfoDisplay" class="mt-4 p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-xs text-blue-700 dark:text-blue-300 transition-colors duration-300 text-center">
+            <span id="loadingIndicator" class="animate-pulse">Memuat data...</span>
+            <span id="currentUserId">Menggunakan Google Apps Script API.</span>
+        </div>
+
         <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4">
             <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl max-w-md w-full">
                 <h3 class="text-xl font-bold mb-4 dark:text-white text-center">Konfirmasi Hapus</h3>
@@ -175,7 +164,6 @@
             </div>
         </div>
 
-        <!-- Modal Edit Tugas -->
         <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4">
             <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-2xl max-w-md w-full">
                 <h3 class="text-xl font-bold mb-4 dark:text-white text-center">Edit Tugas</h3>
