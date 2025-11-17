@@ -2,7 +2,7 @@ const CACHE_NAME = 'aic-todo-cache-v1';
 const DYNAMIC_CACHE_NAME = 'dynamic-cache-v1';
 const APP_SHELL_URLS = [
     './', // Alias untuk index atau root
-    'todo-pwa.html' // Halaman HTML utama
+    'index.html' // Halaman HTML utama
 ];
 const API_ENDPOINT = 'https://script.google.com/macros/s/';
 
