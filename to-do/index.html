@@ -6,6 +6,11 @@
     <title>AIC - To Do List</title>
     <!-- Memuat Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- PWA Manifest & Theme -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#10b981">
+    
     <style>
         /* Menggunakan font Inter */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
@@ -71,7 +76,12 @@
 </head>
 <body class="p-4 sm:p-8 min-h-screen">
 
-    <div id="app-container" class="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl transition-colors duration-300">
+    <!-- Status Offline (Baru) -->
+    <div id="offline-status" class="hidden fixed top-0 left-0 right-0 p-3 bg-yellow-400 dark:bg-yellow-600 text-center text-black dark:text-white font-semibold z-50 shadow-lg">
+        Anda sedang offline. Fungsi tambah, edit, dan hapus dinonaktifkan.
+    </div>
+
+    <div id="app-container" class="max-w-4xl mx-auto bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl transition-colors duration-300 mt-12 sm:mt-0">
         
         <!-- Header dan Mode Gelap -->
         <header class="flex flex-col sm:flex-row sm:justify-between items-center gap-4 sm:gap-0 mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
@@ -83,8 +93,6 @@
                 <svg id="moonIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
             </button>
         </header>
-
-        <!-- Status Autentikasi/Loading (Dihapus dari sini) -->
         
         <!-- Form Input Tugas -->
         <div class="mb-8 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-inner dark:shadow-none bg-gray-50 dark:bg-gray-700/50">
@@ -133,7 +141,7 @@
             </div>
         </div>
 
-        <!-- Status Autentikasi/Loading (Dipindahkan ke sini) -->
+        <!-- Status Autentikasi/Loading -->
         <div id="authInfoDisplay" class="mb-4 p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-xs text-blue-700 dark:text-blue-300 transition-colors duration-300 text-center">
             <span id="loadingIndicator" class="animate-pulse">Memuat data dari Google Sheets...</span>
             <span id="currentUserId">Menggunakan Google Apps Script API.</span>
@@ -155,7 +163,7 @@
                 <p class="mb-6 text-gray-700 dark:text-gray-300 text-center">Anda yakin ingin menghapus tugas ini secara permanen?</p>
                 <div class="flex justify-center space-x-3">
                     <button id="cancelDeleteBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition">Batal</button>
-                    <button id="confirmDeleteBtn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition">Hapus</button>
+                    <button id="confirmDeleteBtn" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition disabled:bg-red-300 dark:disabled:bg-red-800">Hapus</button>
                 </div>
             </div>
         </div>
@@ -174,7 +182,7 @@
                 </div>
                 <div class="flex justify-center space-x-3 mt-6">
                     <button id="cancelEditBtn" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition">Batal</button>
-                    <button id="saveEditBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">Simpan</button>
+                    <button id="saveEditBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition disabled:bg-blue-300 dark:disabled:bg-blue-800">Simpan</button>
                 </div>
             </div>
         </div>
@@ -189,7 +197,6 @@
         // --- Variabel Global & Cache ---
         let allTasksCache = [];
         let currentFilterStatus = 'all'; // 'all', 'active', 'completed'
-        // currentFilterDate dihapus
         let currentSearchTerm = '';
         let taskIdToDelete = null;
         let taskIdToEdit = null;
@@ -208,6 +215,7 @@
         const darkModeToggle = document.getElementById('darkModeToggle');
         const sunIcon = document.getElementById('sunIcon');
         const moonIcon = document.getElementById('moonIcon');
+        const offlineStatusEl = document.getElementById('offline-status'); // (Baru)
 
         // Modal Elements
         const deleteModal = document.getElementById('deleteModal');
@@ -226,7 +234,6 @@
             active: document.getElementById('filterActiveBtn'),
             completed: document.getElementById('filterCompletedBtn')
         };
-        // filterDateBtns dihapus
 
         // --- Helper Functions ---
 
@@ -245,6 +252,26 @@
                 taskListEl.classList.remove('opacity-50');
             }
         }
+        
+        /**
+         * Mengatur UI berdasarkan status online/offline (Baru)
+         * @param {boolean} isOnline
+         */
+        function updateOnlineStatus(isOnline) {
+            if (isOnline) {
+                offlineStatusEl.classList.add('hidden');
+            } else {
+                offlineStatusEl.classList.remove('hidden');
+            }
+            
+            // Nonaktifkan tombol utama saat offline
+            validateInputs(); // Ini akan memeriksa navigator.onLine
+            confirmDeleteBtn.disabled = !isOnline;
+            saveEditBtn.disabled = !isOnline;
+            
+            // Render ulang tugas untuk menonaktifkan tombol-tombol di dalamnya
+            renderTasks(allTasksCache);
+        }
 
         /**
          * Panggilan API dengan mekanisme retry. Digunakan untuk POST.
@@ -252,6 +279,10 @@
          * @returns {Promise<object>} Respon JSON dari Apps Script.
          */
         async function apiCall(payload) {
+            if (!navigator.onLine) {
+                throw new Error("Offline. Tidak dapat melakukan panggilan API.");
+            }
+            
             setLoading(true);
             const maxRetries = 3;
 
@@ -259,7 +290,6 @@
                 try {
                     const response = await fetch(MOCK_API_ENDPOINT, {
                         method: 'POST',
-                        // Menghapus header 'Content-Type: application/json' untuk mempermudah CORS dengan GAS
                         body: JSON.stringify(payload)
                     });
 
@@ -269,17 +299,14 @@
                         setLoading(false);
                         return data;
                     } else {
-                        // Ini adalah error yang berasal dari Apps Script
                         const errorMessage = data.message || `Apps Script Error: Status ${response.status}`;
                         throw new Error(errorMessage);
                     }
                 } catch (error) {
                     if (i === maxRetries - 1) {
                         setLoading(false);
-                        // Lempar error jika ini adalah percobaan terakhir
                         throw new Error(`Gagal berinteraksi dengan API setelah ${maxRetries} kali coba: ${error.message}`);
                     }
-                    // Logging dan Backoff
                     console.warn(`Fetch attempt ${i + 1} failed: ${error.message}. Retrying...`);
                     const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
                     await new Promise(resolve => setTimeout(resolve, delay));
@@ -295,7 +322,6 @@
         function formatDate(dateObj) {
             if (!dateObj || dateObj.toString() === 'Invalid Date') return '';
             const d = new Date(dateObj);
-            // Tambahkan padding nol jika angka < 10
             const year = d.getFullYear();
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
@@ -316,22 +342,29 @@
                    date1.getDate() === date2.getDate();
         }
 
-        // Fungsi getOneWeekFromNow() dihapus
-
         /**
-         * Memastikan input teks tugas tidak kosong.
+         * Memastikan input teks tugas tidak kosong dan sedang online. (Diperbarui)
          */
         function validateInputs() {
-            addTaskBtn.disabled = taskInput.value.trim() === "";
+            const isInputValid = taskInput.value.trim() !== "";
+            const isOnline = navigator.onLine;
+            addTaskBtn.disabled = !isInputValid || !isOnline;
         }
 
         // --- CRUD & API Interaksi ---
 
         /**
-         * Mengambil semua tugas dari Google Sheets via Apps Script API.
+         * Mengambil semua tugas dari Google Sheets via Apps Script API. (Diperbarui)
          */
         async function fetchTasks() {
             setLoading(true);
+            
+            if (!navigator.onLine) {
+                loadingIndicatorEl.textContent = 'Offline. Menampilkan data dari cache.';
+                setLoading(false);
+                return; // Jangan coba fetch jika offline
+            }
+            
             const maxRetries = 3;
 
             for (let i = 0; i < maxRetries; i++) {
@@ -347,12 +380,20 @@
                             text: task.text,
                             dueDate: task.dueDate ? formatDate(task.dueDate) : '',
                             location: task.location || '',
-                            completed: task.completed === true || task.completed === 'TRUE', // Menangani konversi tipe
-                            createdAt: task.createdAt // Biarkan seperti adanya
+                            completed: task.completed === true || task.completed === 'TRUE',
+                            createdAt: task.createdAt
                         }));
+                        
+                        // (Baru) Simpan ke cache lokal setelah fetch berhasil
+                        try {
+                            localStorage.setItem('tasksCache', JSON.stringify(allTasksCache));
+                        } catch (e) {
+                            console.warn("Gagal menyimpan ke localStorage:", e);
+                        }
+
                         renderTasks(allTasksCache);
                         setLoading(false);
-                        return; // Berhasil, keluar dari loop
+                        return; // Berhasil
                     } else {
                         throw new Error(result.message || 'Gagal mengambil data tugas.');
                     }
@@ -360,11 +401,11 @@
                     if (i === maxRetries - 1) {
                         setLoading(false);
                         console.error("Error fetching tasks:", error);
-                        authInfoDisplayEl.textContent = `Gagal memuat data: ${error.message}`;
-                        return; // Gagal, keluar dari loop
+                        authInfoDisplayEl.textContent = `Gagal memuat data: ${error.message}. Menampilkan data cache.`;
+                        return; // Gagal
                     }
                     console.warn(`Fetch attempt ${i + 1} failed: ${error.message}. Retrying...`);
-                    const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
+                    const delay = Math.pow(2, i) * 1000;
                     await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
@@ -378,10 +419,10 @@
             const dueDate = dueDateInput.value || '';
             const location = locationInput.value.trim() || '';
 
-            if (text === "") return;
+            if (text === "" || !navigator.onLine) return;
 
             const newTask = {
-                id: Date.now().toString(), // ID unik menggunakan timestamp
+                id: Date.now().toString(), // ID unik sementara
                 text: text,
                 dueDate: dueDate,
                 location: location,
@@ -390,7 +431,6 @@
             };
 
             try {
-                // Panggil API untuk menambahkan tugas
                 await apiCall({
                     action: "add",
                     data: newTask
@@ -399,14 +439,13 @@
                 // Refresh data setelah berhasil
                 await fetchTasks();
 
-                // Bersihkan input
                 taskInput.value = '';
                 dueDateInput.value = '';
                 locationInput.value = '';
                 validateInputs();
 
             } catch (error) {
-                // Kesalahan ditangani di apiCall
+                console.error("Gagal menambah tugas:", error);
             }
         }
 
@@ -415,29 +454,35 @@
          * @param {string} id ID tugas.
          */
         async function toggleTask(id) {
+            if (!navigator.onLine) return; // Jangan lakukan apapun jika offline
+            
             const task = allTasksCache.find(t => t.id === id);
             if (!task) return;
 
             const newCompletedStatus = !task.completed;
 
             try {
-                // Panggil API untuk update status
                 await apiCall({
                     action: "update",
                     id: id,
                     updates: {
-                        completed: newCompletedStatus // Kirim nilai boolean
+                        completed: newCompletedStatus
                     }
                 });
 
-                // Update cache lokal
                 task.completed = newCompletedStatus;
                 
-                // Re-render daftar tugas
+                // (Baru) Update cache lokal
+                try {
+                    localStorage.setItem('tasksCache', JSON.stringify(allTasksCache));
+                } catch (e) {
+                    console.warn("Gagal menyimpan ke localStorage:", e);
+                }
+
                 renderTasks(allTasksCache);
 
             } catch (error) {
-                // Kesalahan ditangani di apiCall
+                console.error("Gagal toggle tugas:", error);
             }
         }
 
@@ -446,18 +491,19 @@
          * @param {string} id ID tugas.
          */
         async function removeTask(id) {
+            if (!navigator.onLine) return;
+
             try {
-                // Panggil API untuk menghapus tugas
                 await apiCall({
                     action: "delete",
                     id: id
                 });
                 
-                // Refresh data setelah berhasil
-                await fetchTasks();
+                await fetchTasks(); // Refresh data
 
-            } catch (error) {
-                // Kesalahan ditangani di apiCall
+            } catch (error)
+ {
+                console.error("Gagal menghapus tugas:", error);
             }
         }
         
@@ -465,6 +511,8 @@
          * Menyimpan perubahan tugas (dari modal edit) ke Sheets.
          */
         async function saveEditedTask() {
+            if (!navigator.onLine) return;
+            
             const id = taskIdToEdit;
             if (!id) return;
             
@@ -473,12 +521,12 @@
             const newLocation = editLocation.value.trim() || '';
 
             if (newText === "") {
-                alert("Teks tugas tidak boleh kosong.");
+                // Gunakan UI kustom, bukan alert
+                console.error("Teks tugas tidak boleh kosong.");
                 return;
             }
 
             try {
-                // Panggil API untuk update detail tugas
                 await apiCall({
                     action: "update",
                     id: id,
@@ -489,15 +537,13 @@
                     }
                 });
 
-                // Refresh data setelah berhasil
-                await fetchTasks();
+                await fetchTasks(); // Refresh data
 
-                // Tutup modal
                 editModal.classList.add('hidden');
                 taskIdToEdit = null;
 
             } catch (error) {
-                // Kesalahan ditangani di apiCall
+                console.error("Gagal menyimpan editan:", error);
             }
         }
         
@@ -508,16 +554,14 @@
          * @param {Array<object>} tasks 
          */
         function renderTasks(tasks) {
-            // 1. Filter berdasarkan status
+            // 1. Filter status
             let filteredTasks = tasks.filter(task => {
                 if (currentFilterStatus === 'active') return !task.completed;
                 if (currentFilterStatus === 'completed') return task.completed;
                 return true; // 'all'
             });
 
-            // 2. Filter berdasarkan tanggal (DIHAPUS)
-            
-            // 3. Filter berdasarkan pencarian
+            // 2. Filter pencarian
             const searchTerm = currentSearchTerm.toLowerCase();
             if (searchTerm) {
                 filteredTasks = filteredTasks.filter(task => 
@@ -526,20 +570,17 @@
                 );
             }
 
-            // 4. Urutkan: Tugas aktif yang jatuh tempo lebih dulu di atas
+            // 3. Urutkan
             filteredTasks.sort((a, b) => {
-                // Tugas yang belum selesai selalu di atas yang sudah selesai
                 if (a.completed !== b.completed) {
                     return a.completed ? 1 : -1;
                 }
-
-                // Setelah itu, urutkan berdasarkan tanggal jatuh tempo (paling cepat duluan)
                 const dateA = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
                 const dateB = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
                 return dateA - dateB;
             });
 
-            // 5. Render
+            // 4. Render
             taskListEl.innerHTML = '';
             
             if (filteredTasks.length === 0) {
@@ -555,7 +596,7 @@
         }
 
         /**
-         * Membuat elemen DOM untuk satu tugas.
+         * Membuat elemen DOM untuk satu tugas. (Diperbarui)
          * @param {object} task Objek tugas.
          * @returns {HTMLElement} Elemen list item.
          */
@@ -565,12 +606,15 @@
             item.setAttribute('data-id', task.id);
 
             const isDueToday = task.dueDate && isSameDay(task.dueDate, new Date());
-            
+            const isOnline = navigator.onLine; // (Baru) Cek status online
+
             // Checkbox
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.checked = task.completed;
-            checkbox.className = 'w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 dark:focus:ring-emerald-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600 mr-4 flex-shrink-0';
+            // (Baru) Tambahkan disabled
+            checkbox.className = 'w-5 h-5 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 dark:focus:ring-emerald-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600 mr-4 flex-shrink-0 disabled:opacity-50';
+            checkbox.disabled = !isOnline; 
             checkbox.onclick = (e) => {
                 e.stopPropagation();
                 toggleTask(task.id);
@@ -614,9 +658,11 @@
 
             // Edit Button
             const editBtn = document.createElement('button');
-            editBtn.className = 'p-2 rounded-full text-blue-500 hover:bg-blue-100 dark:hover:bg-gray-700 transition duration-150';
+            // (Baru) Tambahkan disabled
+            editBtn.className = 'p-2 rounded-full text-blue-500 hover:bg-blue-100 dark:hover:bg-gray-700 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed';
             editBtn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-7 1l-2 2L18 9l2-2 2.585 2.585zm1.414-2.586a2 2 0 012.828 0l2.586 2.586a2 2 0 010 2.828l-10.4 10.4L5 19l2.828-2.828 10.4-10.4z"></path></svg>`;
             editBtn.title = "Edit Tugas";
+            editBtn.disabled = !isOnline;
             editBtn.onclick = (e) => {
                 e.stopPropagation();
                 openEditModal(task.id);
@@ -624,9 +670,11 @@
 
             // Delete Button
             const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'p-2 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-gray-700 transition duration-150';
+            // (Baru) Tambahkan disabled
+            deleteBtn.className = 'p-2 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-gray-700 transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed';
             deleteBtn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`;
             deleteBtn.title = "Hapus Tugas";
+            deleteBtn.disabled = !isOnline;
             deleteBtn.onclick = (e) => {
                 e.stopPropagation();
                 openDeleteModal(task.id);
@@ -646,7 +694,6 @@
 
         /**
          * Mengubah tampilan tombol filter status.
-         * @param {string} newStatus 'all', 'active', atau 'completed'
          */
         function updateFilterStatusUI(newStatus) {
             currentFilterStatus = newStatus;
@@ -658,8 +705,6 @@
             });
             renderTasks(allTasksCache);
         }
-
-        // Fungsi updateFilterDateUI() dihapus
 
         // --- Modal Logic ---
         
@@ -692,10 +737,23 @@
 
 
         /**
-         * Inisialisasi Aplikasi dan Auth
+         * Inisialisasi Aplikasi dan Auth (Diperbarui)
          */
         async function initializeApp() {
             try {
+                // (Baru) Daftarkan Service Worker
+                if ('serviceWorker' in navigator) {
+                    window.addEventListener('load', () => {
+                        navigator.serviceWorker.register('sw.js')
+                            .then(registration => console.log('Service Worker registered:', registration))
+                            .catch(error => console.log('Service Worker registration failed:', error));
+                    });
+                }
+                
+                // (Baru) Setup Online/Offline Listeners
+                window.addEventListener('online', () => updateOnlineStatus(true));
+                window.addEventListener('offline', () => updateOnlineStatus(false));
+                
                 // 1. Setup Dark Mode
                 const isDarkMode = localStorage.getItem('darkMode') === 'true';
                 if (isDarkMode) {
@@ -730,24 +788,40 @@
                 filterStatusBtns.all.addEventListener('click', () => updateFilterStatusUI('all'));
                 filterStatusBtns.active.addEventListener('click', () => updateFilterStatusUI('active'));
                 filterStatusBtns.completed.addEventListener('click', () => updateFilterStatusUI('completed'));
-
-                // 4. Setup Filter Date Listeners (DIHAPUS)
                 
-                // 5. Setup Search Event Listener
+                // 4. Setup Search Event Listener
                 searchInput.addEventListener('input', () => { currentSearchTerm = searchInput.value; renderTasks(allTasksCache); });
 
-                // 6. Setup Tambah Tugas Event Listener
+                // 5. Setup Tambah Tugas Event Listener
                 addTaskBtn.addEventListener('click', addTask);
                 taskInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter' && !addTaskBtn.disabled) addTask();
                 });
                 
-                // 7. Validasi input
+                // 6. Validasi input
                 [taskInput, dueDateInput, locationInput].forEach(input => {
                     input.addEventListener('input', validateInputs);
                 });
+                
+                // (Baru) Atur status online awal
+                updateOnlineStatus(navigator.onLine);
 
-                // 8. Ambil data awal
+                // 7. (Diperbarui) Ambil data awal
+                
+                // Coba muat dari cache lokal terlebih dahulu
+                const cachedTasks = localStorage.getItem('tasksCache');
+                if (cachedTasks) {
+                    try {
+                        allTasksCache = JSON.parse(cachedTasks);
+                        renderTasks(allTasksCache);
+                        loadingIndicatorEl.textContent = 'Memuat dari cache. Menyegarkan...';
+                    } catch (e) {
+                        console.error('Gagal memuat cache', e);
+                        localStorage.removeItem('tasksCache');
+                    }
+                }
+                
+                // Selalu coba fetch data baru dari network (jika online)
                 await fetchTasks();
 
             } catch (error) {
