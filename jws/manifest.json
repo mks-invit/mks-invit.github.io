@@ -1,0 +1,22 @@
+{
+  "name": "aic | jws",
+  "short_name": "jws",
+  "description": "Aplikasi Jadwal Waktu Sholat dan Al-Qur'an",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "images/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "images/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
