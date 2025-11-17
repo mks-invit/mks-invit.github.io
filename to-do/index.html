@@ -553,6 +553,17 @@
 
             const isDueToday = task.dueDate && isSameDay(task.dueDate, new Date());
             
+            // --- TAMBAHAN: Logika untuk Cek Kadaluarsa ---
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Set ke awal hari ini
+            const dueDate = new Date(task.dueDate); // Menggunakan parsing Date standar
+            
+            // Dianggap kadaluarsa jika dueDate ada, sebelum awal hari ini, DAN belum selesai
+            const isOverdue = task.dueDate && 
+                              dueDate < today && // Membandingkan dengan awal hari ini
+                              !task.completed;
+            // --- AKHIR TAMBAHAN ---
+
             // Checkbox
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
@@ -568,7 +579,13 @@
             content.className = 'flex-grow min-w-0';
 
             const text = document.createElement('p');
-            text.className = `task-text font-medium text-lg truncate ${task.completed ? 'text-gray-500' : 'dark:text-white'}`;
+            // --- MODIFIKASI: Tambahkan kelas warna kuning jika overdue ---
+            text.className = `task-text font-medium text-lg truncate ${
+                task.completed ? 'text-gray-500' : 
+                isOverdue ? 'text-yellow-600 dark:text-yellow-400' : // Terapkan warna kuning
+                'dark:text-white'
+            }`;
+            // --- AKHIR MODIFIKASI ---
             text.textContent = task.text;
             content.appendChild(text);
 
@@ -578,6 +595,7 @@
             // Due Date
             if (task.dueDate) {
                 const dateText = document.createElement('span');
+                // Terapkan warna merah jika 'Hari Ini', tapi biarkan warna kuning jika 'Overdue' (prioritas di teks utama)
                 dateText.className = `mr-3 flex items-center ${isDueToday && !task.completed ? 'text-red-500 font-semibold' : ''}`;
                 dateText.innerHTML = `<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                       ${task.dueDate}${isDueToday ? ' (Hari Ini!)' : ''}`;
