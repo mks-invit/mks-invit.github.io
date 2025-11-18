@@ -36,7 +36,6 @@ self.addEventListener('install', (event) => {
                     console.warn('[SW] Gagal meng-cache beberapa App Shell (mungkin tidak apa-apa):', err);
                 });
             })
-            .then(() => self.skipWaiting()) // Aktifkan SW baru segera
     );
 });
 
@@ -49,63 +48,76 @@ self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
-                cacheNames
-                    .filter(name => name !== STATIC_CACHE_NAME && name !== DYNAMIC_CACHE_NAME)
-                    .map(name => caches.delete(name))
+                cacheNames.map((cacheName) => {
+                    // Hapus cache lama (baik statis maupun dinamis)
+                    if (cacheName !== STATIC_CACHE_NAME && cacheName !== DYNAMIC_CACHE_NAME) {
+                        console.log(`[SW] Menghapus cache lama: ${cacheName}`);
+                        return caches.delete(cacheName);
+                    }
+                    return null; // Tambahkan return null untuk konsistensi
+                })
             );
-        }).then(() => self.clients.claim()) // Ambil alih kontrol halaman
+        })
     );
+    // Memastikan Service Worker baru mengambil alih kontrol halaman dengan cepat
+    return self.clients.claim();
 });
 
 /**
- * Helper: Memeriksa apakah URL berasal dari API yang ditentukan.
- */
-function isApiUrl(url) {
-    return API_ORIGINS.some(origin => url.startsWith(origin));
-}
-
-/**
- * Helper: Memeriksa apakah URL berasal dari CDN Audio yang ditentukan.
- */
-function isAudioUrl(url) {
-    return AUDIO_CDN_ORIGINS.some(origin => url.startsWith(origin));
-}
-
-
-/**
- * Event 'fetch': Dipanggil setiap kali halaman membuat permintaan jaringan.
- * Ini adalah inti dari strategi offline.
+ * Event 'fetch': Dipanggil setiap kali browser membuat permintaan jaringan.
+ * Ini adalah inti dari strategi caching kita.
  */
 self.addEventListener('fetch', (event) => {
-    const { request } = event;
+    const request = event.request;
     const url = new URL(request.url);
 
-    // 1. Strategi untuk API (Network-First, then Cache)
-    if (isApiUrl(url.href)) {
+    // 1. Strategi Network-First untuk API
+    if (API_ORIGINS.includes(url.origin)) {
         event.respondWith(
             fetch(request)
                 .then((networkResponse) => {
-                    // Jika sukses, simpan di cache dinamis
+                    // Jika berhasil dari jaringan, simpan ke cache dinamis
                     caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
                         cache.put(request, networkResponse.clone());
                     });
                     return networkResponse;
                 })
-                .catch(() => {
-                    // Jika gagal (offline), coba ambil dari cache
-                    console.log(`[SW] Offline, menyajikan dari cache untuk: ${url.pathname}`);
-                    return caches.match(request);
+                .catch((err) => {
+                    // Jika jaringan gagal, coba ambil dari cache
+                    console.log(`[SW] Jaringan gagal untuk API, menyajikan dari cache: ${url.pathname}`, err);
+                    return caches.match(request).then((cachedResponse) => {
+                        // Jika tidak ada di cache, kembalikan null (browser akan handle)
+                        return cachedResponse || null;
+                    });
                 })
         );
     }
-    // 2. Strategi untuk Audio (Cache-First, on-demand)
-    // Kita biarkan aplikasi memutarnya, dan jika masuk ke cache,
-    // browser akan mengambilnya dari cache. Caching ditangani oleh
-    // strategi 'Stale-While-Revalidate' di bawah ini.
-    // Permintaan audio (range requests) bisa rumit, jadi SWR adalah yang paling aman.
 
-    // 3. Strategi untuk Aset Lain (Stale-While-Revalidate)
-    // (HTML, CSS, JS, Font, Gambar, dan juga Audio)
+    // 2. Strategi Cache-First untuk Audio CDN (setelah diputar)
+    else if (AUDIO_CDN_ORIGINS.includes(url.origin) && request.destination === 'audio') {
+        event.respondWith(
+            caches.match(request)
+                .then((cachedResponse) => {
+                    // Jika ada di cache, langsung kembalikan
+                    if (cachedResponse) {
+                        console.log(`[SW] Menyajikan audio dari cache: ${url.pathname}`);
+                        return cachedResponse;
+                    }
+
+                    // Jika tidak ada, ambil dari jaringan
+                    return fetch(request).then((networkResponse) => {
+                        // Simpan audio ke cache dinamis saat diambil
+                        caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
+                            cache.put(request, networkResponse.clone());
+                        });
+                        return networkResponse;
+                    });
+                })
+        );
+    }
+
+    // 3. Strategi Stale-While-Revalidate untuk Aset Lain
+    // (HTML, CSS, JS, Font, Gambar, dll)
     else {
         event.respondWith(
             caches.match(request)
@@ -122,7 +134,8 @@ self.addEventListener('fetch', (event) => {
                         })
                         .catch(err => {
                             console.log(`[SW] Gagal mengambil dari jaringan: ${url.pathname}`, err);
-                            // Ini terjadi jika kita offline dan item tidak ada di cache
+                            // [PERBAIKAN 1] Lemparkan error agar ditangkap oleh .catch() di luar
+                            throw err;
                         });
 
                     // 2. Kembalikan dari cache jika ada (Stale)
@@ -133,6 +146,22 @@ self.addEventListener('fetch', (event) => {
 
                     // 3. Jika tidak ada di cache, tunggu & kembalikan dari jaringan (Revalidate)
                     return networkFetch;
+                })
+                // [PERBAIKAN 2] Tambahkan .catch() di akhir rantai
+                .catch(() => {
+                    // Ini adalah fallback jika offline DAN tidak ada di cache
+                    console.log(`[SW] Gagal menyajikan (offline & tidak ada di cache): ${event.request.url}`);
+                    
+                    // Anda bisa mengembalikan halaman fallback jika ada
+                    // if (event.request.mode === 'navigate') {
+                    //     return caches.match('/offline.html'); // Pastikan Anda sudah meng-cache offline.html
+                    // }
+                    
+                    // Atau kembalikan respons Error generik yang valid
+                    return new Response(JSON.stringify({ error: 'Offline and resource not cached.' }), {
+                        status: 503, // Service Unavailable
+                        headers: { 'Content-Type': 'application/json' }
+                    });
                 })
         );
     }
