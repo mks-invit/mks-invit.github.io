@@ -22,7 +22,6 @@
         }
         body.dark #app-container {
             background-color: #374151;
-            /* box-shadow dihapus untuk layout full-screen */
         }
         body.dark .border-gray-300 {
             border-color: #4b5563;
@@ -44,7 +43,6 @@
 
         /* Scrollbar untuk daftar tugas */
         #taskList {
-            /* max-height: 50vh; DIHAPUS untuk layout flex-1 */
             overflow-y: auto;
         }
         #taskList::-webkit-scrollbar {
@@ -65,17 +63,23 @@
             box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.5);
             transform: translateY(-1px);
         }
-
     </style>
 </head>
 <body class="min-h-screen h-screen">
 
     <div id="app-container" class="w-full h-full bg-white dark:bg-gray-800 p-4 sm:p-8 transition-colors duration-300 flex flex-col">
         
-        <header class="flex flex-col sm:flex-row sm:justify-center items-center gap-4 sm:gap-0 mb-6 border-b border-gray-200 dark:border-gray-700 pb-4 flex-shrink-0">
-            <h1 class="text-xl font-semibold text-gray-900 dark:text-white text-center">
-                AIC - To Do List
-            </h1>
+        <header class="flex flex-col sm:flex-row sm:justify-center items-center mb-6 border-b border-gray-200 dark:border-gray-700 pb-4 flex-shrink-0">
+            <div class="flex items-center justify-center gap-3">
+                <h1 class="text-xl font-semibold text-gray-900 dark:text-white text-center">
+                    AIC - To Do List
+                </h1>
+                <button id="refreshBtn" title="Refresh Data" class="p-2 text-gray-500 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-emerald-400 transition-colors duration-200 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none group">
+                    <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </div>
         </header>
         
         <div class="mb-8 p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-inner dark:shadow-none bg-gray-50 dark:bg-gray-700/50 flex-shrink-0">
@@ -170,8 +174,7 @@
 
         // --- Variabel Global & Cache ---
         let allTasksCache = [];
-        let currentFilterStatus = 'all'; // 'all', 'active', 'completed', 'today'
-        // currentFilterDate dihapus
+        let currentFilterStatus = 'all';
         let currentSearchTerm = '';
         let taskIdToDelete = null;
         let taskIdToEdit = null;
@@ -187,9 +190,10 @@
         const loadingIndicatorEl = document.getElementById('loadingIndicator');
         const authInfoDisplayEl = document.getElementById('authInfoDisplay');
         const currentUserIdEl = document.getElementById('currentUserId');
-        const darkModeToggle = document.getElementById('darkModeToggle'); // Masih ada di JS, tapi tidak masalah
-        const sunIcon = document.getElementById('sunIcon'); // Masih ada di JS
-        const moonIcon = document.getElementById('moonIcon'); // Masih ada di JS
+        
+        // Refresh Button Elements
+        const refreshBtn = document.getElementById('refreshBtn');
+        const refreshIcon = document.getElementById('refreshIcon');
 
         // Modal Elements
         const deleteModal = document.getElementById('deleteModal');
@@ -202,14 +206,13 @@
         const editDueDate = document.getElementById('editDueDate');
         const editLocation = document.getElementById('editLocation');
 
-        // Filter Buttons (filterTodayBtn DITAMBAHKAN)
+        // Filter Buttons
         const filterStatusBtns = {
             all: document.getElementById('filterAllBtn'),
             active: document.getElementById('filterActiveBtn'),
             completed: document.getElementById('filterCompletedBtn'),
             today: document.getElementById('filterTodayBtn')
         };
-        // filterDateBtns dihapus
 
         // --- Helper Functions ---
 
@@ -222,17 +225,21 @@
                 loadingIndicatorEl.textContent = 'Memuat...';
                 addTaskBtn.disabled = true;
                 taskListEl.classList.add('opacity-50');
+                // Animasi Spin pada icon refresh
+                refreshBtn.disabled = true;
+                refreshIcon.classList.add('animate-spin');
             } else {
                 loadingIndicatorEl.textContent = '';
-                validateInputs(); // Re-enable button if inputs are valid
+                validateInputs();
                 taskListEl.classList.remove('opacity-50');
+                // Hapus Animasi Spin
+                refreshBtn.disabled = false;
+                refreshIcon.classList.remove('animate-spin');
             }
         }
 
         /**
-         * Panggilan API dengan mekanisme retry. Digunakan untuk POST.
-         * @param {object} payload Data yang akan dikirim (termasuk 'action', 'id', 'data', dll.).
-         * @returns {Promise<object>} Respon JSON dari Apps Script.
+         * Panggilan API dengan mekanisme retry.
          */
         async function apiCall(payload) {
             setLoading(true);
@@ -242,7 +249,6 @@
                 try {
                     const response = await fetch(MOCK_API_ENDPOINT, {
                         method: 'POST',
-                        // Menghapus header 'Content-Type: application/json' untuk mempermudah CORS dengan GAS
                         body: JSON.stringify(payload)
                     });
 
@@ -252,19 +258,16 @@
                         setLoading(false);
                         return data;
                     } else {
-                        // Ini adalah error yang berasal dari Apps Script
                         const errorMessage = data.message || `Apps Script Error: Status ${response.status}`;
                         throw new Error(errorMessage);
                     }
                 } catch (error) {
                     if (i === maxRetries - 1) {
                         setLoading(false);
-                        // Lempar error jika ini adalah percobaan terakhir
                         throw new Error(`Gagal berinteraksi dengan API setelah ${maxRetries} kali coba: ${error.message}`);
                     }
-                    // Logging dan Backoff
                     console.warn(`Fetch attempt ${i + 1} failed: ${error.message}. Retrying...`);
-                    const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
+                    const delay = Math.pow(2, i) * 1000;
                     await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
@@ -272,13 +275,10 @@
 
         /**
          * Mengubah format tanggal menjadi YYYY-MM-DD.
-         * @param {Date} dateObj 
-         * @returns {string} Tanggal dalam format string YYYY-MM-DD.
          */
         function formatDate(dateObj) {
             if (!dateObj || dateObj.toString() === 'Invalid Date') return '';
             const d = new Date(dateObj);
-            // Tambahkan padding nol jika angka < 10
             const year = d.getFullYear();
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
@@ -286,10 +286,7 @@
         }
         
         /**
-         * Membandingkan tanggal (hanya bagian hari, bulan, tahun).
-         * @param {Date|string} d1 
-         * @param {Date|string} d2 
-         * @returns {boolean} True jika tanggal sama.
+         * Membandingkan tanggal.
          */
         function isSameDay(d1, d2) {
             const date1 = new Date(d1);
@@ -298,8 +295,6 @@
                    date1.getMonth() === date2.getMonth() &&
                    date1.getDate() === date2.getDate();
         }
-
-        // Fungsi getOneWeekFromNow() dihapus
 
         /**
          * Memastikan input teks tugas tidak kosong.
@@ -319,23 +314,21 @@
 
             for (let i = 0; i < maxRetries; i++) {
                 try {
-                    // Gunakan GET dengan parameter action=read
                     const response = await fetch(MOCK_API_ENDPOINT + '?action=read');
                     const result = await response.json();
 
                     if (response.ok && result.status === 'success') {
-                        // Mapping dan normalisasi data dari Sheets
                         allTasksCache = result.data.map(task => ({
                             id: task.id.toString(),
                             text: task.text,
                             dueDate: task.dueDate ? formatDate(task.dueDate) : '',
                             location: task.location || '',
-                            completed: task.completed === true || task.completed === 'TRUE', // Menangani konversi tipe
-                            createdAt: task.createdAt // Biarkan seperti adanya
+                            completed: task.completed === true || task.completed === 'TRUE',
+                            createdAt: task.createdAt
                         }));
                         renderTasks(allTasksCache);
                         setLoading(false);
-                        return; // Berhasil, keluar dari loop
+                        return; 
                     } else {
                         throw new Error(result.message || 'Gagal mengambil data tugas.');
                     }
@@ -344,17 +337,17 @@
                         setLoading(false);
                         console.error("Error fetching tasks:", error);
                         authInfoDisplayEl.textContent = `Gagal memuat data: ${error.message}`;
-                        return; // Gagal, keluar dari loop
+                        return;
                     }
                     console.warn(`Fetch attempt ${i + 1} failed: ${error.message}. Retrying...`);
-                    const delay = Math.pow(2, i) * 1000; // 1s, 2s, 4s
+                    const delay = Math.pow(2, i) * 1000;
                     await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
         }
 
         /**
-         * Menambah tugas baru ke Google Sheets.
+         * Menambah tugas baru.
          */
         async function addTask() {
             const text = taskInput.value.trim();
@@ -364,7 +357,7 @@
             if (text === "") return;
 
             const newTask = {
-                id: Date.now().toString(), // ID unik menggunakan timestamp
+                id: Date.now().toString(),
                 text: text,
                 dueDate: dueDate,
                 location: location,
@@ -373,29 +366,22 @@
             };
 
             try {
-                // Panggil API untuk menambahkan tugas
                 await apiCall({
                     action: "add",
                     data: newTask
                 });
-                
-                // Refresh data setelah berhasil
                 await fetchTasks();
-
-                // Bersihkan input
                 taskInput.value = '';
                 dueDateInput.value = '';
                 locationInput.value = '';
                 validateInputs();
-
             } catch (error) {
-                // Kesalahan ditangani di apiCall
+                // Handled by apiCall
             }
         }
 
         /**
-         * Mengubah status 'completed' tugas di Sheets.
-         * @param {string} id ID tugas.
+         * Update status completed.
          */
         async function toggleTask(id) {
             const task = allTasksCache.find(t => t.id === id);
@@ -404,48 +390,32 @@
             const newCompletedStatus = !task.completed;
 
             try {
-                // Panggil API untuk update status
                 await apiCall({
                     action: "update",
                     id: id,
-                    updates: {
-                        completed: newCompletedStatus // Kirim nilai boolean
-                    }
+                    updates: { completed: newCompletedStatus }
                 });
-
-                // Update cache lokal
                 task.completed = newCompletedStatus;
-                
-                // Re-render daftar tugas
                 renderTasks(allTasksCache);
-
             } catch (error) {
-                // Kesalahan ditangani di apiCall
+                // Handled by apiCall
             }
         }
 
         /**
-         * Menghapus tugas dari Sheets.
-         * @param {string} id ID tugas.
+         * Hapus tugas.
          */
         async function removeTask(id) {
             try {
-                // Panggil API untuk menghapus tugas
-                await apiCall({
-                    action: "delete",
-                    id: id
-                });
-                
-                // Refresh data setelah berhasil
+                await apiCall({ action: "delete", id: id });
                 await fetchTasks();
-
             } catch (error) {
-                // Kesalahan ditangani di apiCall
+                // Handled by apiCall
             }
         }
         
         /**
-         * Menyimpan perubahan tugas (dari modal edit) ke Sheets.
+         * Simpan edit tugas.
          */
         async function saveEditedTask() {
             const id = taskIdToEdit;
@@ -461,7 +431,6 @@
             }
 
             try {
-                // Panggil API untuk update detail tugas
                 await apiCall({
                     action: "update",
                     id: id,
@@ -471,40 +440,26 @@
                         location: newLocation
                     }
                 });
-
-                // Refresh data setelah berhasil
                 await fetchTasks();
-
-                // Tutup modal
                 editModal.classList.add('hidden');
                 taskIdToEdit = null;
-
             } catch (error) {
-                // Kesalahan ditangani di apiCall
+                // Handled by apiCall
             }
         }
         
         // --- Filtering dan Rendering ---
 
-        /**
-         * Menerapkan filter dan merender daftar tugas.
-         * @param {Array<object>} tasks 
-         */
         function renderTasks(tasks) {
-            // 1. Filter berdasarkan status (Logika "today" DITAMBAHKAN)
             let filteredTasks = tasks.filter(task => {
                 if (currentFilterStatus === 'active') return !task.completed;
                 if (currentFilterStatus === 'completed') return task.completed;
                 if (currentFilterStatus === 'today') {
-                    // Tampilkan tugas yang jatuh tempo hari ini DAN belum selesai
                     return task.dueDate && isSameDay(task.dueDate, new Date()) && !task.completed;
                 }
-                return true; // 'all'
+                return true;
             });
 
-            // 2. Filter berdasarkan tanggal (DIHAPUS)
-            
-            // 3. Filter berdasarkan pencarian
             const searchTerm = currentSearchTerm.toLowerCase();
             if (searchTerm) {
                 filteredTasks = filteredTasks.filter(task => 
@@ -513,27 +468,19 @@
                 );
             }
 
-            // 4. Urutkan: Tugas aktif yang jatuh tempo lebih dulu di atas
             filteredTasks.sort((a, b) => {
-                // Tugas yang belum selesai selalu di atas yang sudah selesai
-                if (a.completed !== b.completed) {
-                    return a.completed ? 1 : -1;
-                }
-
-                // Setelah itu, urutkan berdasarkan tanggal jatuh tempo (paling cepat duluan)
+                if (a.completed !== b.completed) return a.completed ? 1 : -1;
                 const dateA = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
                 const dateB = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
                 return dateA - dateB;
             });
 
-            // 5. Render
             taskListEl.innerHTML = '';
             
             if (filteredTasks.length === 0) {
                 emptyStateEl.classList.remove('hidden');
             } else {
                 emptyStateEl.classList.add('hidden');
-                
                 filteredTasks.forEach(task => {
                     const taskEl = createTaskElement(task);
                     taskListEl.appendChild(taskEl);
@@ -541,30 +488,17 @@
             }
         }
 
-        /**
-         * Membuat elemen DOM untuk satu tugas.
-         * @param {object} task Objek tugas.
-         * @returns {HTMLElement} Elemen list item.
-         */
         function createTaskElement(task) {
             const item = document.createElement('div');
             item.className = `task-list-item flex items-center p-4 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 ${task.completed ? 'completed-task bg-gray-100 dark:bg-gray-700/70' : 'bg-white dark:bg-gray-800'}`;
             item.setAttribute('data-id', task.id);
 
             const isDueToday = task.dueDate && isSameDay(task.dueDate, new Date());
-            
-            // --- TAMBAHAN: Logika untuk Cek Kadaluarsa ---
             const today = new Date();
-            today.setHours(0, 0, 0, 0); // Set ke awal hari ini
-            const dueDate = new Date(task.dueDate); // Menggunakan parsing Date standar
-            
-            // Dianggap kadaluarsa jika dueDate ada, sebelum awal hari ini, DAN belum selesai
-            const isOverdue = task.dueDate && 
-                              dueDate < today && // Membandingkan dengan awal hari ini
-                              !task.completed;
-            // --- AKHIR TAMBAHAN ---
+            today.setHours(0, 0, 0, 0);
+            const dueDate = new Date(task.dueDate);
+            const isOverdue = task.dueDate && dueDate < today && !task.completed;
 
-            // Checkbox
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.checked = task.completed;
@@ -574,35 +508,29 @@
                 toggleTask(task.id);
             };
 
-            // Task Content
             const content = document.createElement('div');
             content.className = 'flex-grow min-w-0';
 
             const text = document.createElement('p');
-            // --- MODIFIKASI: Tambahkan kelas warna kuning jika overdue ---
             text.className = `task-text font-medium text-lg truncate ${
                 task.completed ? 'text-gray-500' : 
-                isOverdue ? 'text-yellow-600 dark:text-yellow-400' : // Terapkan warna kuning
+                isOverdue ? 'text-yellow-600 dark:text-yellow-400' : 
                 'dark:text-white'
             }`;
-            // --- AKHIR MODIFIKASI ---
             text.textContent = task.text;
             content.appendChild(text);
 
             const meta = document.createElement('div');
             meta.className = 'flex flex-wrap items-center text-sm mt-1 text-gray-500 dark:text-gray-400';
 
-            // Due Date
             if (task.dueDate) {
                 const dateText = document.createElement('span');
-                // Terapkan warna merah jika 'Hari Ini', tapi biarkan warna kuning jika 'Overdue' (prioritas di teks utama)
                 dateText.className = `mr-3 flex items-center ${isDueToday && !task.completed ? 'text-red-500 font-semibold' : ''}`;
                 dateText.innerHTML = `<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                       ${task.dueDate}${isDueToday ? ' (Hari Ini!)' : ''}`;
                 meta.appendChild(dateText);
             }
 
-            // Location
             if (task.location) {
                 const locationText = document.createElement('span');
                 locationText.className = 'mr-3 flex items-center';
@@ -613,25 +541,20 @@
             
             content.appendChild(meta);
             
-            // Action Buttons Container
             const actions = document.createElement('div');
             actions.className = 'flex-shrink-0 ml-4 space-x-2 flex';
 
-            // Edit Button
             const editBtn = document.createElement('button');
             editBtn.className = 'p-2 rounded-full text-blue-500 hover:bg-blue-100 dark:hover:bg-gray-700 transition duration-150';
             editBtn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-7 1l-2 2L18 9l2-2 2.585 2.585zm1.414-2.586a2 2 0 012.828 0l2.586 2.586a2 2 0 010 2.828l-10.4 10.4L5 19l2.828-2.828 10.4-10.4z"></path></svg>`;
-            editBtn.title = "Edit Tugas";
             editBtn.onclick = (e) => {
                 e.stopPropagation();
                 openEditModal(task.id);
             };
 
-            // Delete Button
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'p-2 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-gray-700 transition duration-150';
             deleteBtn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`;
-            deleteBtn.title = "Hapus Tugas";
             deleteBtn.onclick = (e) => {
                 e.stopPropagation();
                 openDeleteModal(task.id);
@@ -649,10 +572,6 @@
 
         // --- Event Handlers & Initialisation ---
 
-        /**
-         * Mengubah tampilan tombol filter status.
-         * @param {string} newStatus 'all', 'active', 'completed', atau 'today'
-         */
         function updateFilterStatusUI(newStatus) {
             currentFilterStatus = newStatus;
             Object.keys(filterStatusBtns).forEach(status => {
@@ -664,10 +583,6 @@
             renderTasks(allTasksCache);
         }
 
-        // Fungsi updateFilterDateUI() dihapus
-
-        // --- Modal Logic ---
-        
         function openDeleteModal(id) {
             taskIdToDelete = id;
             deleteModal.classList.remove('hidden');
@@ -686,7 +601,6 @@
             editTaskText.value = task.text;
             editDueDate.value = task.dueDate;
             editLocation.value = task.location;
-
             editModal.classList.remove('hidden');
         }
 
@@ -695,34 +609,12 @@
             taskIdToEdit = null;
         }
 
-
-        /**
-         * Inisialisasi Aplikasi dan Auth
-         */
         async function initializeApp() {
             try {
-                // 1. Setup Dark Mode (Bagian ini masih ada di JS, tapi tombolnya di HTML sudah dihapus)
                 const isDarkMode = localStorage.getItem('darkMode') === 'true';
-                if (isDarkMode) {
-                    document.body.classList.add('dark');
-                    if (sunIcon) sunIcon.classList.remove('hidden');
-                    if (moonIcon) moonIcon.classList.add('hidden');
-                } else {
-                    if (sunIcon) sunIcon.classList.add('hidden');
-                    if (moonIcon) moonIcon.classList.remove('hidden');
-                }
-                
-                if (darkModeToggle) {
-                    darkModeToggle.addEventListener('click', () => {
-                        document.body.classList.toggle('dark');
-                        const isDark = document.body.classList.contains('dark');
-                        localStorage.setItem('darkMode', isDark);
-                        sunIcon.classList.toggle('hidden');
-                        moonIcon.classList.toggle('hidden');
-                    });
-                }
+                if (isDarkMode) document.body.classList.add('dark');
 
-                // 2. Setup Modal Listeners
+                // Setup Event Listeners
                 confirmDeleteBtn.addEventListener('click', () => {
                     if (taskIdToDelete) {
                         removeTask(taskIdToDelete);
@@ -733,29 +625,28 @@
                 saveEditBtn.addEventListener('click', saveEditedTask);
                 cancelEditBtn.addEventListener('click', closeEditModal);
                 
-                // 3. Setup Filter Status Listeners (Listener "today" DITAMBAHKAN)
                 filterStatusBtns.all.addEventListener('click', () => updateFilterStatusUI('all'));
                 filterStatusBtns.active.addEventListener('click', () => updateFilterStatusUI('active'));
                 filterStatusBtns.completed.addEventListener('click', () => updateFilterStatusUI('completed'));
                 filterStatusBtns.today.addEventListener('click', () => updateFilterStatusUI('today'));
 
-                // 4. Setup Filter Date Listeners (DIHAPUS)
-                
-                // 5. Setup Search Event Listener
-                searchInput.addEventListener('input', () => { currentSearchTerm = searchInput.value; renderTasks(allTasksCache); });
+                searchInput.addEventListener('input', () => { 
+                    currentSearchTerm = searchInput.value; 
+                    renderTasks(allTasksCache); 
+                });
 
-                // 6. Setup Tambah Tugas Event Listener
                 addTaskBtn.addEventListener('click', addTask);
                 taskInput.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter' && !addTaskBtn.disabled) addTask();
                 });
                 
-                // 7. Validasi input
                 [taskInput, dueDateInput, locationInput].forEach(input => {
                     input.addEventListener('input', validateInputs);
                 });
 
-                // 8. Ambil data awal
+                // Tambahkan listener untuk tombol Refresh baru
+                refreshBtn.addEventListener('click', fetchTasks);
+
                 await fetchTasks();
 
             } catch (error) {
