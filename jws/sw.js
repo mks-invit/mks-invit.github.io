@@ -12,7 +12,7 @@ const API_ORIGINS = [
 // Aset inti aplikasi (App Shell) yang akan di-cache saat instalasi
 const APP_SHELL_URLS = [
     '/',
-    'jws ok.html' // Ganti ini jika nama file HTML Anda berbeda
+    'index.html' // Ganti ini jika nama file HTML Anda berbeda
 ];
 
 // Asal (origin) CDN Audio yang akan di-cache saat diputar
