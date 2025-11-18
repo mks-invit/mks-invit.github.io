@@ -269,8 +269,23 @@
             
             <p id="checklist-date" class="text-center text-sm text-gray-500 dark:text-gray-400 mb-6"></p>
 
-            <div id="checklist-container" class="space-y-3 flex-grow overflow-y-auto pr-2">
-                <div class="text-center p-6 text-gray-500 dark:text-gray-400">Memuat checklist...</div>
+            <div id="checklist-container" class="flex-grow overflow-y-auto pr-2">
+                
+                <h3 class="text-base font-semibold text-emerald-600 dark:text-emerald-400 mb-3 sticky top-0 bg-white dark:bg-gray-800 py-1">
+                    Shalat Fardu
+                </h3>
+                <div id="fardu-checklist" class="space-y-3">
+                    <div class="text-center p-6 text-gray-500 dark:text-gray-400">Memuat...</div>
+                </div>
+
+                <hr class="my-6 border-gray-200 dark:border-gray-600">
+
+                <h3 class="text-base font-semibold text-blue-600 dark:text-blue-400 mb-3 sticky top-0 bg-white dark:bg-gray-800 py-1">
+                    Shalat Sunnah
+                </h3>
+                <div id="sunnah-checklist" class="space-y-3">
+                    </div>
+
             </div>
             
             <button id="reset-checklist-button" 
@@ -1412,18 +1427,34 @@
         }
         
         // ====================================================================
-        // === [BARU] FUNGSI CHECKLIST SHALAT ===
+        // === [MODIFIKASI TERBARU] FUNGSI CHECKLIST SHALAT (Qobliyah/Badiyah) ===
         // ====================================================================
         
         const CHECKLIST_KEY = 'dailyChecklist';
         const OBLIGATORY_PRAYERS = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
+        
+        // [MODIFIKASI] Daftar shalat sunnah didetailkan
+        const SUNNAH_PRAYERS = [
+            'Tahajud', 
+            'Witir', 
+            'Qobliyah Subuh', 
+            'Dhuha',
+            'Qobliyah Dzuhur',
+            'Badiyah Dzuhur',
+            'Qobliyah Ashar',
+            'Qobliyah Maghrib',
+            'Badiyah Maghrib',
+            'Qobliyah Isya',
+            'Badiyah Isya'
+        ];
+
 
         /**
-         * Mendapatkan state checklist untuk hari ini dari localStorage.
-         * Jika data tidak ada atau sudah kedaluwarsa, data akan direset.
+         * [MODIFIKASI] Mendapatkan state (Fardu & Sunnah) untuk hari ini.
+         * Menangani migrasi dari daftar 'Rawatib...' ke 'Qobliyah/Badiyah...'
          */
         function getChecklistState() {
-            const today = new Date().toLocaleDateString('id-ID'); // Gunakan format tanggal lokal
+            const today = new Date().toLocaleDateString('id-ID');
             let data;
             
             try {
@@ -1432,74 +1463,186 @@
                 data = null;
             }
 
-            // Jika data ada dan tanggalnya sama dengan hari ini, kembalikan
-            if (data && data.date === today) {
+            // Check 1: Data ada, tanggal sama, struktur fardu/sunnah ada
+            if (data && data.date === today && data.fardu && data.sunnah) {
+                const oldSunnah = data.sunnah;
+                const newSunnah = {};
+                let needsUpdate = false;
+                
+                // Cek jika ada list sunnah baru (dari const) yang belum ada di data tersimpan
+                for (const p of SUNNAH_PRAYERS) {
+                    if (!oldSunnah.hasOwnProperty(p)) {
+                        needsUpdate = true;
+                        break;
+                    }
+                }
+                
+                // Cek jika masih ada list sunnah LAMA (yang ambigu, misal 'Rawatib Dzuhur')
+                if (oldSunnah.hasOwnProperty('Rawatib Dzuhur') || oldSunnah.hasOwnProperty('Rawatib Maghrib') || oldSunnah.hasOwnProperty('Rawatib Isya')) {
+                    needsUpdate = true;
+                }
+                
+                // Jika tidak perlu update (happy path), langsung kembalikan
+                if (!needsUpdate) {
+                    return data; 
+                }
+                
+                // --- Jika Perlu Update/Migrasi ---
+                
+                // 1. Inisialisasi semua prayer BARU ke false
+                for (const p of SUNNAH_PRAYERS) {
+                    newSunnah[p] = false;
+                }
+                
+                // 2. Salin data lama ke data baru jika namanya masih sama (misal 'Tahajud', 'Dhuha')
+                for (const p in oldSunnah) {
+                    if (newSunnah.hasOwnProperty(p)) { // Jika prayer lama ada di list baru
+                        newSunnah[p] = oldSunnah[p];
+                    }
+                }
+                
+                // 3. Migrasi data ambigu (jika ada)
+                // Asumsi: jika 'Rawatib Dzuhur' dicentang, maka Qobliyah & Badiyah ikut tercentang
+                if (oldSunnah['Rawatib Dzuhur']) {
+                    newSunnah['Qobliyah Dzuhur'] = oldSunnah['Rawatib Dzuhur'];
+                    newSunnah['Badiyah Dzuhur'] = oldSunnah['Rawatib Dzuhur'];
+                }
+                // Asumsi: 'Rawatib Maghrib' adalah Badiyah
+                if (oldSunnah['Rawatib Maghrib']) {
+                    newSunnah['Badiyah Maghrib'] = oldSunnah['Rawatib Maghrib'];
+                }
+                // Asumsi: 'Rawatib Isya' adalah Badiyah
+                if (oldSunnah['Rawatib Isya']) {
+                    newSunnah['Badiyah Isya'] = oldSunnah['Rawatib Isya'];
+                }
+                
+                // 4. Ganti objek sunnah lama dengan yang baru
+                data.sunnah = newSunnah;
+                localStorage.setItem(CHECKLIST_KEY, JSON.stringify(data));
                 return data;
             }
 
-            // Jika tidak, buat state baru untuk hari ini
+            // Check 2: Buat state baru jika tidak ada data/tanggal beda
             const newState = {
                 date: today,
-                prayers: {
-                    'Subuh': false,
-                    'Dzuhur': false,
-                    'Ashar': false,
-                    'Maghrib': false,
-                    'Isya': false
-                }
+                fardu: {},
+                sunnah: {}
             };
+            
+            OBLIGATORY_PRAYERS.forEach(p => { newState.fardu[p] = false; });
+            SUNNAH_PRAYERS.forEach(p => { newState.sunnah[p] = false; }); // Pakai list BARU
+            
+            // Migrasi dari struktur 'prayers' (sangat lama)
+            if (data && data.date === today && data.prayers) {
+                 for (const p in data.prayers) {
+                     if (newState.fardu.hasOwnProperty(p)) {
+                         newState.fardu[p] = data.prayers[p];
+                     }
+                 }
+            }
+            
+            // Migrasi dari 'sunnah' lama jika buat state baru (misal beda hari tapi struktur lama)
+            if (data && data.date === today && data.sunnah) {
+                 const oldSunnah = data.sunnah;
+                 for (const p in oldSunnah) {
+                     if (newState.sunnah.hasOwnProperty(p)) {
+                         newState.sunnah[p] = oldSunnah[p];
+                     }
+                 }
+                 // Migrasi data ambigu
+                 if (oldSunnah['Rawatib Dzuhur']) {
+                     newState.sunnah['Qobliyah Dzuhur'] = oldSunnah['Rawatib Dzuhur'];
+                     newState.sunnah['Badiyah Dzuhur'] = oldSunnah['Rawatib Dzuhur'];
+                 }
+                 if (oldSunnah['Rawatib Maghrib']) {
+                     newState.sunnah['Badiyah Maghrib'] = oldSunnah['Rawatib Maghrib'];
+                 }
+                 if (oldSunnah['Rawatib Isya']) {
+                     newState.sunnah['Badiyah Isya'] = oldSunnah['Rawatib Isya'];
+                 }
+            }
+            
             localStorage.setItem(CHECKLIST_KEY, JSON.stringify(newState));
             return newState;
         }
 
         /**
-         * Me-render item checklist ke dalam container
+         * [MODIFIKASI] Me-render item checklist ke DUA container (fardu & sunnah)
+         * (Tidak perlu diubah, fungsi ini sudah dinamis membaca const SUNNAH_PRAYERS)
          */
         function renderChecklist() {
-            const container = document.getElementById('checklist-container');
+            const farduContainer = document.getElementById('fardu-checklist');
+            const sunnahContainer = document.getElementById('sunnah-checklist');
             const dateEl = document.getElementById('checklist-date');
-            if (!container || !dateEl) return;
+            
+            if (!farduContainer || !sunnahContainer || !dateEl) return;
 
             const state = getChecklistState();
-            const prayers = state.prayers;
-            
             dateEl.textContent = `Untuk Hari: ${state.date}`;
-            container.innerHTML = ''; // Kosongkan container
 
-            OBLIGATORY_PRAYERS.forEach(prayer => {
-                const isChecked = prayers[prayer] ? 'checked' : '';
-                const itemHtml = `
-                    <label for="check-${prayer}" 
+            farduContainer.innerHTML = ''; // Kosongkan container Fardu
+            sunnahContainer.innerHTML = ''; // Kosongkan container Sunnah
+
+            // Helper function untuk membuat HTML item
+            const createItemHtml = (prayer, isChecked, type) => {
+                // Ganti spasi dengan strip untuk ID HTML yang valid
+                const prayerId = prayer.replace(/\s+/g, '-'); 
+                
+                return `
+                    <label for="check-${prayerId}" 
                            class="flex items-center justify-between w-full p-4 rounded-lg shadow-md cursor-pointer transition-all duration-200 
                                   ${isChecked ? 'bg-emerald-50 dark:bg-emerald-900/50 border-l-4 border-emerald-500' : 'bg-white dark:bg-gray-700'}">
                         
                         <span class="text-lg font-semibold text-gray-800 dark:text-gray-100">${prayer}</span>
                         
-                        <input type="checkbox" id="check-${prayer}" data-prayer="${prayer}" 
+                        <input type="checkbox" id="check-${prayerId}" 
+                               data-prayer="${prayer}" 
+                               data-type="${type}"
                                class="checklist-item w-6 h-6 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 dark:focus:ring-emerald-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-600 dark:border-gray-500" 
-                               ${isChecked}>
+                               ${isChecked ? 'checked' : ''}>
                     </label>
                 `;
-                container.insertAdjacentHTML('beforeend', itemHtml);
+            };
+
+            // 1. Render Fardu
+            OBLIGATORY_PRAYERS.forEach(prayer => {
+                const isChecked = state.fardu[prayer] || false;
+                farduContainer.insertAdjacentHTML('beforeend', createItemHtml(prayer, isChecked, 'fardu'));
+            });
+
+            // 2. Render Sunnah
+            SUNNAH_PRAYERS.forEach(prayer => {
+                const isChecked = state.sunnah[prayer] || false;
+                sunnahContainer.insertAdjacentHTML('beforeend', createItemHtml(prayer, isChecked, 'sunnah'));
             });
         }
 
+
         /**
-         * Menangani perubahan pada checkbox
-         * @param {Event} event 
+         * [MODIFIKASI] Menangani perubahan pada checkbox (fardu atau sunnah)
+         * (Tidak perlu diubah, fungsi ini sudah dinamis)
          */
         function handleChecklistChange(event) {
-            const prayerName = event.target.dataset.prayer;
-            const isChecked = event.target.checked;
+            const checkbox = event.target;
+            const prayerName = checkbox.dataset.prayer;
+            const prayerType = checkbox.dataset.type; // 'fardu' atau 'sunnah'
+            const isChecked = checkbox.checked;
             
-            const currentState = getChecklistState(); // Ambil state hari ini
-            if (currentState.prayers.hasOwnProperty(prayerName)) {
-                currentState.prayers[prayerName] = isChecked;
-                localStorage.setItem(CHECKLIST_KEY, JSON.stringify(currentState));
+            const currentState = getChecklistState(); 
+
+            if (prayerType === 'fardu' && currentState.fardu.hasOwnProperty(prayerName)) {
+                currentState.fardu[prayerName] = isChecked;
+            } else if (prayerType === 'sunnah' && currentState.sunnah.hasOwnProperty(prayerName)) {
+                currentState.sunnah[prayerName] = isChecked;
+            } else {
+                console.warn('Tipe prayer tidak dikenal:', prayerType, prayerName);
+                return;
             }
             
-            // Perbarui style item
-            const label = event.target.closest('label');
+            localStorage.setItem(CHECKLIST_KEY, JSON.stringify(currentState));
+            
+            // Update style item
+            const label = checkbox.closest('label');
             if (label) {
                 if (isChecked) {
                     label.classList.add('bg-emerald-50', 'dark:bg-emerald-900/50', 'border-l-4', 'border-emerald-500');
@@ -1512,15 +1655,22 @@
         }
         
         /**
-         * Mereset data checklist untuk hari ini
+         * [MODIFIKASI] Mereset data checklist (fardu dan sunnah) untuk hari ini
+         * (Tidak perlu diubah, fungsi ini sudah dinamis)
          */
         function resetChecklist() {
-             if (confirm('Apakah Anda yakin ingin mereset semua checklist untuk hari ini?')) {
+             if (confirm('Apakah Anda yakin ingin mereset semua checklist (fardu dan sunnah) untuk hari ini?')) {
                 const today = new Date().toLocaleDateString('id-ID');
+                
                 const newState = {
                     date: today,
-                    prayers: { 'Subuh': false, 'Dzuhur': false, 'Ashar': false, 'Maghrib': false, 'Isya': false }
+                    fardu: {},
+                    sunnah: {}
                 };
+                
+                OBLIGATORY_PRAYERS.forEach(p => { newState.fardu[p] = false; });
+                SUNNAH_PRAYERS.forEach(p => { newState.sunnah[p] = false; });
+
                 localStorage.setItem(CHECKLIST_KEY, JSON.stringify(newState));
                 renderChecklist(); // Render ulang UI
              }
@@ -1550,7 +1700,7 @@
         }
         
         // ====================================================================
-        // === AKHIR [BARU] FUNGSI CHECKLIST ===
+        // === AKHIR [MODIFIKASI TERBARU] FUNGSI CHECKLIST ===
         // ====================================================================
 
 
