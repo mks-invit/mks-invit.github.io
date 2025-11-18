@@ -30,26 +30,998 @@
             color: #d1d5db; /* Gray 300 - Teks lebih lembut */
         }
         
-        /* ... (sisa CSS Anda) ... */
+        /* Loading Spinner */
+        .loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #10b981; /* Green */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
+        /* Dark mode untuk loader */
+        body.dark .loader {
+            border: 4px solid #374151; /* Gray 700 */
+            border-top: 4px solid #10b981; /* Green */
+        }
+        
+        /* Mengatur posisi loader */
+        #app-loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh; /* Memusatkan di layar */
+        }
+        
+        /* Sembunyikan konten utama saat memuat */
+        #main-content {
+            display: none; /* Mulai tersembunyi */
+            width: 100%;
+        }
+
+        /* Gaya untuk header */
+        header {
+            width: 100%;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        body.dark header {
+            background-color: #1f2937; /* Gray 800 */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Gaya untuk tab */
+        .tab {
+            transition: all 0.2s ease-in-out;
+            border-bottom: 2px solid transparent;
+        }
+        .tab.active {
+            border-bottom-color: #10b981;
+            color: #10b981;
+            font-weight: 700;
+        }
+        body.dark .tab.active {
+            color: #10b981;
+        }
+
+        /* Card styles */
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.75rem; /* 12px */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        body.dark .card {
+            background-color: #1f2937; /* Gray 800 */
+        }
+        
+        /* Button */
+        .btn {
+            background-color: #10b981;
+            color: #ffffff;
+            transition: background-color 0.2s;
+        }
+        .btn:hover {
+            background-color: #059669;
+        }
+        
+        /* Audio Player Mini */
+        #mini-player {
+            position: fixed;
+            bottom: -100px; /* Mulai tersembunyi */
+            left: 0;
+            right: 0;
+            transition: bottom 0.3s ease-in-out;
+            z-index: 50;
+        }
+        
+        /* Gaya untuk Surah List Item */
+        .surah-item {
+            transition: background-color 0.2s;
+        }
+        .surah-item:hover {
+            background-color: #f9fafb;
+        }
+        body.dark .surah-item:hover {
+            background-color: #374151; /* Gray 700 */
+        }
+        
+        /* Gaya untuk Ayat Item */
+        .ayat-item {
+            border-bottom: 1px solid #e5e7eb;
+        }
+        body.dark .ayat-item {
+            border-bottom-color: #374151; /* Gray 700 */
+        }
+        .ayat-item:last-child {
+            border-bottom: none;
+        }
+
+        /* SVG Ikon */
+        .icon-btn {
+            background-color: #f3f4f6;
+            border-radius: 9999px;
+            padding: 0.5rem;
+            transition: background-color 0.2s;
+        }
+        .icon-btn:hover {
+            background-color: #e5e7eb;
+        }
+        body.dark .icon-btn {
+            background-color: #374151;
+            color: #d1d5db;
+        }
+        body.dark .icon-btn:hover {
+            background-color: #4b5563;
+        }
+        
+        /* Login/Auth Page */
+        #auth-page {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 2rem;
+        }
+        
+        /* Input field */
+        .input-field {
+            background-color: #f9fafb;
+            border: 1px solid #d1d5db;
+            color: #1f2937;
+        }
+        .input-field:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+            outline: none;
+        }
+        body.dark .input-field {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #d1d5db;
+        }
+        
     </style>
 </head>
 <body class="min-h-screen">
 
-    <div id="app">
+    <div id="app-loader">
+        <div class="loader"></div>
+    </div>
+
+    <div id="main-content" class="w-full max-w-lg mx-auto">
+        
+        <header class="sticky top-0 z-40">
+            <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-emerald-600">JWS</h1>
+                <div class="flex items-center space-x-2">
+                    <button id="dark-mode-toggle" class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </button>
+                    <div id="user-info" class="flex items-center">
+                        </div>
+                </div>
+            </div>
+            
+            <nav class="flex justify-around border-b border-gray-200 dark:border-gray-700">
+                <button data-tab="jadwal" class="tab w-full py-3 px-2 text-center text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Jadwal Sholat
+                </button>
+                <button data-tab="quran" class="tab w-full py-3 px-2 text-center text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Al-Qur'an
+                </button>
+            </nav>
+        </header>
+
+        <main id="page-container" class="p-4">
+            <div id="jadwal-page" class="page space-y-4">
+                <div class="card p-4 text-center">
+                    <p class="text-sm text-gray-500 dark:text-gray-400" id="jadwal-tanggal">Memuat...</p>
+                    <h2 class="text-3xl font-extrabold my-2" id="jadwal-waktu-sekarang">--:--:--</h2>
+                    <p class="text-lg font-semibold" id="jadwal-sholat-berikutnya">Memuat...</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400" id="jadwal-lokasi">Memuat lokasi...</p>
+                </div>
+                <div class="card p-4 space-y-3" id="jadwal-list">
+                    </div>
+            </div>
+            
+            <div id="quran-page" class="page hidden">
+                <div id="surah-list-view">
+                    <div class="mb-4">
+                        <input type="text" id="search-surah" placeholder="Cari surah..." class="w-full px-4 py-2 rounded-lg input-field">
+                    </div>
+                    <div id="surah-list" class="space-y-2">
+                        </div>
+                </div>
+                
+                <div id="surah-detail-view" class="hidden space-y-4">
+                    <div class="card p-4 flex justify-between items-center">
+                        <button id="back-to-surah-list" class="icon-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                        </button>
+                        <div class="text-center">
+                            <h2 id="detail-surah-nama" class="text-xl font-bold"></h2>
+                            <p id="detail-surah-info" class="text-sm text-gray-500 dark:text-gray-400"></p>
+                        </div>
+                        <div class="w-8"></div> </div>
+                    <div class="card p-2">
+                        <div id="ayat-list" class="space-y-4">
+                            </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="auth-page" class="page hidden p-4 card space-y-4">
+                <h2 id="auth-title" class="text-xl font-bold text-center">Login</h2>
+                <div id="auth-error" class="text-red-500 text-sm text-center hidden"></div>
+                
+                <input type="email" id="auth-email" placeholder="Email" class="w-full px-4 py-2 rounded-lg input-field">
+                <input type="password" id="auth-password" placeholder="Password" class="w-full px-4 py-2 rounded-lg input-field">
+                
+                <button id="auth-submit-btn" class="w-full btn py-2 rounded-lg font-bold">Login</button>
+                <button id="auth-google-btn" class="w-full btn py-2 rounded-lg font-bold bg-blue-500 hover:bg-blue-600 flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#fff"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#fff"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#fff"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#fff"/></svg>
+                    <span>Login dengan Google</span>
+                </button>
+                
+                <p class="text-center text-sm">
+                    <span id="auth-toggle-text">Belum punya akun?</span>
+                    <button id="auth-toggle-btn" class="text-emerald-600 hover:underline font-semibold">Daftar</button>
+                </p>
+            </div>
+            
+        </main>
+    </div>
+    
+    <div id="mini-player" class="card p-3 shadow-lg flex items-center space-x-3 mx-2 mb-2">
+        <button id="mini-player-play-pause" class="icon-btn">
+            </button>
+        <div class="flex-1 min-w-0">
+            <p id="mini-player-title" class="text-sm font-semibold truncate">...</p>
+            <p id="mini-player-subtitle" class="text-xs text-gray-500 dark:text-gray-400 truncate">...</p>
         </div>
+        <button id="mini-player-close" class="icon-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+        </button>
+    </div>
 
 
     <script>
-        // ... (Logika aplikasi Anda, fungsi startApp(), setupDarkMode(), dll.) ...
+        // Logika aplikasi utama
         
-        // Contoh placeholder untuk fungsi yang ada di file Anda
-        function setupDarkMode() { /* ... */ }
-        function initializeFirebaseAndAuth() { /* ... */ }
+        // Elemen DOM
+        const appLoader = document.getElementById('app-loader');
+        const mainContent = document.getElementById('main-content');
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const userInfo = document.getElementById('user-info');
+        const pageContainer = document.getElementById('page-container');
+        const tabs = document.querySelectorAll('.tab');
+        const pages = document.querySelectorAll('.page');
         
+        // Halaman Jadwal
+        const jadwalTanggal = document.getElementById('jadwal-tanggal');
+        const jadwalWaktuSekarang = document.getElementById('jadwal-waktu-sekarang');
+        const jadwalSholatBerikutnya = document.getElementById('jadwal-sholat-berikutnya');
+        const jadwalLokasi = document.getElementById('jadwal-lokasi');
+        const jadwalList = document.getElementById('jadwal-list');
+
+        // Halaman Qur'an
+        const quranPage = document.getElementById('quran-page');
+        const surahListView = document.getElementById('surah-list-view');
+        const searchSurah = document.getElementById('search-surah');
+        const surahList = document.getElementById('surah-list');
+        const surahDetailView = document.getElementById('surah-detail-view');
+        const backToSurahList = document.getElementById('back-to-surah-list');
+        const detailSurahNama = document.getElementById('detail-surah-nama');
+        const detailSurahInfo = document.getElementById('detail-surah-info');
+        const ayatList = document.getElementById('ayat-list');
+
+        // Halaman Auth
+        const authPage = document.getElementById('auth-page');
+        const authTitle = document.getElementById('auth-title');
+        const authError = document.getElementById('auth-error');
+        const authEmail = document.getElementById('auth-email');
+        const authPassword = document.getElementById('auth-password');
+        const authSubmitBtn = document.getElementById('auth-submit-btn');
+        const authGoogleBtn = document.getElementById('auth-google-btn');
+        const authToggleText = document.getElementById('auth-toggle-text');
+        const authToggleBtn = document.getElementById('auth-toggle-btn');
+        
+        // Mini Player
+        const miniPlayer = document.getElementById('mini-player');
+        const miniPlayerPlayPause = document.getElementById('mini-player-play-pause');
+        const miniPlayerTitle = document.getElementById('mini-player-title');
+        const miniPlayerSubtitle = document.getElementById('mini-player-subtitle');
+        const miniPlayerClose = document.getElementById('mini-player-close');
+
+        // Variabel Global
+        let globalAudioPlayer = new Audio();
+        let currentAyatPlaying = null; // Menyimpan elemen tombol ayat yg sedang diputar
+        let allSurahData = []; // Menyimpan data semua surah
+        let currentTimerInterval = null;
+        let isAuthPage = false; // Status apakah sedang di halaman login/register
+        let restoredAudioSrc = null;
+        let restoredAudioTime = 0;
+
+        // Ikon SVG
+        const sunIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M12 12a5 5 0 100-10 5 5 0 000 10z" /></svg>`;
+        const moonIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>`;
+        const playIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8.118v3.764a1 1 0 001.555.832l3.197-1.882a1 1 0 000-1.664l-3.197-1.882z" clip-rule="evenodd" /></svg>`;
+        const pauseIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h1a1 1 0 001-1V8a1 1 0 00-1-1H8zm3 0a1 1 0 00-1 1v4a1 1 0 001 1h1a1 1 0 001-1V8a1 1 0 00-1-1h-1z" clip-rule="evenodd" /></svg>`;
+
+        
+        // ===================================================================
+        // FUNGSI UTAMA APLIKASI
+        // ===================================================================
+
+        /**
+         * Menampilkan loader dan menyembunyikan konten utama
+         */
+        function showLoader() {
+            appLoader.style.display = 'flex';
+            mainContent.style.display = 'none';
+        }
+
+        /**
+         * Menyembunyikan loader dan menampilkan konten utama
+         */
+        function hideLoader() {
+            appLoader.style.display = 'none';
+            mainContent.style.display = 'block';
+        }
+        
+        /**
+         * Fungsi utama untuk memulai aplikasi
+         */
+        function startApp(user) {
+            isAuthPage = false;
+            hideLoader();
+            updateUserInfo(user);
+            setupTabs();
+            activateTab('jadwal'); // Tab default
+            loadJadwalSholat();
+            loadAllSurah(); // Muat data surah di latar belakang
+            
+            // Setup listener
+            searchSurah.addEventListener('input', filterSurah);
+            backToSurahList.addEventListener('click', showSurahList);
+            
+            // Tampilkan mini-player jika audio dipulihkan
+            if (restoredAudioSrc) {
+                // Perlu cara untuk mendapatkan judul & subjudul
+                // Untuk saat ini, kita tampilkan saja
+                showMiniPlayer('Audio Dipulihkan', 'Melanjutkan pemutaran');
+                // Setel ikon ke 'play' karena audio dijeda
+                miniPlayerPlayPause.innerHTML = playIconSvg;
+            }
+        }
+        
+        /**
+         * Menampilkan halaman Autentikasi
+         */
+        function showAuthPage() {
+            isAuthPage = true;
+            hideLoader();
+            // Sembunyikan header & tab nav
+            document.querySelector('header').style.display = 'none';
+            // Tampilkan auth page & sembunyikan page container
+            pageContainer.style.display = 'none';
+            authPage.style.display = 'block';
+            
+            setupAuthPage();
+        }
+
+        // ===================================================================
+        // FUNGSI DARK MODE
+        // ===================================================================
+
+        /**
+         * Mengatur Dark Mode (memeriksa localStorage dan OS preference)
+         */
+        function setupDarkMode() {
+            darkModeToggle.addEventListener('click', toggleDarkMode);
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                document.body.classList.add('dark');
+                darkModeToggle.innerHTML = sunIcon;
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.body.classList.remove('dark');
+                darkModeToggle.innerHTML = moonIcon;
+            }
+        }
+
+        /**
+         * Toggle Dark Mode
+         */
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                document.body.classList.remove('dark');
+                localStorage.theme = 'light';
+                darkModeToggle.innerHTML = moonIcon;
+            } else {
+                document.documentElement.classList.add('dark');
+                document.body.classList.add('dark');
+                localStorage.theme = 'dark';
+                darkModeToggle.innerHTML = sunIcon;
+            }
+        }
+
+        // ===================================================================
+        // FUNGSI AUTENTIKASI (Placeholder - Ganti dengan Firebase Anda)
+        // ===================================================================
+
+        /**
+         * Menginisialisasi Firebase dan memeriksa status login
+         */
+        function initializeFirebaseAndAuth() {
+            // !!! GANTI DENGAN KODE INISIALISASI FIREBASE ANDA !!!
+            console.log("Firebase Auth diinisialisasi (placeholder)...");
+            
+            // Simulasi pengecekan status auth
+            // Ganti ini dengan listener auth state change dari Firebase
+            // Contoh: firebase.auth().onAuthStateChanged(user => { ... });
+            
+            const simulatedUser = null; // Ubah ini untuk tes (mis. { email: 'user@test.com' })
+            
+            if (simulatedUser) {
+                startApp(simulatedUser);
+            } else {
+                showAuthPage();
+            }
+        }
+        
+        /**
+         * Mengatur listener dan logika untuk halaman auth
+         */
+        function setupAuthPage() {
+            let isLogin = true;
+
+            const updateUI = () => {
+                if (isLogin) {
+                    authTitle.innerText = 'Login';
+                    authSubmitBtn.innerText = 'Login';
+                    authToggleText.innerText = 'Belum punya akun?';
+                    authToggleBtn.innerText = 'Daftar';
+                } else {
+                    authTitle.innerText = 'Daftar Akun Baru';
+                    authSubmitBtn.innerText = 'Daftar';
+                    authToggleText.innerText = 'Sudah punya akun?';
+                    authToggleBtn.innerText = 'Login';
+                }
+                authError.classList.add('hidden');
+                authError.innerText = '';
+            };
+            
+            authToggleBtn.addEventListener('click', () => {
+                isLogin = !isLogin;
+                updateUI();
+            });
+
+            authSubmitBtn.addEventListener('click', () => {
+                const email = authEmail.value;
+                const password = authPassword.value;
+                if (!email || !password) {
+                    showAuthError("Email dan Password tidak boleh kosong.");
+                    return;
+                }
+                
+                // Tampilkan loading (opsional)
+                authSubmitBtn.disabled = true;
+                authSubmitBtn.innerText = 'Memproses...';
+                
+                // !!! GANTI DENGAN LOGIKA FIREBASE ANDA !!!
+                if (isLogin) {
+                    // firebase.auth().signInWithEmailAndPassword(email, password)...
+                    console.log('Login attempt:', email, password);
+                } else {
+                    // firebase.auth().createUserWithEmailAndPassword(email, password)...
+                    console.log('Register attempt:', email, password);
+                }
+                
+                // Simulasi sukses/gagal
+                setTimeout(() => {
+                    // Jika gagal:
+                    // showAuthError("Email atau password salah.");
+                    // authSubmitBtn.disabled = false;
+                    // updateUI();
+                    
+                    // Jika sukses (kita panggil startApp)
+                    const fakeUser = { email: email };
+                    startApp(fakeUser);
+                    
+                    // Reset header dan page container
+                    document.querySelector('header').style.display = 'block';
+                    pageContainer.style.display = 'block';
+                    authPage.style.display = 'none';
+
+                }, 1000);
+            });
+            
+            authGoogleBtn.addEventListener('click', () => {
+                // !!! GANTI DENGAN LOGIKA FIREBASE GOOGLE SIGN-IN ANDA !!!
+                // const provider = new firebase.auth.GoogleAuthProvider();
+                // firebase.auth().signInWithPopup(provider)...
+                console.log('Google Sign-in clicked');
+            });
+            
+            updateUI();
+        }
+        
+        function showAuthError(message) {
+            authError.innerText = message;
+            authError.classList.remove('hidden');
+        }
+
+        /**
+         * Memperbarui UI info pengguna di header
+         */
+        function updateUserInfo(user) {
+            if (user) {
+                userInfo.innerHTML = `
+                    <div class="text-right text-sm">
+                        <p class="font-semibold truncate max-w-[100px]">${user.email}</p>
+                        <button id="logout-btn" class="text-xs text-red-500 hover:underline">Logout</button>
+                    </div>
+                `;
+                document.getElementById('logout-btn').addEventListener('click', () => {
+                    // !!! GANTI DENGAN LOGIKA FIREBASE LOGOUT ANDA !!!
+                    // firebase.auth().signOut()...
+                    console.log('Logout clicked');
+                    // Simulasi logout
+                    updateUserInfo(null); // Hapus info user
+                    showAuthPage(); // Kembali ke halaman login
+                });
+            } else {
+                userInfo.innerHTML = ''; // Kosong jika tidak login
+            }
+        }
+        
+
+        // ===================================================================
+        // FUNGSI NAVIGASI TAB
+        // ===================================================================
+
+        /**
+         * Mengatur listener untuk semua tab
+         */
+        function setupTabs() {
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    activateTab(tab.dataset.tab);
+                });
+            });
+        }
+
+        /**
+         * Mengaktifkan tab dan menampilkan halaman yang sesuai
+         */
+        function activateTab(tabName) {
+            if (isAuthPage) return; // Jangan ganti tab jika di halaman auth
+            
+            // Sembunyikan semua halaman
+            pages.forEach(page => page.classList.add('hidden'));
+            
+            // Nonaktifkan semua tab
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Aktifkan tab dan halaman yang dipilih
+            const activeTab = document.querySelector(`.tab[data-tab="${tabName}"]`);
+            const activePage = document.getElementById(`${tabName}-page`);
+
+            if (activeTab) activeTab.classList.add('active');
+            if (activePage) activePage.classList.remove('hidden');
+            
+            // Jika pindah ke tab quran, pastikan tampilan defaultnya (list surah)
+            if (tabName === 'quran') {
+                showSurahList();
+            }
+        }
+
+
+        // ===================================================================
+        // FUNGSI JADWAL SHOLAT
+        // ===================================================================
+
+        /**
+         * Memuat data jadwal sholat (perlu lokasi)
+         */
+        function loadJadwalSholat() {
+            jadwalLokasi.textContent = 'Mendeteksi lokasi...';
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    const { latitude, longitude } = pos.coords;
+                    fetchJadwal(latitude, longitude);
+                }, err => {
+                    console.error('Gagal mendapatkan lokasi', err);
+                    jadwalLokasi.textContent = 'Gagal mendapatkan lokasi';
+                    // Fallback ke lokasi default (mis. Jakarta)
+                    fetchJadwal(-6.2088, 106.8456, 'Jakarta (Default)');
+                });
+            } else {
+                // Fallback jika geolocation tidak didukung
+                fetchJadwal(-6.2088, 106.8456, 'Jakarta (Default)');
+            }
+        }
+
+        /**
+         * Mengambil data jadwal dari API
+         */
+        async function fetchJadwal(lat, lon, locationName = null) {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            const formattedDate = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+            
+            try {
+                // 1. Dapatkan Lokasi (jika tidak disediakan)
+                if (!locationName) {
+                    try {
+                        const locRes = await fetch(`https://api.myquran.com/v2/regions/location?latitude=${lat}&longitude=${lon}`);
+                        if (!locRes.ok) throw new Error('Gagal mengambil data lokasi');
+                        const locData = await locRes.json();
+                        locationName = locData.data.location;
+                    } catch (e) {
+                        console.warn(e);
+                        locationName = "Lokasi Tidak Dikenal";
+                    }
+                }
+                jadwalLokasi.textContent = locationName;
+
+                // 2. Dapatkan Jadwal Sholat
+                const jadwalRes = await fetch(`https://api.myquran.com/v2/pray/schedule/daily?latitude=${lat}&longitude=${lon}&date=${formattedDate}`);
+                if (!jadwalRes.ok) throw new Error('Gagal mengambil data jadwal');
+                const jadwalData = await jadwalRes.json();
+                
+                displayJadwal(jadwalData.data);
+
+            } catch (error) {
+                console.error('Error fetching jadwal sholat:', error);
+                jadwalList.innerHTML = `<p class="text-red-500 text-center">Gagal memuat jadwal.</p>`;
+            }
+        }
+
+        /**
+         * Menampilkan jadwal dan memulai timer
+         */
+        function displayJadwal(data) {
+            const jadwal = data.schedule;
+            jadwalTanggal.textContent = data.date.hijri.date;
+
+            const jadwalMapping = [
+                { nama: 'Imsak', waktu: jadwal.imsak },
+                { nama: 'Subuh', waktu: jadwal.fajr },
+                { nama: 'Terbit', waktu: jadwal.sunrise },
+                { nama: 'Dzuhur', waktu: jadwal.dhuhr },
+                { nama: 'Ashar', waktu: jadwal.asr },
+                { nama: 'Maghrib', waktu: jadwal.maghrib },
+                { nama: 'Isya', waktu: jadwal.isha },
+            ];
+            
+            jadwalList.innerHTML = jadwalMapping.map(j => `
+                <div class="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                    <span class="font-semibold">${j.nama}</span>
+                    <span class="font-bold text-lg text-emerald-600">${j.waktu}</span>
+                </div>
+            `).join('');
+
+            // Hentikan timer sebelumnya jika ada
+            if (currentTimerInterval) clearInterval(currentTimerInterval);
+            
+            // Mulai timer baru
+            currentTimerInterval = setInterval(() => {
+                updateTimer(jadwalMapping);
+            }, 1000);
+            updateTimer(jadwalMapping); // Panggil sekali saat inisialisasi
+        }
+
+        /**
+         * Memperbarui jam dan hitung mundur sholat berikutnya
+         */
+        function updateTimer(jadwalMapping) {
+            const now = new Date();
+            const jam = now.getHours().toString().padStart(2, '0');
+            const menit = now.getMinutes().toString().padStart(2, '0');
+            const detik = now.getSeconds().toString().padStart(2, '0');
+            jadwalWaktuSekarang.textContent = `${jam}:${menit}:${detik}`;
+
+            let sholatBerikutnya = null;
+            let waktuSholatBerikutnya = null;
+
+            // Cari waktu sholat berikutnya
+            for (const j of jadwalMapping) {
+                // Abaikan imsak dan terbit untuk hitung mundur utama
+                if (j.nama === 'Imsak' || j.nama === 'Terbit') continue;
+
+                const [jamSholat, menitSholat] = j.waktu.split(':').map(Number);
+                const waktuSholat = new Date();
+                waktuSholat.setHours(jamSholat, menitSholat, 0, 0);
+
+                if (waktuSholat > now) {
+                    sholatBerikutnya = j.nama;
+                    waktuSholatBerikutnya = waktuSholat;
+                    break;
+                }
+            }
+
+            // Jika semua waktu sholat hari ini sudah lewat, ambil Subuh besok
+            if (!sholatBerikutnya) {
+                sholatBerikutnya = 'Subuh';
+                const [jamSubuh, menitSubuh] = jadwalMapping.find(j => j.nama === 'Subuh').waktu.split(':').map(Number);
+                waktuSholatBerikutnya = new Date();
+                waktuSholatBerikutnya.setDate(waktuSholatBerikutnya.getDate() + 1); // Tambah 1 hari
+                waktuSholatBerikutnya.setHours(jamSubuh, menitSubuh, 0, 0);
+            }
+
+            // Hitung selisih waktu
+            const diffMs = waktuSholatBerikutnya - now;
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffMins = Math.floor((diffMs % 3600000) / 60000);
+            const diffSecs = Math.floor((diffMs % 60000) / 1000);
+
+            jadwalSholatBerikutnya.innerHTML = `
+                ${sholatBerikutnya} dalam 
+                <span class="text-emerald-600">${diffHours.toString().padStart(2, '0')}:${diffMins.toString().padStart(2, '0')}:${diffSecs.toString().padStart(2, '0')}</span>
+            `;
+        }
+
+        // ===================================================================
+        // FUNGSI AL-QUR'AN
+        // ===================================================================
+
+        /**
+         * Memuat daftar semua surah dari API
+         */
+        async function loadAllSurah() {
+            try {
+                const res = await fetch('https://api.quran.com/api/v4/chapters?language=id');
+                if (!res.ok) throw new Error('Gagal memuat daftar surah');
+                const data = await res.json();
+                allSurahData = data.chapters;
+                displayAllSurah(allSurahData);
+            } catch (error) {
+                console.error(error);
+                surahList.innerHTML = `<p class="text-red-500 text-center">Gagal memuat daftar surah.</p>`;
+            }
+        }
+        
+        /**
+         * Menampilkan daftar surah ke UI
+         */
+        function displayAllSurah(surahData) {
+            surahList.innerHTML = surahData.map(surah => `
+                <div class="card p-4 flex justify-between items-center surah-item cursor-pointer" data-surah-id="${surah.id}">
+                    <div class="flex items-center space-x-4">
+                        <span class="flex items-center justify-center w-10 h-10 text-xs font-bold bg-gray-100 dark:bg-gray-700 rounded-full">${surah.id}</span>
+                        <div>
+                            <h3 class="text-lg font-bold">${surah.name_simple}</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">${surah.translated_name.name} (${surah.verses_count} ayat)</p>
+                        </div>
+                    </div>
+                    <span class="text-2xl font-bold" style="font-family: 'Arial', sans-serif;">${surah.name_arabic}</span>
+                </div>
+            `).join('');
+            
+            // Tambahkan event listener ke setiap item surah
+            document.querySelectorAll('.surah-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    loadSurahDetail(item.dataset.surahId);
+                });
+            });
+        }
+        
+        /**
+         * Menyaring daftar surah berdasarkan input pencarian
+         */
+        function filterSurah(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredData = allSurahData.filter(surah => 
+                surah.name_simple.toLowerCase().includes(searchTerm) ||
+                surah.translated_name.name.toLowerCase().includes(searchTerm) ||
+                surah.id.toString() === searchTerm
+            );
+            displayAllSurah(filteredData);
+        }
+        
+        /**
+         * Beralih ke tampilan detail surah
+         */
+        function showSurahDetail() {
+            surahListView.classList.add('hidden');
+            surahDetailView.classList.remove('hidden');
+            quranPage.scrollTop = 0; // Scroll ke atas
+        }
+        
+        /**
+         * Beralih kembali ke tampilan daftar surah
+         */
+        function showSurahList() {
+            surahListView.classList.remove('hidden');
+            surahDetailView.classList.add('hidden');
+        }
+
+        /**
+         * Memuat detail surah (info + ayat) dari API
+         */
+        async function loadSurahDetail(surahId) {
+            showSurahDetail();
+            ayatList.innerHTML = `<div class="flex justify-center p-8"><div class="loader"></div></div>`;
+            detailSurahNama.textContent = 'Memuat...';
+            detailSurahInfo.textContent = '';
+            
+            try {
+                // 1. Dapatkan Info Surah
+                const infoRes = await fetch(`https://api.quran.com/api/v4/chapters/${surahId}?language=id`);
+                if (!infoRes.ok) throw new Error('Gagal memuat info surah');
+                const infoData = await infoRes.json();
+                const surahInfo = infoData.chapter;
+                detailSurahNama.textContent = surahInfo.name_simple;
+                detailSurahInfo.textContent = `${surahInfo.translated_name.name} • ${surahInfo.verses_count} Ayat`;
+
+                // 2. Dapatkan Ayat (terjemahan + audio)
+                const ayatRes = await fetch(`https://api.quran.com/api/v4/verses/by_chapter/${surahId}?language=id&words=false&translations=33&audio=7&fields=text_uthmani`);
+                // (translations=33 adalah ID Kemenag, audio=7 adalah Mishary Alafasy)
+                if (!ayatRes.ok) throw new Error('Gagal memuat ayat');
+                const ayatData = await ayatRes.json();
+                
+                displayAyat(ayatData.verses);
+                
+            } catch (error) {
+                console.error(error);
+                ayatList.innerHTML = `<p class="text-red-500 text-center">Gagal memuat data ayat.</p>`;
+            }
+        }
+        
+        /**
+         * Menampilkan daftar ayat ke UI
+         */
+        function displayAyat(ayatData) {
+            ayatList.innerHTML = ayatData.map(ayat => {
+                const audioUrl = 'https://cdn.islamic.network' + ayat.audio.url;
+                const terjemahan = ayat.translations.find(t => t.resource_id === 33).text;
+                const nomorAyat = ayat.verse_key.split(':')[1];
+                const surahNomor = ayat.verse_key.split(':')[0];
+                
+                return `
+                <div class="ayat-item p-4 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-emerald-600">${ayat.verse_key}</span>
+                        <button class="play-ayat-btn icon-btn" 
+                                data-audio-src="${audioUrl}" 
+                                data-surah-nama="${detailSurahNama.textContent}" 
+                                data-ayat-nomor="${nomorAyat}"
+                                data-surah-nomor="${surahNomor}">
+                            ${playIconSvg}
+                        </button>
+                    </div>
+                    <p class="text-right text-2xl" lang="ar" style="line-height: 2.5;">${ayat.text_uthmani}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">${terjemahan.replace(/<[^>]*>?/gm, '')}</p>
+                </div>
+                `;
+            }).join('');
+            
+            // Tambahkan listener ke semua tombol play ayat
+            document.querySelectorAll('.play-ayat-btn').forEach(btn => {
+                btn.addEventListener('click', handleAyatPlay);
+            });
+        }
+        
+        // ===================================================================
+        // FUNGSI AUDIO PLAYER
+        // ===================================================================
+
+        /**
+         * Menangani klik pada tombol play/pause ayat
+         */
+        function handleAyatPlay(event) {
+            const btn = event.currentTarget;
+            const audioSrc = btn.dataset.audioSrc;
+            const surahNama = btn.dataset.surahNama;
+            const ayatNomor = btn.dataset.AyatNomor;
+            const surahNomor = btn.dataset.SurahNomor;
+            
+            // Jika audio yang sama diklik (sedang memutar)
+            if (globalAudioPlayer.src === audioSrc && !globalAudioPlayer.paused) {
+                globalAudioPlayer.pause();
+            } else {
+                // Jika audio berbeda atau sedang dijeda
+                if (globalAudioPlayer.src !== audioSrc) {
+                    globalAudioPlayer.src = audioSrc;
+                }
+                globalAudioPlayer.play();
+                showMiniPlayer(`${surahNama}`, `Ayat ${ayatNomor}`);
+                
+                // Simpan audio yg sedang diputar untuk restore
+                sessionStorage.setItem('lastAudioSrc', audioSrc);
+            }
+            
+            // Perbarui tombol (jika ada yg sedang diputar sebelumnya)
+            if (currentAyatPlaying && currentAyatPlaying !== btn) {
+                currentAyatPlaying.innerHTML = playIconSvg;
+            }
+            currentAyatPlaying = btn; // Set tombol saat ini
+        }
+        
+        /**
+         * Menampilkan mini player
+         */
+        function showMiniPlayer(title, subtitle) {
+            miniPlayerTitle.textContent = title;
+            miniPlayerSubtitle.textContent = subtitle;
+            miniPlayer.style.bottom = '0px';
+        }
+        
+        /**
+         * Menyembunyikan mini player
+         */
+        function hideMiniPlayer() {
+            miniPlayer.style.bottom = '-100px';
+        }
+        
+        // Event listener untuk global audio player
+        globalAudioPlayer.addEventListener('play', () => {
+            if (currentAyatPlaying) currentAyatPlaying.innerHTML = pauseIconSvg;
+            miniPlayerPlayPause.innerHTML = pauseIconSvg;
+        });
+        
+        globalAudioPlayer.addEventListener('pause', () => {
+            if (currentAyatPlaying) currentAyatPlaying.innerHTML = playIconSvg;
+            miniPlayerPlayPause.innerHTML = playIconSvg;
+            
+            // Simpan progres audio saat dijeda
+            sessionStorage.setItem('lastAudioTime', globalAudioPlayer.currentTime);
+        });
+        
+        globalAudioPlayer.addEventListener('ended', () => {
+            if (currentAyatPlaying) currentAyatPlaying.innerHTML = playIconSvg;
+            miniPlayerPlayPause.innerHTML = playIconSvg;
+            currentAyatPlaying = null;
+            // hideMiniPlayer(); // Opsional: sembunyikan saat selesai
+            
+            // Hapus data restore saat selesai
+            sessionStorage.removeItem('lastAudioSrc');
+            sessionStorage.removeItem('lastAudioTime');
+        });
+        
+        // Event listener untuk tombol mini player
+        miniPlayerPlayPause.addEventListener('click', () => {
+            if (globalAudioPlayer.paused) {
+                globalAudioPlayer.play();
+            } else {
+                globalAudioPlayer.pause();
+            }
+        });
+        
+        miniPlayerClose.addEventListener('click', () => {
+            globalAudioPlayer.pause();
+            globalAudioPlayer.src = ''; // Hentikan audio
+            hideMiniPlayer();
+            if (currentAyatPlaying) currentAyatPlaying.innerHTML = playIconSvg;
+            currentAyatPlaying = null;
+            
+            // Hapus data restore saat ditutup
+            sessionStorage.removeItem('lastAudioSrc');
+            sessionStorage.removeItem('lastAudioTime');
+        });
+
+        // Event listener untuk audio yang dipulihkan
+        globalAudioPlayer.addEventListener('canplay', () => {
+            if (restoredAudioTime > 0) {
+                globalAudioPlayer.currentTime = restoredAudioTime;
+                restoredAudioTime = 0; // Reset agar tidak loop
+            }
+        });
+
+        // ===================================================================
+        // INISIALISASI SAAT JENDELA DIMUAT
+        // ===================================================================
+
         // Inisialisasi Firebase, Auth, dan Dark Mode saat jendela dimuat
         window.onload = () => {
-             /*
              const savedSrc = sessionStorage.getItem('lastAudioSrc');
              const savedTime = sessionStorage.getItem('lastAudioTime');
 
@@ -58,22 +1030,20 @@
                 restoredAudioTime = parseFloat(savedTime);
                 
                 globalAudioPlayer.src = restoredAudioSrc;
-                globalAudioPlayer.currentTime = restoredAudioTime;
+                // Waktu akan di-set di 'canplay' listener
 
                 sessionStorage.removeItem('lastAudioSrc');
                 sessionStorage.removeItem('lastAudioTime');
              }
-             */
 
              setupDarkMode(); 
              initializeFirebaseAndAuth(); 
-             // startApp() akan dipanggil oleh initializeFirebaseAndAuth setelah selesai
+             // startApp() atau showAuthPage() akan dipanggil oleh initializeFirebaseAndAuth
         }
 
     </script>
     
     <script>
-        // Skrip registrasi Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js')
