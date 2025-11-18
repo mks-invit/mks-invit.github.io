@@ -1,18 +1,27 @@
 /* eslint-disable no-restricted-globals */
 
-const STATIC_CACHE_NAME = 'jws-static-cache-v1';
-const DYNAMIC_CACHE_NAME = 'jws-dynamic-cache-v1';
+// [PENTING] Ubah versi cache setiap kali Anda mengubah file aset agar browser mengambil yang baru
+const STATIC_CACHE_NAME = 'jws-static-cache-v2'; // Ubah v1 ke v2
+const DYNAMIC_CACHE_NAME = 'jws-dynamic-cache-v2';
 
 // Daftar URL API yang menggunakan strategi Network-First
+// (Data diutamakan update dari internet, jika offline baru ambil cache)
 const API_ORIGINS = [
     'https://api.myquran.com', // Jadwal Sholat
     'https://api.quran.com'    // Data Surah & Ayat
 ];
 
 // Aset inti aplikasi (App Shell) yang akan di-cache saat instalasi
+// [PERBAIKAN] Aset eksternal (Tailwind & Font) ditambahkan agar tampilan tidak rusak saat offline
 const APP_SHELL_URLS = [
     '/',
-    'index.html' // Ganti ini jika nama file HTML Anda berbeda
+    'index.html',
+    'manifest.json',
+    'images/icon-192.png', // Pastikan path sesuai dengan folder Anda
+    'images/icon-512.png', 
+    // Aset Eksternal (Penting untuk UI)
+    'https://cdn.tailwindcss.com',
+    'https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap'
 ];
 
 // Asal (origin) CDN Audio yang akan di-cache saat diputar
@@ -23,117 +32,94 @@ const AUDIO_CDN_ORIGINS = [
 
 /**
  * Event 'install': Dipanggil saat Service Worker pertama kali diinstal.
- * Ini adalah tempat kita meng-cache App Shell.
+ * Mengunduh dan menyimpan aset inti (App Shell).
  */
 self.addEventListener('install', (event) => {
     console.log('[SW] Menginstal Service Worker...');
+    self.skipWaiting(); // Memaksa SW baru untuk segera aktif
+    
     event.waitUntil(
         caches.open(STATIC_CACHE_NAME)
             .then((cache) => {
                 console.log('[SW] Pre-caching App Shell');
-                // Kita abaikan kegagalan addAll (misalnya 404) agar tidak membatalkan instalasi
-                return cache.addAll(APP_SHELL_URLS).catch(err => {
-                    console.warn('[SW] Gagal meng-cache beberapa App Shell (mungkin tidak apa-apa):', err);
-                });
+                return cache.addAll(APP_SHELL_URLS);
             })
-            .then(() => self.skipWaiting()) // Aktifkan SW baru segera
+            .catch(err => {
+                console.warn('[SW] Gagal meng-cache beberapa App Shell:', err);
+            })
     );
 });
 
 /**
- * Event 'activate': Dipanggil saat Service Worker diaktifkan.
- * Ini adalah tempat kita membersihkan cache lama.
+ * Event 'activate': Membersihkan cache lama yang tidak digunakan lagi.
  */
 self.addEventListener('activate', (event) => {
     console.log('[SW] Mengaktifkan Service Worker...');
     event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames
-                    .filter(name => name !== STATIC_CACHE_NAME && name !== DYNAMIC_CACHE_NAME)
-                    .map(name => caches.delete(name))
-            );
-        }).then(() => self.clients.claim()) // Ambil alih kontrol halaman
+        caches.keys().then((keyList) => {
+            return Promise.all(keyList.map((key) => {
+                // Hapus cache yang namanya berbeda dengan versi saat ini
+                if (key !== STATIC_CACHE_NAME && key !== DYNAMIC_CACHE_NAME) {
+                    console.log('[SW] Menghapus cache lama:', key);
+                    return caches.delete(key);
+                }
+            }));
+        })
     );
+    return self.clients.claim();
 });
 
 /**
- * Helper: Memeriksa apakah URL berasal dari API yang ditentukan.
- */
-function isApiUrl(url) {
-    return API_ORIGINS.some(origin => url.startsWith(origin));
-}
-
-/**
- * Helper: Memeriksa apakah URL berasal dari CDN Audio yang ditentukan.
- */
-function isAudioUrl(url) {
-    return AUDIO_CDN_ORIGINS.some(origin => url.startsWith(origin));
-}
-
-
-/**
- * Event 'fetch': Dipanggil setiap kali halaman membuat permintaan jaringan.
- * Ini adalah inti dari strategi offline.
+ * Event 'fetch': Mengatur strategi caching.
  */
 self.addEventListener('fetch', (event) => {
-    const { request } = event;
+    const request = event.request;
     const url = new URL(request.url);
 
-    // 1. Strategi untuk API (Network-First, then Cache)
-    if (isApiUrl(url.href)) {
+    // --- STRATEGI 1: Network-First (Untuk API) ---
+    // Coba ambil data terbaru dari internet. Jika gagal (offline), ambil dari cache.
+    if (API_ORIGINS.some(origin => url.href.startsWith(origin))) {
         event.respondWith(
             fetch(request)
                 .then((networkResponse) => {
-                    // Jika sukses, simpan di cache dinamis
+                    return caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
+                        cache.put(request, networkResponse.clone());
+                        return networkResponse;
+                    });
+                })
+                .catch(() => {
+                    // Jika offline, kembalikan dari cache (jika ada)
+                    return caches.match(request);
+                })
+        );
+        return;
+    }
+
+    // --- STRATEGI 2: Stale-While-Revalidate (Untuk Aset UI, Gambar, Audio) ---
+    // Tampilkan cache SEGERA (agar loading cepat/offline jalan), 
+    // lalu update cache di background untuk kunjungan berikutnya.
+    event.respondWith(
+        caches.match(request).then((cachedResponse) => {
+            // Proses fetch ke jaringan (untuk update cache)
+            const networkFetch = fetch(request)
+                .then((networkResponse) => {
                     caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
                         cache.put(request, networkResponse.clone());
                     });
                     return networkResponse;
                 })
-                .catch(() => {
-                    // Jika gagal (offline), coba ambil dari cache
-                    console.log(`[SW] Offline, menyajikan dari cache untuk: ${url.pathname}`);
-                    return caches.match(request);
-                })
-        );
-    }
-    // 2. Strategi untuk Audio (Cache-First, on-demand)
-    // Kita biarkan aplikasi memutarnya, dan jika masuk ke cache,
-    // browser akan mengambilnya dari cache. Caching ditangani oleh
-    // strategi 'Stale-While-Revalidate' di bawah ini.
-    // Permintaan audio (range requests) bisa rumit, jadi SWR adalah yang paling aman.
+                .catch((err) => {
+                    // Log error jika offline (tidak masalah jika sudah ada cachedResponse)
+                    // console.log(`[SW] Mode Offline: Menggunakan aset lokal untuk ${url.pathname}`);
+                });
 
-    // 3. Strategi untuk Aset Lain (Stale-While-Revalidate)
-    // (HTML, CSS, JS, Font, Gambar, dan juga Audio)
-    else {
-        event.respondWith(
-            caches.match(request)
-                .then((cachedResponse) => {
-                    // 1. Buat janji untuk mengambil data dari jaringan
-                    const networkFetch = fetch(request)
-                        .then((networkResponse) => {
-                            // Simpan respons baru ke cache dinamis
-                            caches.open(DYNAMIC_CACHE_NAME).then((cache) => {
-                                // Put akan menimpa cache lama dengan yang baru
-                                cache.put(request, networkResponse.clone());
-                            });
-                            return networkResponse;
-                        })
-                        .catch(err => {
-                            console.log(`[SW] Gagal mengambil dari jaringan: ${url.pathname}`, err);
-                            // Ini terjadi jika kita offline dan item tidak ada di cache
-                        });
+            // 1. Jika ada di cache, kembalikan LANGSUNG (User senang, aplikasi cepat terbuka)
+            if (cachedResponse) {
+                return cachedResponse;
+            }
 
-                    // 2. Kembalikan dari cache jika ada (Stale)
-                    if (cachedResponse) {
-                        console.log(`[SW] Menyajikan dari cache: ${url.pathname}`);
-                        return cachedResponse;
-                    }
-
-                    // 3. Jika tidak ada di cache, tunggu & kembalikan dari jaringan (Revalidate)
-                    return networkFetch;
-                })
-        );
-    }
+            // 2. Jika tidak ada di cache, tunggu jaringan (Loading biasa)
+            return networkFetch;
+        })
+    );
 });
