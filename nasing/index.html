@@ -6,7 +6,6 @@
     <title>Silsilah Keluarga Puang Guru Nasing</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     
     <script>
@@ -15,15 +14,10 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#3498db',
-                        'primary-dark': '#2980b9',
-                        'bg-light': '#f4f7f6',
-                        'bg-dark': '#121212',
-                        'card-dark': '#1e1e1e',
+                        primary: '#3498db', 'primary-dark': '#2980b9',
+                        'bg-light': '#f4f7f6', 'bg-dark': '#121212', 'card-dark': '#1e1e1e',
                     },
-                    fontFamily: {
-                        sans: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif'],
-                    }
+                    fontFamily: { sans: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif'] }
                 }
             }
         }
@@ -32,19 +26,21 @@
     <style>
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-slide-down { animation: slideDown 0.3s ease-out; }
+        
         .tree-line { border-left: 2px dashed #d1d5db; }
         .dark .tree-line { border-left: 2px dashed #4b5563; }
         
-        /* Animasi kedip untuk hasil pencarian */
         @keyframes pulse-highlight {
             0%, 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7); transform: scale(1); }
             50% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0); transform: scale(1.02); }
         }
-        .highlight-card {
-            animation: pulse-highlight 1.5s ease-in-out 3;
-            border-color: #facc15 !important; 
-            z-index: 10;
-        }
+        .highlight-card { animation: pulse-highlight 1.5s ease-in-out 3; border-color: #facc15 !important; z-index: 10; }
+
+        /* Custom Scrollbar */
+        #custom-search-results::-webkit-scrollbar { width: 6px; }
+        #custom-search-results::-webkit-scrollbar-track { background: transparent; }
+        #custom-search-results::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        .dark #custom-search-results::-webkit-scrollbar-thumb { background-color: #4b5563; }
     </style>
 </head>
 <body class="bg-bg-light text-slate-700 dark:bg-bg-dark dark:text-gray-200 font-sans transition-colors duration-300 p-5 min-h-screen">
@@ -53,6 +49,10 @@
     
     <header class="text-center mb-10">
         <div class="flex justify-center items-center gap-3 mb-1">
+            <button onclick="fetchData()" class="w-8 h-8 rounded-full border border-gray-400 text-gray-500 dark:text-gray-300 dark:border-gray-500 hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200" title="Refresh Data">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+
             <h4 class="text-xl font-bold text-slate-800 dark:text-gray-100 m-0">Silsilah Puang Guru Nasing</h4>
             
             <button id="theme-btn" class="w-8 h-8 rounded-full border border-gray-400 text-gray-500 dark:text-gray-300 dark:border-gray-500 hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200" title="Ganti Mode">
@@ -60,20 +60,12 @@
             </button>
         </div>
 
-        <div class="relative w-full max-w-xs mx-auto mt-4 group z-20">
+        <div class="relative w-full max-w-xs mx-auto mt-4 group z-30">
             <div class="flex items-center bg-white dark:bg-gray-800 rounded-full px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm focus-within:shadow-md focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all">
                 <i class="fas fa-search text-gray-400 mr-3 group-focus-within:text-primary"></i>
-                <input 
-                    type="text" 
-                    id="search-box" 
-                    list="all-members-list"
-                    class="w-full bg-transparent border-none focus:ring-0 text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none"
-                    placeholder="Cari nama keluarga..." 
-                    oninput="handleSearchInput(this.value)"
-                    onchange="handleSearchExecute(this.value)"
-                    autocomplete="off"
-                >
+                <input type="text" id="search-box" class="w-full bg-transparent border-none focus:ring-0 text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none" placeholder="Cari nama keluarga..." oninput="handleSearchInput(this.value)" onkeydown="if(event.key === 'Enter') handleSearchExecute(this.value)" onblur="setTimeout(() => hideSearch(), 200)" autocomplete="off">
             </div>
+            <ul id="custom-search-results" class="absolute w-full bg-white dark:bg-card-dark mt-2 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden border border-gray-200 dark:border-gray-600 z-50 text-sm text-left"></ul>
         </div>
     </header>
 
@@ -81,11 +73,8 @@
         <div class="w-10 h-10 border-4 border-gray-200 border-t-primary rounded-full animate-spin mb-3"></div>
         <p class="text-sm text-gray-500 dark:text-gray-400">Menghubungkan ke Database...</p>
     </div>
-
     <div id="tree-root" class="hidden"></div>
 </div>
-
-<datalist id="all-members-list"></datalist>
 
 <div id="modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden justify-center items-center p-4">
     <div class="bg-white dark:bg-card-dark w-full max-w-lg rounded-xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto transition-colors duration-300">
@@ -96,28 +85,22 @@
         <input type="hidden" id="inp-parent">
 
         <div class="mb-4">
-            <label class="block text-sm font-semibold mb-1 dark:text-gray-300">Nama Lengkap</label>
-            <input type="text" id="inp-name" class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-400" placeholder="Masukkan Nama" autocomplete="off">
-        </div>
-
-        <div class="mb-4">
-            <label class="block text-sm font-semibold mb-1 dark:text-gray-300">Pasangan Orang Tua</label>
-            <input type="text" id="inp-mother" class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-400" placeholder="Ketik nama..." autocomplete="off">
-        </div>
-
-        <div class="mb-4">
-            <label class="block text-sm font-semibold mb-2 dark:text-gray-300">Status Pernikahan</label>
-            
-            <div class="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 mb-3">
-                <input type="checkbox" id="chk-married" class="w-5 h-5 text-primary focus:ring-primary border-gray-300 rounded cursor-pointer" onchange="toggleSpouseSection()">
-                <label for="chk-married" class="text-sm cursor-pointer dark:text-gray-300 select-none">Sudah Menikah</label>
+            <div class="flex justify-between items-end mb-2">
+                <label class="text-sm font-semibold dark:text-gray-300">Daftar Anggota Keluarga</label>
             </div>
             
-            <div id="spouse-section" class="hidden space-y-2">
-                <div class="text-xs text-gray-400 mb-2">Masukkan nama pasangan (bisa lebih dari satu).</div>
-                <div id="spouse-container" class="space-y-2"></div>
-                <button type="button" class="w-full py-2 px-4 bg-blue-50 text-blue-600 border border-dashed border-blue-300 rounded-lg hover:bg-blue-100 font-semibold text-sm transition-colors mt-2 dark:bg-gray-700 dark:text-blue-400 dark:border-gray-600 dark:hover:bg-gray-600" onclick="addSpouseRow()">+ Tambah Pasangan</button>
-            </div>
+            <div id="children-inputs-container" class="space-y-3">
+                </div>
+
+            <button type="button" id="btn-add-more-child" class="hidden mt-3 text-sm font-medium text-primary hover:text-primary-dark flex items-center gap-1" onclick="addChildInputRow()">
+                <i class="fas fa-plus-circle"></i> Tambah anak lagi
+            </button>
+        </div>
+
+        <div class="mb-4 pt-2 border-t border-gray-100 dark:border-gray-700">
+            <label class="block text-sm font-semibold mb-1 dark:text-gray-300">Pasangan Orang Tua (Ibu/Ayah)</label>
+            <input type="text" id="inp-mother" class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-400 text-sm" placeholder="Ibu/Ayah dari anak-anak di atas..." autocomplete="off">
+            <p class="text-[10px] text-gray-400 mt-1">*Kosongkan jika tidak perlu</p>
         </div>
 
         <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 mt-6">
@@ -128,52 +111,45 @@
 </div>
 
 <script>
-    // ==============================================================
-    // URL SCRIPT GOOGLE
-    const API_URL = "https://script.google.com/macros/s/AKfycbxaOo9p7QZHNNBNqt-s7_CPHh_J8672SRAVkSxUv0VljwovwN4zaYx9bkoL_VtB1dTB/exec";
-    // ==============================================================
+    // =======================================================================
+    // GANTI URL DI BAWAH INI DENGAN URL DEPLOYMENT APPS SCRIPT ANDA
+    const API_URL = "https://script.google.com/macros/s/AKfycbxaOo9p7QZHNNBNqt-s7_CPHh_J8672SRAVkSxUv0VljwovwN4zaYx9bkoL_VtB1dTB/exec"; 
+    // =======================================================================
 
     let allData = [];
-    let searchableNamesList = []; // Variabel baru untuk menyimpan daftar nama di memori
-
-    const themeBtn = document.getElementById('theme-btn');
-    const themeIcon = themeBtn.querySelector('i');
+    let searchableNamesList = []; 
     const htmlEl = document.documentElement;
 
-    if (localStorage.getItem('theme') === 'dark') {
+    // 1. DEFAULT DARK MODE
+    if (localStorage.getItem('theme') !== 'light') { 
         htmlEl.classList.add('dark');
-        themeIcon.classList.replace('fa-moon', 'fa-sun');
-    } else {
-        htmlEl.classList.remove('dark');
+        document.querySelector('#theme-btn i').classList.replace('fa-moon', 'fa-sun');
     }
 
-    themeBtn.addEventListener('click', () => {
+    document.getElementById('theme-btn').addEventListener('click', () => {
         if (htmlEl.classList.contains('dark')) {
             htmlEl.classList.remove('dark');
             localStorage.setItem('theme', 'light');
-            themeIcon.classList.replace('fa-sun', 'fa-moon');
+            document.querySelector('#theme-btn i').classList.replace('fa-sun', 'fa-moon');
         } else {
             htmlEl.classList.add('dark');
             localStorage.setItem('theme', 'dark');
-            themeIcon.classList.replace('fa-moon', 'fa-sun');
+            document.querySelector('#theme-btn i').classList.replace('fa-moon', 'fa-sun');
         }
     });
 
-    window.onload = function() {
-        fetchData();
-    };
+    window.onload = fetchData;
 
     async function fetchData() {
         showLoader(true);
         try {
             const response = await fetch(API_URL);
-            const data = await response.json();
-            allData = data;
-            prepareSearchableNames(); // Simpan nama ke memori, jangan ke HTML dulu
+            allData = await response.json();
+            prepareSearchableNames(); 
             renderTree();
             showLoader(false);
         } catch (error) {
-            alert("Gagal mengambil data: " + error);
+            alert("Gagal mengambil data. Pastikan URL API benar.");
             showLoader(false);
         }
     }
@@ -182,12 +158,8 @@
         showLoader(true);
         closeModal();
         try {
-            const response = await fetch(API_URL, {
-                method: "POST",
-                body: JSON.stringify(payload)
-            });
-            const data = await response.json();
-            allData = data; 
+            const response = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+            allData = await response.json(); 
             prepareSearchableNames();
             renderTree();
             showLoader(false);
@@ -202,145 +174,81 @@
         document.getElementById('tree-root').style.display = show ? 'none' : 'block';
     }
 
-    // MENGUMPULKAN DATA NAMA TAPI TIDAK LANGSUNG MASUK DATALIST
     function prepareSearchableNames() {
         const uniqueNames = new Set();
-
-        allData.forEach(person => {
-            if(person.name && person.name.trim()) uniqueNames.add(person.name.trim());
-            if(person.spouse && person.spouse.trim()) {
-                person.spouse.split(',').forEach(s => {
-                    if(s.trim()) uniqueNames.add(s.trim());
-                });
-            }
+        allData.forEach(p => {
+            if(p.name) uniqueNames.add(p.name.trim());
+            if(p.spouse) p.spouse.split(',').forEach(s => { if(s.trim()) uniqueNames.add(s.trim()); });
         });
-        
-        // Simpan ke variabel global, urutkan abjad
         searchableNamesList = Array.from(uniqueNames).sort();
     }
 
-    // ==============================================================
-    // LOGIKA PENCARIAN BARU (MINIMAL 2 HURUF)
-    // ==============================================================
-    
-    // Fungsi ini dipanggil setiap user mengetik (oninput)
+    // --- SEARCH & HIGHLIGHT ---
     function handleSearchInput(value) {
-        const datalist = document.getElementById('all-members-list');
-        
-        // Jika kurang dari 2 huruf, kosongkan datalist agar dropdown tidak muncul
-        if (!value || value.length < 2) {
-            datalist.innerHTML = '';
-            return;
-        }
-
-        // Jika >= 2 huruf, isi datalist dengan nama yang COCOK saja
-        // (Ini membuat browser menampilkan dropdown)
-        const lowerVal = value.toLowerCase();
-        const filteredNames = searchableNamesList.filter(name => 
-            name.toLowerCase().includes(lowerVal)
-        );
-
-        // Render ulang isi datalist
-        // Tips: Kita hanya render max 20 hasil agar browser tidak berat
-        datalist.innerHTML = '';
-        filteredNames.slice(0, 20).forEach(name => {
-            const option = document.createElement('option');
-            option.value = name;
-            datalist.appendChild(option);
-        });
-    }
-
-    // Fungsi ini dipanggil saat user menekan Enter atau memilih item (onchange)
-    function handleSearchExecute(name) {
-        if (!name) return;
-        
-        const target = allData.find(d => d.name.toLowerCase() === name.toLowerCase());
-        
-        if (target) {
-            document.getElementById('search-box').blur();
-            // Reset datalist supaya pas klik lagi gak langsung muncul semua
-            document.getElementById('all-members-list').innerHTML = ''; 
-            expandAndHighlight(target.id);
+        const dropdown = document.getElementById('custom-search-results');
+        if (!value || value.length < 2) { dropdown.classList.add('hidden'); return; }
+        const filtered = searchableNamesList.filter(n => n.toLowerCase().includes(value.toLowerCase()));
+        dropdown.innerHTML = '';
+        if (filtered.length > 0) {
+            dropdown.classList.remove('hidden');
+            filtered.slice(0, 20).forEach(name => {
+                const li = document.createElement('li');
+                li.className = "px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-slate-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700 last:border-none transition-colors";
+                li.textContent = name;
+                li.onclick = () => { document.getElementById('search-box').value = name; handleSearchExecute(name); dropdown.classList.add('hidden'); };
+                dropdown.appendChild(li);
+            });
         } else {
-            const spouseMatch = allData.find(d => d.spouse && d.spouse.toLowerCase().includes(name.toLowerCase()));
-            if(spouseMatch) {
-                document.getElementById('search-box').blur();
-                document.getElementById('all-members-list').innerHTML = '';
-                expandAndHighlight(spouseMatch.id);
-            } else {
-                // Jangan alert jika user baru ngetik sebagian dan belum enter, 
-                // tapi onchange biasanya trigger saat lost focus atau enter.
-                // alert('Nama tidak ditemukan.'); 
-            }
+            dropdown.innerHTML = '<li class="px-4 py-2 text-gray-400 italic text-xs">Tidak ditemukan</li>';
+            dropdown.classList.remove('hidden');
+        }
+    }
+    function hideSearch() { document.getElementById('custom-search-results').classList.add('hidden'); }
+    function handleSearchExecute(name) {
+        let target = allData.find(d => d.name.toLowerCase() === name.toLowerCase());
+        if(!target) target = allData.find(d => d.spouse && d.spouse.toLowerCase().includes(name.toLowerCase()));
+        if(target) {
+            document.getElementById('search-box').blur(); hideSearch(); expandAndHighlight(target.id);
         }
     }
 
+    // --- RENDER TREE ---
     function renderTree() {
         const container = document.getElementById('tree-root');
         container.innerHTML = '';
         const roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root');
-        
-        const ul = document.createElement('ul');
-        ul.className = 'pl-0 border-none';
+        const ul = document.createElement('ul'); ul.className = 'pl-0 border-none';
         roots.forEach(root => ul.appendChild(createNode(root, 0)));
         container.appendChild(ul);
     }
 
     function createNode(person, level) {
-        const li = document.createElement('li');
-        li.className = 'my-3';
-
-        const children = allData.filter(d => 
-            d.parentId == person.id || 
-            (d.motherName && d.motherName.trim() === person.name)
-        );
+        const li = document.createElement('li'); li.className = 'my-3';
+        const children = allData.filter(d => d.parentId == person.id || (d.motherName && d.motherName.trim() === person.name));
         const hasChildren = children.length > 0;
 
         let parentLabel = `<span class="block text-[0.7rem] uppercase tracking-wide text-primary mb-0.5">★ Leluhur Utama</span>`;
-        
         if (person.parentId && person.parentId !== 'root') {
             const father = allData.find(d => d.id === person.parentId);
-            const fatherName = father ? father.name : "???";
-            let motherName = person.motherName && person.motherName.trim() !== "" 
-                ? person.motherName 
-                : (father && father.spouse ? father.spouse : "(pasangan)");
-            
-            parentLabel = `<span class="block text-[0.7rem] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-0.5">Anak dari: <strong class="text-slate-700 dark:text-gray-200">${fatherName}</strong> & <strong class="text-slate-700 dark:text-gray-200">${motherName}</strong></span>`;
+            let motherName = person.motherName || (father && father.spouse ? father.spouse : "???");
+            parentLabel = `<span class="block text-[0.7rem] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-0.5">Anak dari: <strong class="text-slate-700 dark:text-gray-200">${father ? father.name : '???'}</strong> & <strong class="text-slate-700 dark:text-gray-200">${motherName}</strong></span>`;
         }
 
         let spouseHtml = '';
         if (person.spouse) {
-            const spouses = person.spouse.split(',').map(s => s.trim()).filter(s => s);
-            if(spouses.length > 0) {
-                spouses.forEach(s => {
-                    spouseHtml += `<span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-white/60 text-pink-600 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800 cursor-default"><i class="fas fa-heart mr-1 text-[0.6rem]"></i> ${s}</span>`;
-                });
-            }
+            person.spouse.split(',').forEach(s => {
+                if(s.trim()) spouseHtml += `<span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-white/60 text-pink-600 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800 cursor-default mr-1"><i class="fas fa-heart mr-1 text-[0.6rem]"></i> ${s.trim()}</span>`;
+            });
         }
 
-        const generationColors = [
-            'bg-slate-100 border-slate-400 dark:bg-slate-800 dark:border-slate-500', 
-            'bg-blue-50 border-blue-400 dark:bg-blue-900/20 dark:border-blue-500',
-            'bg-emerald-50 border-emerald-400 dark:bg-emerald-900/20 dark:border-emerald-500',
-            'bg-amber-50 border-amber-400 dark:bg-amber-900/20 dark:border-amber-500',
-            'bg-purple-50 border-purple-400 dark:bg-purple-900/20 dark:border-purple-500',
-            'bg-rose-50 border-rose-400 dark:bg-rose-900/20 dark:border-rose-500'
-        ];
-        const colorClass = generationColors[level % generationColors.length];
-
+        const colors = ['bg-slate-100 border-slate-400 dark:bg-slate-800 dark:border-slate-500', 'bg-blue-50 border-blue-400 dark:bg-blue-900/20 dark:border-blue-500', 'bg-emerald-50 border-emerald-400 dark:bg-emerald-900/20 dark:border-emerald-500', 'bg-amber-50 border-amber-400 dark:bg-amber-900/20 dark:border-amber-500', 'bg-purple-50 border-purple-400 dark:bg-purple-900/20 dark:border-purple-500', 'bg-rose-50 border-rose-400 dark:bg-rose-900/20 dark:border-rose-500'];
+        
         const div = document.createElement('div');
         div.id = 'card-' + person.id;
-        div.className = `relative flex items-start p-4 rounded-lg shadow-sm hover:shadow-md border-[3px] transition-all duration-200 group ${colorClass}`;
+        div.className = `relative flex items-start p-4 rounded-lg shadow-sm hover:shadow-md border-[3px] transition-all duration-200 group ${colors[level % colors.length]} ${level === 0 ? 'shadow-md' : ''}`;
         
-        if(level === 0) div.classList.add('shadow-md');
-        
-        const toggleIcon = hasChildren 
-            ? '<i class="fas fa-chevron-right"></i>' 
-            : '<i class="fas fa-circle text-[6px] opacity-30"></i>';
-
         div.innerHTML = `
-            <button class="toggle-btn w-5 mt-1 mr-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-transform duration-200 ${hasChildren ? 'cursor-pointer' : 'cursor-default'}" onclick="toggleChild(this)">${toggleIcon}</button>
-            
+            <button class="toggle-btn w-5 mt-1 mr-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-transform duration-200 ${hasChildren ? 'cursor-pointer' : 'cursor-default'}" onclick="toggleChild(this)">${hasChildren ? '<i class="fas fa-chevron-right"></i>' : '<i class="fas fa-circle text-[6px] opacity-30"></i>'}</button>
             <div class="flex-grow cursor-pointer" onclick="toggleChild(this.previousElementSibling)">
                 ${parentLabel}
                 <div class="flex flex-wrap items-center gap-2">
@@ -348,11 +256,10 @@
                     ${spouseHtml}
                 </div>
             </div>
-
             <div class="flex gap-1.5 ml-2 opacity-10 group-hover:opacity-100 transition-opacity duration-300 self-center">
-                <button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('edit', '${person.id}')" title="Edit"><i class="fas fa-pen text-xs"></i></button>
-                <button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('add', '${person.id}')" title="Tambah Anak"><i class="fas fa-plus text-xs"></i></button>
-                ${level > 0 ? `<button class="w-8 h-8 rounded-full bg-red-100 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors dark:bg-red-900/40 dark:hover:bg-red-600" onclick="deleteItem('${person.id}')" title="Hapus"><i class="fas fa-trash text-xs"></i></button>` : ''}
+                <button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('edit', '${person.id}')"><i class="fas fa-pen text-xs"></i></button>
+                <button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('add', '${person.id}')"><i class="fas fa-plus text-xs"></i></button>
+                ${level > 0 ? `<button class="w-8 h-8 rounded-full bg-red-100 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors dark:bg-red-900/40 dark:hover:bg-red-600" onclick="deleteItem('${person.id}')"><i class="fas fa-trash text-xs"></i></button>` : ''}
             </div>
         `;
         li.appendChild(div);
@@ -360,12 +267,7 @@
         if (hasChildren || true) {
             const childUl = document.createElement('ul');
             childUl.className = 'children-container hidden pl-[22px] tree-line list-none'; 
-            
-            if (level === 0) {
-                childUl.classList.remove('hidden');
-                childUl.classList.add('block'); 
-                div.querySelector('.toggle-btn').innerHTML = '<i class="fas fa-chevron-down"></i>';
-            }
+            if (level === 0) { childUl.classList.remove('hidden'); childUl.classList.add('block'); div.querySelector('.toggle-btn').innerHTML = '<i class="fas fa-chevron-down"></i>'; }
             children.forEach(child => childUl.appendChild(createNode(child, level + 1)));
             li.appendChild(childUl);
         }
@@ -373,163 +275,125 @@
     }
 
     function toggleChild(btn) {
-        const card = btn.parentElement;
-        const ul = card.nextElementSibling; 
-        
+        const ul = btn.parentElement.nextElementSibling; 
         if (ul && ul.tagName === 'UL' && ul.children.length > 0) {
-            const isHidden = ul.classList.contains('hidden');
-            if (isHidden) {
-                ul.classList.remove('hidden');
-                ul.classList.add('block', 'animate-slide-down');
-                btn.innerHTML = '<i class="fas fa-chevron-down"></i>';
+            if (ul.classList.contains('hidden')) {
+                ul.classList.remove('hidden'); ul.classList.add('block', 'animate-slide-down'); btn.innerHTML = '<i class="fas fa-chevron-down"></i>';
             } else {
-                ul.classList.add('hidden');
-                ul.classList.remove('block', 'animate-slide-down');
-                btn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                ul.classList.add('hidden'); ul.classList.remove('block', 'animate-slide-down'); btn.innerHTML = '<i class="fas fa-chevron-right"></i>';
             }
         }
     }
 
-    function toggleSpouseSection() {
-        const isMarried = document.getElementById('chk-married').checked;
-        const section = document.getElementById('spouse-section');
-        const container = document.getElementById('spouse-container');
-
-        if (isMarried) {
-            section.classList.remove('hidden');
-            if (container.children.length === 0) addSpouseRow();
-        } else {
-            section.classList.add('hidden');
-        }
+    // --- MODAL & DYNAMIC INPUTS ---
+    function toggleChildSpouseInput(checkbox) {
+        const inp = checkbox.closest('.child-input-row').querySelector('.inp-child-spouse');
+        if (checkbox.checked) { inp.classList.remove('hidden'); inp.focus(); } 
+        else { inp.classList.add('hidden'); inp.value = ''; }
     }
 
-    function addSpouseRow(value = "") {
-        const container = document.getElementById('spouse-container');
+    function addChildInputRow(nameVal = "", spouseVal = "") {
+        const container = document.getElementById('children-inputs-container');
         const div = document.createElement('div');
-        div.className = 'flex gap-2';
+        div.className = 'child-input-row bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 relative animate-slide-down';
+        
+        const deleteBtn = container.children.length > 0 ? `<button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500" onclick="this.closest('.child-input-row').remove()"><i class="fas fa-times"></i></button>` : ``;
+        const hasSpouse = spouseVal && spouseVal.trim() !== "";
+        
         div.innerHTML = `
-            <input type="text" class="inp-spouse-dynamic w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-primary outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white" value="${value}" placeholder="Nama Pasangan..." autocomplete="off">
-            <button type="button" class="w-10 flex-shrink-0 bg-red-50 text-red-500 rounded-lg border border-red-100 hover:bg-red-100 flex items-center justify-center transition-colors dark:bg-red-900/20 dark:border-red-800 dark:hover:bg-red-900/40" onclick="this.parentElement.remove()" title="Hapus"><i class="fas fa-times"></i></button>
+            ${deleteBtn}
+            <div class="mb-2 pr-5">
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Nama Lengkap</label>
+                <input type="text" class="inp-child-name w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Nama anak..." value="${nameVal}" autocomplete="off">
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <input type="checkbox" class="w-3.5 h-3.5 text-primary rounded focus:ring-primary" onchange="toggleChildSpouseInput(this)" ${hasSpouse ? "checked" : ""}>
+                    <label class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer select-none" onclick="this.previousElementSibling.click()">Sudah Menikah?</label>
+                </div>
+                <input type="text" class="inp-child-spouse ${hasSpouse ? "" : "hidden"} w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Nama Pasangan..." value="${spouseVal}" autocomplete="off">
+            </div>
         `;
         container.appendChild(div);
     }
 
     function openModal(mode, id) {
-        const modal = document.getElementById('modal');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        
+        document.getElementById('modal').classList.remove('hidden'); document.getElementById('modal').classList.add('flex');
         document.getElementById('inp-mode').value = mode;
-        const spouseContainer = document.getElementById('spouse-container');
-        spouseContainer.innerHTML = ''; 
-        
-        document.getElementById('inp-name').value = '';
-        document.getElementById('inp-mother').value = '';
-        document.getElementById('inp-parent').value = '';
-        document.getElementById('chk-married').checked = false;
+        document.getElementById('children-inputs-container').innerHTML = ''; 
+        document.getElementById('inp-mother').value = ''; document.getElementById('inp-parent').value = '';
 
         if (mode === 'add') {
             document.getElementById('modal-title').innerText = "Tambah Keturunan";
             document.getElementById('inp-parent').value = id; 
-            
+            document.getElementById('btn-add-more-child').classList.remove('hidden'); 
+            addChildInputRow(); 
             const father = allData.find(d => d.id == id);
-            if (father && father.spouse) {
-                const spouses = father.spouse.split(',').filter(s => s.trim());
-                if (spouses.length === 1) {
-                    document.getElementById('inp-mother').value = spouses[0].trim();
-                }
-            }
-            toggleSpouseSection();
+            if (father && father.spouse && father.spouse.split(',').length === 1) document.getElementById('inp-mother').value = father.spouse.trim();
         } else {
             document.getElementById('modal-title').innerText = "Edit Data";
+            document.getElementById('btn-add-more-child').classList.add('hidden'); 
             const p = allData.find(d => d.id == id);
-            
             document.getElementById('inp-id').value = id;
-            document.getElementById('inp-name').value = p.name;
+            addChildInputRow(p.name, p.spouse); 
             document.getElementById('inp-mother').value = p.motherName || '';
-            if (p.spouse && p.spouse.trim() !== "") {
-                document.getElementById('chk-married').checked = true;
-                p.spouse.split(',').forEach(s => addSpouseRow(s.trim()));
-            }
-            toggleSpouseSection();
         }
     }
 
     function closeModal() {
-        const modal = document.getElementById('modal');
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        document.getElementById('modal').classList.add('hidden'); document.getElementById('modal').classList.remove('flex');
     }
 
     function submitData() {
         const mode = document.getElementById('inp-mode').value;
-        const isMarried = document.getElementById('chk-married').checked;
-        
-        let spouseString = "";
-        if (isMarried) {
-            const spouseInputs = document.querySelectorAll('.inp-spouse-dynamic');
-            const spouseList = [];
-            spouseInputs.forEach(inp => {
-                if (inp.value.trim() !== "") spouseList.push(inp.value.trim());
-            });
-            spouseString = spouseList.join(', ');
-        }
-        
-        const payload = {
-            action: mode,
-            name: document.getElementById('inp-name').value,
-            spouse: spouseString,
-            motherName: document.getElementById('inp-mother').value
-        };
-        if (!payload.name) { alert("Nama wajib diisi!"); return; }
+        const rows = document.querySelectorAll('.child-input-row');
+        const childrenData = [];
 
+        rows.forEach(row => {
+            const name = row.querySelector('.inp-child-name').value.trim();
+            const spouseInp = row.querySelector('.inp-child-spouse');
+            const spouse = (!spouseInp.classList.contains('hidden')) ? spouseInp.value.trim() : "";
+            if (name) childrenData.push({ name, spouse });
+        });
+
+        if (childrenData.length === 0) { alert("Wajib isi minimal satu nama!"); return; }
+
+        const payload = { action: mode, motherName: document.getElementById('inp-mother').value };
         if (mode === 'add') {
             payload.parentId = document.getElementById('inp-parent').value;
+            payload.children = childrenData;
         } else {
             payload.id = document.getElementById('inp-id').value;
+            payload.name = childrenData[0].name;
+            payload.spouse = childrenData[0].spouse;
         }
-
         postData(payload);
     }
 
     function deleteItem(id) {
-        if(confirm("Hapus data ini? Keturunan di bawahnya juga akan terhapus.")) {
-            postData({ action: 'delete', id: id });
-        }
+        if(confirm("Hapus data ini beserta keturunannya?")) postData({ action: 'delete', id: id });
     }
 
     function expandAndHighlight(targetId) {
-        document.querySelectorAll('.highlight-card').forEach(el => {
-            el.classList.remove('highlight-card');
-        });
-
+        document.querySelectorAll('.highlight-card').forEach(el => el.classList.remove('highlight-card'));
         let curr = allData.find(d => d.id === targetId);
-        
         while (curr && curr.parentId && curr.parentId !== 'root') {
-            const parentId = curr.parentId;
-            const parentCard = document.getElementById('card-' + parentId);
-            
-            if (parentCard) {
-                const toggleBtn = parentCard.querySelector('.toggle-btn');
-                const childUl = parentCard.nextElementSibling; 
-                
-                if (childUl && childUl.classList.contains('hidden')) {
-                    childUl.classList.remove('hidden');
-                    childUl.classList.add('block', 'animate-slide-down');
-                    if (toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i>';
+            const pCard = document.getElementById('card-' + curr.parentId);
+            if (pCard) {
+                const ul = pCard.nextElementSibling; 
+                if (ul && ul.classList.contains('hidden')) {
+                    ul.classList.remove('hidden'); ul.classList.add('block', 'animate-slide-down');
+                    pCard.querySelector('.toggle-btn').innerHTML = '<i class="fas fa-chevron-down"></i>';
                 }
             }
-            curr = allData.find(d => d.id === parentId);
+            curr = allData.find(d => d.id === curr.parentId);
         }
-
         setTimeout(() => {
-            const targetCard = document.getElementById('card-' + targetId);
-            if (targetCard) {
-                targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                targetCard.classList.add('highlight-card');
-                setTimeout(() => {
-                    targetCard.classList.remove('highlight-card');
-                }, 4500);
+            const tCard = document.getElementById('card-' + targetId);
+            if (tCard) {
+                tCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                tCard.classList.add('highlight-card');
+                setTimeout(() => tCard.classList.remove('highlight-card'), 4500);
             }
         }, 300); 
     }
