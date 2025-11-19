@@ -34,6 +34,17 @@
         .animate-slide-down { animation: slideDown 0.3s ease-out; }
         .tree-line { border-left: 2px dashed #d1d5db; }
         .dark .tree-line { border-left: 2px dashed #4b5563; }
+        
+        /* Animasi kedip untuk hasil pencarian */
+        @keyframes pulse-highlight {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7); transform: scale(1); }
+            50% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0); transform: scale(1.02); }
+        }
+        .highlight-card {
+            animation: pulse-highlight 1.5s ease-in-out 3; /* Berkedip 3 kali */
+            border-color: #facc15 !important; /* Warna kuning */
+            z-index: 10;
+        }
     </style>
 </head>
 <body class="bg-bg-light text-slate-700 dark:bg-bg-dark dark:text-gray-200 font-sans transition-colors duration-300 p-5 min-h-screen">
@@ -48,7 +59,22 @@
                 <i class="fas fa-moon"></i>
             </button>
         </div>
-        <p class="text-sm text-gray-400">Aplikasi Silsilah Keluarga Interaktif</p>
+
+        <div class="relative w-full max-w-xs mx-auto mt-4 group z-20">
+            <div class="flex items-center bg-white dark:bg-gray-800 rounded-full px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm focus-within:shadow-md focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all">
+                <i class="fas fa-search text-gray-400 mr-3 group-focus-within:text-primary"></i>
+                <input 
+                    type="text" 
+                    id="search-box" 
+                    list="all-members-list"
+                    class="w-full bg-transparent border-none focus:ring-0 text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none"
+                    placeholder="Cari nama keluarga..." 
+                    onchange="handleSearch(this.value)"
+                    autocomplete="off"
+                >
+            </div>
+            <p class="text-[10px] text-gray-400 mt-1">Ketik nama lalu pilih (Tekan Enter)</p>
+        </div>
     </header>
 
     <div id="loader" class="flex flex-col items-center mt-16">
@@ -189,7 +215,7 @@
                 });
             }
         });
-        
+
         Array.from(uniqueNames).sort().forEach(name => {
             const option = document.createElement('option');
             option.value = name;
@@ -201,6 +227,7 @@
         const container = document.getElementById('tree-root');
         container.innerHTML = '';
         const roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root');
+        
         const ul = document.createElement('ul');
         ul.className = 'pl-0 border-none';
         roots.forEach(root => ul.appendChild(createNode(root, 0)));
@@ -218,6 +245,7 @@
         const hasChildren = children.length > 0;
 
         let parentLabel = `<span class="block text-[0.7rem] uppercase tracking-wide text-primary mb-0.5">★ Leluhur Utama</span>`;
+        
         if (person.parentId && person.parentId !== 'root') {
             const father = allData.find(d => d.id === person.parentId);
             const fatherName = father ? father.name : "???";
@@ -228,8 +256,6 @@
             parentLabel = `<span class="block text-[0.7rem] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-0.5">Anak dari: <strong class="text-slate-700 dark:text-gray-200">${fatherName}</strong> & <strong class="text-slate-700 dark:text-gray-200">${motherName}</strong></span>`;
         }
 
-        // === MODIFIKASI PASANGAN (SPOUSE) ===
-        // Sekarang spouseHtml bukan lagi DIV pembungkus, melainkan string berisi span-span
         let spouseHtml = '';
         if (person.spouse) {
             const spouses = person.spouse.split(',').map(s => s.trim()).filter(s => s);
@@ -240,7 +266,6 @@
             }
         }
 
-        // Array warna (sama seperti sebelumnya)
         const generationColors = [
             'bg-slate-100 border-slate-400 dark:bg-slate-800 dark:border-slate-500', 
             'bg-blue-50 border-blue-400 dark:bg-blue-900/20 dark:border-blue-500',
@@ -249,31 +274,28 @@
             'bg-purple-50 border-purple-400 dark:bg-purple-900/20 dark:border-purple-500',
             'bg-rose-50 border-rose-400 dark:bg-rose-900/20 dark:border-rose-500'
         ];
-
         const colorClass = generationColors[level % generationColors.length];
 
         const div = document.createElement('div');
+        // MODIFIED: Tambahkan ID untuk pencarian
+        div.id = 'card-' + person.id;
         div.className = `relative flex items-start p-4 rounded-lg shadow-sm hover:shadow-md border-[3px] transition-all duration-200 group ${colorClass}`;
         
         if(level === 0) div.classList.add('shadow-md');
-
+        
         const toggleIcon = hasChildren 
             ? '<i class="fas fa-chevron-right"></i>' 
             : '<i class="fas fa-circle text-[6px] opacity-30"></i>';
 
-        // === MODIFIKASI HTML UTAMA ===
-        // Nama dan Spouse diletakkan dalam satu container flex-row yang sama (flex-wrap)
         div.innerHTML = `
             <button class="toggle-btn w-5 mt-1 mr-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-transform duration-200 ${hasChildren ? 'cursor-pointer' : 'cursor-default'}" onclick="toggleChild(this)">${toggleIcon}</button>
             
             <div class="flex-grow cursor-pointer" onclick="toggleChild(this.previousElementSibling)">
                 ${parentLabel}
-                
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="text-lg font-bold text-slate-800 dark:text-gray-100">${person.name}</span>
                     ${spouseHtml}
                 </div>
-
             </div>
 
             <div class="flex gap-1.5 ml-2 opacity-10 group-hover:opacity-100 transition-opacity duration-300 self-center">
@@ -282,7 +304,6 @@
                 ${level > 0 ? `<button class="w-8 h-8 rounded-full bg-red-100 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors dark:bg-red-900/40 dark:hover:bg-red-600" onclick="deleteItem('${person.id}')" title="Hapus"><i class="fas fa-trash text-xs"></i></button>` : ''}
             </div>
         `;
-
         li.appendChild(div);
 
         if (hasChildren || true) {
@@ -367,8 +388,7 @@
                     document.getElementById('inp-mother').value = spouses[0].trim();
                 }
             }
-            toggleSpouseSection(); 
-
+            toggleSpouseSection();
         } else {
             document.getElementById('modal-title').innerText = "Edit Data";
             const p = allData.find(d => d.id == id);
@@ -376,7 +396,6 @@
             document.getElementById('inp-id').value = id;
             document.getElementById('inp-name').value = p.name;
             document.getElementById('inp-mother').value = p.motherName || '';
-
             if (p.spouse && p.spouse.trim() !== "") {
                 document.getElementById('chk-married').checked = true;
                 p.spouse.split(',').forEach(s => addSpouseRow(s.trim()));
@@ -411,7 +430,6 @@
             spouse: spouseString,
             motherName: document.getElementById('inp-mother').value
         };
-
         if (!payload.name) { alert("Nama wajib diisi!"); return; }
 
         if (mode === 'add') {
@@ -427,6 +445,79 @@
         if(confirm("Hapus data ini? Keturunan di bawahnya juga akan terhapus.")) {
             postData({ action: 'delete', id: id });
         }
+    }
+
+    // ==============================================================
+    // FITUR PENCARIAN & AUTO EXPAND (BARU)
+    // ==============================================================
+    function handleSearch(name) {
+        if (!name) return;
+        
+        // Cari data orang berdasarkan nama (case insensitive)
+        const target = allData.find(d => d.name.toLowerCase() === name.toLowerCase());
+        
+        if (target) {
+            // Kosongkan search box agar bersih (opsional)
+            document.getElementById('search-box').blur();
+            
+            // Jalankan fungsi expand
+            expandAndHighlight(target.id);
+        } else {
+            // Cek juga apakah itu nama pasangan
+            const spouseMatch = allData.find(d => d.spouse && d.spouse.toLowerCase().includes(name.toLowerCase()));
+            if(spouseMatch) {
+                document.getElementById('search-box').blur();
+                expandAndHighlight(spouseMatch.id);
+            } else {
+                alert('Nama tidak ditemukan dalam silsilah.');
+            }
+        }
+    }
+
+    function expandAndHighlight(targetId) {
+        // Hapus highlight lama jika ada
+        document.querySelectorAll('.highlight-card').forEach(el => {
+            el.classList.remove('highlight-card');
+        });
+
+        let curr = allData.find(d => d.id === targetId);
+        
+        // 1. Loop ke atas (ke orang tua) untuk membuka semua folder yang tertutup
+        while (curr && curr.parentId && curr.parentId !== 'root') {
+            const parentId = curr.parentId;
+            const parentCard = document.getElementById('card-' + parentId);
+            
+            if (parentCard) {
+                const toggleBtn = parentCard.querySelector('.toggle-btn');
+                const childUl = parentCard.nextElementSibling; // Mengambil elemen <ul> anak
+                
+                // Jika folder tertutup (hidden), buka folder tersebut
+                if (childUl && childUl.classList.contains('hidden')) {
+                    childUl.classList.remove('hidden');
+                    childUl.classList.add('block', 'animate-slide-down');
+                    // Ubah ikon panah menjadi ke bawah
+                    if (toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i>';
+                }
+            }
+            // Lanjut naik ke kakek/nenek dst
+            curr = allData.find(d => d.id === parentId);
+        }
+
+        // 2. Scroll ke target dan beri highlight
+        setTimeout(() => {
+            const targetCard = document.getElementById('card-' + targetId);
+            if (targetCard) {
+                targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Efek highlight
+                targetCard.classList.add('highlight-card');
+                
+                // Hapus class highlight setelah animasi selesai (opsional, biar bersih)
+                setTimeout(() => {
+                    targetCard.classList.remove('highlight-card');
+                }, 4500);
+            }
+        }, 300); // Delay sedikit agar animasi expand selesai dulu
     }
 </script>
 </body>
