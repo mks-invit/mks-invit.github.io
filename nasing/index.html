@@ -11,7 +11,7 @@
     
     <script>
         tailwind.config = {
-            darkMode: 'class', // Mengaktifkan dark mode via class 'dark'
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -30,11 +30,8 @@
     </script>
 
     <style>
-        /* Custom animation untuk loader & dropdown karena lebih ringkas di CSS biasa */
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-slide-down { animation: slideDown 0.3s ease-out; }
-        
-        /* Garis putus-putus pohon silsilah */
         .tree-line { border-left: 2px dashed #d1d5db; }
         .dark .tree-line { border-left: 2px dashed #4b5563; }
     </style>
@@ -107,18 +104,16 @@
 
 <script>
     // ==============================================================
-    // KONFIGURASI SCRIPT (URL TETAP SAMA)
+    // URL SCRIPT GOOGLE (TIDAK BERUBAH)
     const API_URL = "https://script.google.com/macros/s/AKfycbxaOo9p7QZHNNBNqt-s7_CPHh_J8672SRAVkSxUv0VljwovwN4zaYx9bkoL_VtB1dTB/exec";
     // ==============================================================
 
     let allData = [];
 
-    // --- DARK MODE LOGIC ---
     const themeBtn = document.getElementById('theme-btn');
     const themeIcon = themeBtn.querySelector('i');
     const htmlEl = document.documentElement;
 
-    // Cek local storage
     if (localStorage.getItem('theme') === 'dark') {
         htmlEl.classList.add('dark');
         themeIcon.classList.replace('fa-moon', 'fa-sun');
@@ -137,7 +132,6 @@
             themeIcon.classList.replace('fa-moon', 'fa-sun');
         }
     });
-    // -----------------------
 
     window.onload = function() {
         fetchData();
@@ -203,13 +197,11 @@
         });
     }
 
-    // --- TREE RENDERING WITH TAILWIND CLASSES ---
     function renderTree() {
         const container = document.getElementById('tree-root');
         container.innerHTML = '';
         const roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root');
         const ul = document.createElement('ul');
-        // Root ul padding reset
         ul.className = 'pl-0 border-none';
         roots.forEach(root => ul.appendChild(createNode(root, 0)));
         container.appendChild(ul);
@@ -223,10 +215,8 @@
             d.parentId == person.id || 
             (d.motherName && d.motherName.trim() === person.name)
         );
-
         const hasChildren = children.length > 0;
 
-        // Logic Label Orang Tua
         let parentLabel = `<span class="block text-[0.7rem] uppercase tracking-wide text-primary mb-0.5">★ Leluhur Utama</span>`;
         if (person.parentId && person.parentId !== 'root') {
             const father = allData.find(d => d.id === person.parentId);
@@ -235,40 +225,47 @@
                 ? person.motherName 
                 : (father && father.spouse ? father.spouse : "(pasangan)");
             
-            parentLabel = `<span class="block text-[0.7rem] uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-0.5">Anak dari: <strong class="text-slate-700 dark:text-gray-300">${fatherName}</strong> & <strong class="text-slate-700 dark:text-gray-300">${motherName}</strong></span>`;
+            parentLabel = `<span class="block text-[0.7rem] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-0.5">Anak dari: <strong class="text-slate-700 dark:text-gray-200">${fatherName}</strong> & <strong class="text-slate-700 dark:text-gray-200">${motherName}</strong></span>`;
         }
 
-        // Logic Pasangan Badge
         let spouseHtml = '';
         if (person.spouse) {
             const spouses = person.spouse.split(',').map(s => s.trim()).filter(s => s);
             if(spouses.length > 0) {
                 spouseHtml = `<div class="flex flex-wrap gap-1.5 mt-1">`;
                 spouses.forEach(s => {
-                    spouseHtml += `<span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-pink-50 text-pink-600 border border-pink-200 dark:bg-pink-900/20 dark:text-pink-300 dark:border-pink-800"><i class="fas fa-heart mr-1 text-[0.6rem]"></i> ${s}</span>`;
+                    spouseHtml += `<span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-white/60 text-pink-600 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800"><i class="fas fa-heart mr-1 text-[0.6rem]"></i> ${s}</span>`;
                 });
                 spouseHtml += `</div>`;
             }
         }
 
-        // Tentukan warna border kiri berdasarkan level (Color mapping)
-        // Level 0: dark, 1: blue, 2: teal, 3: orange, 4: purple
-        const borderColors = [
-            'border-l-slate-700 dark:border-l-gray-400 bg-gray-100 dark:bg-slate-800', 
-            'border-l-[#2980b9]', 
-            'border-l-[#16a085]', 
-            'border-l-[#f39c12]', 
-            'border-l-[#8e44ad]'
+        // === MODIFIKASI ARRAY WARNA (BORDER KELILING) ===
+        // Menghapus 'border-l-' agar warna berlaku untuk seluruh sisi border
+        const generationColors = [
+            // Level 0: Slate
+            'bg-slate-100 border-slate-400 dark:bg-slate-800 dark:border-slate-500', 
+            // Level 1: Biru
+            'bg-blue-50 border-blue-400 dark:bg-blue-900/20 dark:border-blue-500',
+            // Level 2: Hijau
+            'bg-emerald-50 border-emerald-400 dark:bg-emerald-900/20 dark:border-emerald-500',
+            // Level 3: Orange
+            'bg-amber-50 border-amber-400 dark:bg-amber-900/20 dark:border-amber-500',
+            // Level 4: Ungu
+            'bg-purple-50 border-purple-400 dark:bg-purple-900/20 dark:border-purple-500',
+            // Level 5: Merah Muda
+            'bg-rose-50 border-rose-400 dark:bg-rose-900/20 dark:border-rose-500'
         ];
-        // Gunakan modulus agar warna berulang jika level > 4
-        let colorClass = level === 0 ? borderColors[0] : borderColors[(level % 4) || 1];
-        if(level > 0 && level % 4 === 0) colorClass = borderColors[4];
+
+        const colorClass = generationColors[level % generationColors.length];
 
         const div = document.createElement('div');
-        // Tailwind classes untuk Node Card
-        div.className = `relative flex items-start bg-white dark:bg-card-dark p-4 rounded-lg shadow-sm hover:shadow-md border-l-[5px] transition-all duration-200 group ${colorClass}`;
         
-        if(level === 0) div.classList.add('shadow');
+        // === PERUBAHAN UTAMA PADA BORDER ===
+        // Menggunakan border-[3px] untuk membuat border keliling tebal
+        div.className = `relative flex items-start p-4 rounded-lg shadow-sm hover:shadow-md border-[3px] transition-all duration-200 group ${colorClass}`;
+        
+        if(level === 0) div.classList.add('shadow-md');
 
         const toggleIcon = hasChildren 
             ? '<i class="fas fa-chevron-right"></i>' 
@@ -284,9 +281,9 @@
             </div>
 
             <div class="flex gap-1.5 ml-2 opacity-10 group-hover:opacity-100 transition-opacity duration-300 self-center">
-                <button class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('edit', '${person.id}')" title="Edit"><i class="fas fa-pen text-xs"></i></button>
-                <button class="w-8 h-8 rounded-full bg-gray-100 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('add', '${person.id}')" title="Tambah Anak"><i class="fas fa-plus text-xs"></i></button>
-                ${level > 0 ? `<button class="w-8 h-8 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors dark:bg-red-900/20 dark:hover:bg-red-600" onclick="deleteItem('${person.id}')" title="Hapus"><i class="fas fa-trash text-xs"></i></button>` : ''}
+                <button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('edit', '${person.id}')" title="Edit"><i class="fas fa-pen text-xs"></i></button>
+                <button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('add', '${person.id}')" title="Tambah Anak"><i class="fas fa-plus text-xs"></i></button>
+                ${level > 0 ? `<button class="w-8 h-8 rounded-full bg-red-100 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors dark:bg-red-900/40 dark:hover:bg-red-600" onclick="deleteItem('${person.id}')" title="Hapus"><i class="fas fa-trash text-xs"></i></button>` : ''}
             </div>
         `;
 
@@ -294,12 +291,11 @@
 
         if (hasChildren || true) {
             const childUl = document.createElement('ul');
-            // Class tree-line didefinisikan di style head untuk border dashed
             childUl.className = 'children-container hidden pl-[22px] tree-line list-none'; 
             
             if (level === 0) {
                 childUl.classList.remove('hidden');
-                childUl.classList.add('block'); // Force open level 0
+                childUl.classList.add('block'); 
                 div.querySelector('.toggle-btn').innerHTML = '<i class="fas fa-chevron-down"></i>';
             }
             children.forEach(child => childUl.appendChild(createNode(child, level + 1)));
@@ -310,7 +306,6 @@
 
     function toggleChild(btn) {
         const card = btn.parentElement;
-        // Cari ul sibling berikutnya dari card
         const ul = card.nextElementSibling; 
         
         if (ul && ul.tagName === 'UL' && ul.children.length > 0) {
@@ -319,17 +314,13 @@
                 ul.classList.remove('hidden');
                 ul.classList.add('block', 'animate-slide-down');
                 btn.innerHTML = '<i class="fas fa-chevron-down"></i>';
-                btn.classList.add('rotate-90'); // Opsional animasi rotate
             } else {
                 ul.classList.add('hidden');
                 ul.classList.remove('block', 'animate-slide-down');
                 btn.innerHTML = '<i class="fas fa-chevron-right"></i>';
-                btn.classList.remove('rotate-90');
             }
         }
     }
-
-    // --- FORM & INTERACTION LOGIC ---
 
     function toggleSpouseSection() {
         const isMarried = document.getElementById('chk-married').checked;
