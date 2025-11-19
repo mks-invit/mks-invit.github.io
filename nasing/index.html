@@ -104,7 +104,7 @@
 
 <script>
     // ==============================================================
-    // URL SCRIPT GOOGLE (TIDAK BERUBAH)
+    // URL SCRIPT GOOGLE
     const API_URL = "https://script.google.com/macros/s/AKfycbxaOo9p7QZHNNBNqt-s7_CPHh_J8672SRAVkSxUv0VljwovwN4zaYx9bkoL_VtB1dTB/exec";
     // ==============================================================
 
@@ -228,41 +228,31 @@
             parentLabel = `<span class="block text-[0.7rem] uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-0.5">Anak dari: <strong class="text-slate-700 dark:text-gray-200">${fatherName}</strong> & <strong class="text-slate-700 dark:text-gray-200">${motherName}</strong></span>`;
         }
 
+        // === MODIFIKASI PASANGAN (SPOUSE) ===
+        // Sekarang spouseHtml bukan lagi DIV pembungkus, melainkan string berisi span-span
         let spouseHtml = '';
         if (person.spouse) {
             const spouses = person.spouse.split(',').map(s => s.trim()).filter(s => s);
             if(spouses.length > 0) {
-                spouseHtml = `<div class="flex flex-wrap gap-1.5 mt-1">`;
                 spouses.forEach(s => {
-                    spouseHtml += `<span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-white/60 text-pink-600 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800"><i class="fas fa-heart mr-1 text-[0.6rem]"></i> ${s}</span>`;
+                    spouseHtml += `<span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-white/60 text-pink-600 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800 cursor-default"><i class="fas fa-heart mr-1 text-[0.6rem]"></i> ${s}</span>`;
                 });
-                spouseHtml += `</div>`;
             }
         }
 
-        // === MODIFIKASI ARRAY WARNA (BORDER KELILING) ===
-        // Menghapus 'border-l-' agar warna berlaku untuk seluruh sisi border
+        // Array warna (sama seperti sebelumnya)
         const generationColors = [
-            // Level 0: Slate
             'bg-slate-100 border-slate-400 dark:bg-slate-800 dark:border-slate-500', 
-            // Level 1: Biru
             'bg-blue-50 border-blue-400 dark:bg-blue-900/20 dark:border-blue-500',
-            // Level 2: Hijau
             'bg-emerald-50 border-emerald-400 dark:bg-emerald-900/20 dark:border-emerald-500',
-            // Level 3: Orange
             'bg-amber-50 border-amber-400 dark:bg-amber-900/20 dark:border-amber-500',
-            // Level 4: Ungu
             'bg-purple-50 border-purple-400 dark:bg-purple-900/20 dark:border-purple-500',
-            // Level 5: Merah Muda
             'bg-rose-50 border-rose-400 dark:bg-rose-900/20 dark:border-rose-500'
         ];
 
         const colorClass = generationColors[level % generationColors.length];
 
         const div = document.createElement('div');
-        
-        // === PERUBAHAN UTAMA PADA BORDER ===
-        // Menggunakan border-[3px] untuk membuat border keliling tebal
         div.className = `relative flex items-start p-4 rounded-lg shadow-sm hover:shadow-md border-[3px] transition-all duration-200 group ${colorClass}`;
         
         if(level === 0) div.classList.add('shadow-md');
@@ -271,13 +261,19 @@
             ? '<i class="fas fa-chevron-right"></i>' 
             : '<i class="fas fa-circle text-[6px] opacity-30"></i>';
 
+        // === MODIFIKASI HTML UTAMA ===
+        // Nama dan Spouse diletakkan dalam satu container flex-row yang sama (flex-wrap)
         div.innerHTML = `
             <button class="toggle-btn w-5 mt-1 mr-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-transform duration-200 ${hasChildren ? 'cursor-pointer' : 'cursor-default'}" onclick="toggleChild(this)">${toggleIcon}</button>
             
             <div class="flex-grow cursor-pointer" onclick="toggleChild(this.previousElementSibling)">
                 ${parentLabel}
-                <span class="block text-lg font-bold mb-1 text-slate-800 dark:text-gray-100">${person.name}</span>
-                ${spouseHtml}
+                
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-lg font-bold text-slate-800 dark:text-gray-100">${person.name}</span>
+                    ${spouseHtml}
+                </div>
+
             </div>
 
             <div class="flex gap-1.5 ml-2 opacity-10 group-hover:opacity-100 transition-opacity duration-300 self-center">
