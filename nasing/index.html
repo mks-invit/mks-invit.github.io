@@ -41,8 +41,8 @@
             50% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0); transform: scale(1.02); }
         }
         .highlight-card {
-            animation: pulse-highlight 1.5s ease-in-out 3; /* Berkedip 3 kali */
-            border-color: #facc15 !important; /* Warna kuning */
+            animation: pulse-highlight 1.5s ease-in-out 3;
+            border-color: #facc15 !important; 
             z-index: 10;
         }
     </style>
@@ -69,11 +69,12 @@
                     list="all-members-list"
                     class="w-full bg-transparent border-none focus:ring-0 text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none"
                     placeholder="Cari nama keluarga..." 
-                    onchange="handleSearch(this.value)"
+                    oninput="handleSearchInput(this.value)"
+                    onchange="handleSearchExecute(this.value)"
                     autocomplete="off"
                 >
             </div>
-            <p class="text-[10px] text-gray-400 mt-1">Ketik nama lalu pilih (Tekan Enter)</p>
+            <p class="text-[10px] text-gray-400 mt-1">Ketik minimal 2 huruf untuk mencari</p>
         </div>
     </header>
 
@@ -102,8 +103,7 @@
 
         <div class="mb-4">
             <label class="block text-sm font-semibold mb-1 dark:text-gray-300">Pasangan Orang Tua</label>
-            <input type="text" id="inp-mother" list="all-members-list" class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-400" placeholder="Cari atau ketik nama..." autocomplete="off">
-            <div class="text-xs text-gray-400 mt-1">Otomatis disarankan dari pasangan Ayah.</div>
+            <input type="text" id="inp-mother" class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-400" placeholder="Ketik nama..." autocomplete="off">
         </div>
 
         <div class="mb-4">
@@ -135,6 +135,7 @@
     // ==============================================================
 
     let allData = [];
+    let searchableNamesList = []; // Variabel baru untuk menyimpan daftar nama di memori
 
     const themeBtn = document.getElementById('theme-btn');
     const themeIcon = themeBtn.querySelector('i');
@@ -169,7 +170,7 @@
             const response = await fetch(API_URL);
             const data = await response.json();
             allData = data;
-            updateAllMembersList();
+            prepareSearchableNames(); // Simpan nama ke memori, jangan ke HTML dulu
             renderTree();
             showLoader(false);
         } catch (error) {
@@ -188,7 +189,7 @@
             });
             const data = await response.json();
             allData = data; 
-            updateAllMembersList();
+            prepareSearchableNames();
             renderTree();
             showLoader(false);
         } catch (error) {
@@ -202,9 +203,8 @@
         document.getElementById('tree-root').style.display = show ? 'none' : 'block';
     }
 
-    function updateAllMembersList() {
-        const datalist = document.getElementById('all-members-list');
-        datalist.innerHTML = ''; 
+    // MENGUMPULKAN DATA NAMA TAPI TIDAK LANGSUNG MASUK DATALIST
+    function prepareSearchableNames() {
         const uniqueNames = new Set();
 
         allData.forEach(person => {
@@ -215,12 +215,65 @@
                 });
             }
         });
+        
+        // Simpan ke variabel global, urutkan abjad
+        searchableNamesList = Array.from(uniqueNames).sort();
+    }
 
-        Array.from(uniqueNames).sort().forEach(name => {
+    // ==============================================================
+    // LOGIKA PENCARIAN BARU (MINIMAL 2 HURUF)
+    // ==============================================================
+    
+    // Fungsi ini dipanggil setiap user mengetik (oninput)
+    function handleSearchInput(value) {
+        const datalist = document.getElementById('all-members-list');
+        
+        // Jika kurang dari 2 huruf, kosongkan datalist agar dropdown tidak muncul
+        if (!value || value.length < 2) {
+            datalist.innerHTML = '';
+            return;
+        }
+
+        // Jika >= 2 huruf, isi datalist dengan nama yang COCOK saja
+        // (Ini membuat browser menampilkan dropdown)
+        const lowerVal = value.toLowerCase();
+        const filteredNames = searchableNamesList.filter(name => 
+            name.toLowerCase().includes(lowerVal)
+        );
+
+        // Render ulang isi datalist
+        // Tips: Kita hanya render max 20 hasil agar browser tidak berat
+        datalist.innerHTML = '';
+        filteredNames.slice(0, 20).forEach(name => {
             const option = document.createElement('option');
             option.value = name;
             datalist.appendChild(option);
         });
+    }
+
+    // Fungsi ini dipanggil saat user menekan Enter atau memilih item (onchange)
+    function handleSearchExecute(name) {
+        if (!name) return;
+        
+        const target = allData.find(d => d.name.toLowerCase() === name.toLowerCase());
+        
+        if (target) {
+            document.getElementById('search-box').blur();
+            // Reset datalist supaya pas klik lagi gak langsung muncul semua
+            document.getElementById('all-members-list').innerHTML = ''; 
+            expandAndHighlight(target.id);
+        } else {
+            const spouseMatch = allData.find(d => d.spouse && d.spouse.toLowerCase().includes(name.toLowerCase()));
+            if(spouseMatch) {
+                document.getElementById('search-box').blur();
+                document.getElementById('all-members-list').innerHTML = '';
+                expandAndHighlight(spouseMatch.id);
+            } else {
+                // Jangan alert jika user baru ngetik sebagian dan belum enter, 
+                // tapi onchange biasanya trigger saat lost focus atau enter.
+                // alert('Nama tidak ditemukan.'); 
+            }
+        }
     }
 
     function renderTree() {
@@ -277,7 +330,6 @@
         const colorClass = generationColors[level % generationColors.length];
 
         const div = document.createElement('div');
-        // MODIFIED: Tambahkan ID untuk pencarian
         div.id = 'card-' + person.id;
         div.className = `relative flex items-start p-4 rounded-lg shadow-sm hover:shadow-md border-[3px] transition-all duration-200 group ${colorClass}`;
         
@@ -357,7 +409,7 @@
         const div = document.createElement('div');
         div.className = 'flex gap-2';
         div.innerHTML = `
-            <input type="text" class="inp-spouse-dynamic w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-primary outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white" list="all-members-list" value="${value}" placeholder="Cari atau ketik Nama Pasangan..." autocomplete="off">
+            <input type="text" class="inp-spouse-dynamic w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-primary outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white" value="${value}" placeholder="Nama Pasangan..." autocomplete="off">
             <button type="button" class="w-10 flex-shrink-0 bg-red-50 text-red-500 rounded-lg border border-red-100 hover:bg-red-100 flex items-center justify-center transition-colors dark:bg-red-900/20 dark:border-red-800 dark:hover:bg-red-900/40" onclick="this.parentElement.remove()" title="Hapus"><i class="fas fa-times"></i></button>
         `;
         container.appendChild(div);
@@ -447,77 +499,40 @@
         }
     }
 
-    // ==============================================================
-    // FITUR PENCARIAN & AUTO EXPAND (BARU)
-    // ==============================================================
-    function handleSearch(name) {
-        if (!name) return;
-        
-        // Cari data orang berdasarkan nama (case insensitive)
-        const target = allData.find(d => d.name.toLowerCase() === name.toLowerCase());
-        
-        if (target) {
-            // Kosongkan search box agar bersih (opsional)
-            document.getElementById('search-box').blur();
-            
-            // Jalankan fungsi expand
-            expandAndHighlight(target.id);
-        } else {
-            // Cek juga apakah itu nama pasangan
-            const spouseMatch = allData.find(d => d.spouse && d.spouse.toLowerCase().includes(name.toLowerCase()));
-            if(spouseMatch) {
-                document.getElementById('search-box').blur();
-                expandAndHighlight(spouseMatch.id);
-            } else {
-                alert('Nama tidak ditemukan dalam silsilah.');
-            }
-        }
-    }
-
     function expandAndHighlight(targetId) {
-        // Hapus highlight lama jika ada
         document.querySelectorAll('.highlight-card').forEach(el => {
             el.classList.remove('highlight-card');
         });
 
         let curr = allData.find(d => d.id === targetId);
         
-        // 1. Loop ke atas (ke orang tua) untuk membuka semua folder yang tertutup
         while (curr && curr.parentId && curr.parentId !== 'root') {
             const parentId = curr.parentId;
             const parentCard = document.getElementById('card-' + parentId);
             
             if (parentCard) {
                 const toggleBtn = parentCard.querySelector('.toggle-btn');
-                const childUl = parentCard.nextElementSibling; // Mengambil elemen <ul> anak
+                const childUl = parentCard.nextElementSibling; 
                 
-                // Jika folder tertutup (hidden), buka folder tersebut
                 if (childUl && childUl.classList.contains('hidden')) {
                     childUl.classList.remove('hidden');
                     childUl.classList.add('block', 'animate-slide-down');
-                    // Ubah ikon panah menjadi ke bawah
                     if (toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i>';
                 }
             }
-            // Lanjut naik ke kakek/nenek dst
             curr = allData.find(d => d.id === parentId);
         }
 
-        // 2. Scroll ke target dan beri highlight
         setTimeout(() => {
             const targetCard = document.getElementById('card-' + targetId);
             if (targetCard) {
                 targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
-                // Efek highlight
                 targetCard.classList.add('highlight-card');
-                
-                // Hapus class highlight setelah animasi selesai (opsional, biar bersih)
                 setTimeout(() => {
                     targetCard.classList.remove('highlight-card');
                 }, 4500);
             }
-        }, 300); // Delay sedikit agar animasi expand selesai dulu
+        }, 300); 
     }
 </script>
 </body>
