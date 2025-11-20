@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silsilah Keluarga Puang Guru Nasing</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { colors: { primary: '#3498db', 'primary-dark': '#2980b9', 'bg-light': '#f4f7f6', 'bg-dark': '#121212', 'card-dark': '#1e1e1e' }, fontFamily: { sans: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif'] } } }
+        }
+    </script>
+    <style>
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slide-down { animation: slideDown 0.3s ease-out; }
+        .tree-line { border-left: 2px dashed #d1d5db; }
+        .dark .tree-line { border-left: 2px dashed #4b5563; }
+        @keyframes pulse-highlight { 0%, 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7); transform: scale(1); } 50% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0); transform: scale(1.02); } }
+        .highlight-card { animation: pulse-highlight 1.5s ease-in-out 3; border-color: #facc15 !important; z-index: 10; }
+        #custom-search-results::-webkit-scrollbar { width: 6px; }
+        #custom-search-results::-webkit-scrollbar-track { background: transparent; }
+        #custom-search-results::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        .dark #custom-search-results::-webkit-scrollbar-thumb { background-color: #4b5563; }
+        
+        /* Animasi untuk tombol Sync */
+        @keyframes bounce-gentle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+        .animate-bounce-gentle { animation: bounce-gentle 2s infinite; }
+    </style>
+</head>
+<body class="bg-bg-light text-slate-700 dark:bg-bg-dark dark:text-gray-200 font-sans transition-colors duration-300 p-5 min-h-screen">
+
+<div class="max-w-4xl mx-auto pb-20">
+    <header class="text-center mb-10 mt-5">
+        <div class="flex justify-center items-center gap-3 mb-1 flex-wrap">
+            <button onclick="fetchData()" class="w-8 h-8 rounded-full border border-gray-400 text-gray-500 dark:text-gray-300 dark:border-gray-500 hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200" title="Muat Ulang Data Server"><i class="fas fa-sync-alt"></i></button>
+            
+            <button id="btn-sync" onclick="doSync()" class="hidden relative w-8 h-8 rounded-full border border-orange-400 text-orange-500 hover:bg-orange-500 hover:text-white flex items-center justify-center transition-all duration-200 animate-bounce-gentle shadow-lg" title="Kirim Data ke Server">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span id="sync-badge" class="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm border border-white dark:border-gray-800">0</span>
+            </button>
+            <h4 class="text-xl font-bold text-slate-800 dark:text-gray-100 m-0 px-2">Silsilah Puang Guru Nasing</h4>
+            
+            <button id="theme-btn" class="w-8 h-8 rounded-full border border-gray-400 text-gray-500 dark:text-gray-300 dark:border-gray-500 hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200"><i class="fas fa-moon"></i></button>
+            <button id="btn-login-trigger" onclick="openLoginModal()" class="w-8 h-8 rounded-full border border-gray-400 text-gray-500 dark:text-gray-300 dark:border-gray-500 hover:bg-green-600 hover:text-white hover:border-green-600 flex items-center justify-center transition-all duration-200"><i class="fas fa-lock"></i></button>
+            <button id="btn-logout-trigger" onclick="doLogout()" class="hidden w-8 h-8 rounded-full border border-red-400 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all duration-200"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+        
+        <div class="relative w-full max-w-xs mx-auto mt-4 group z-30">
+            <div class="flex items-center bg-white dark:bg-gray-800 rounded-full px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm focus-within:shadow-md focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all">
+                <i class="fas fa-search text-gray-400 mr-3 group-focus-within:text-primary"></i>
+                <input type="text" id="search-box" class="w-full bg-transparent border-none focus:ring-0 text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none" placeholder="Cari nama keluarga..." oninput="handleSearchInput(this.value)" onkeydown="if(event.key === 'Enter') handleSearchExecute(this.value)" onblur="setTimeout(() => hideSearch(), 200)" autocomplete="off">
+            </div>
+            <ul id="custom-search-results" class="absolute w-full bg-white dark:bg-card-dark mt-2 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden border border-gray-200 dark:border-gray-600 z-50 text-sm text-left"></ul>
+        </div>
+    </header>
+
+    <div id="loader" class="flex flex-col items-center mt-16" style="display:none;">
+        <div class="w-10 h-10 border-4 border-gray-200 border-t-primary rounded-full animate-spin mb-3"></div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Memproses Data...</p>
+    </div>
+
+    <div id="tree-root" class="hidden"></div>
+
+    <footer class="mt-16 border-t border-gray-200 dark:border-gray-700 pt-6 pb-8 text-center transition-colors duration-300">
+        <p class="text-sm font-semibold text-slate-600 dark:text-gray-300 mb-1">
+            &copy; Copyright Keluarga Besar Puang Guru Nasing
+        </p>
+        <p class="text-xs text-gray-500 dark:text-gray-500">
+            Original Design by 
+            <a href="https://wa.me/6282395223314" target="_blank" rel="noopener noreferrer" class="font-bold text-primary hover:text-primary-dark hover:underline transition-colors duration-200 ml-1">
+                i.s Dg. Tawang
+            </a> 
+            & 
+            <a href="https://wa.me/6285649117103" target="_blank" rel="noopener noreferrer" class="font-bold text-primary hover:text-primary-dark hover:underline transition-colors duration-200">
+                Ratna Dg. Kebo
+            </a>
+            <br> Berkolaborasi degan Seluruh Keturunan Puang Guru Nasing
+        </p>
+    </footer>
+</div>
+
+<datalist id="existing-members"></datalist>
+
+<div id="login-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden justify-center items-center p-4">
+    <div class="bg-white dark:bg-card-dark w-full max-w-sm rounded-xl shadow-2xl p-6 animate-slide-down">
+        <h3 class="text-xl font-bold text-center mb-4 dark:text-white">Login Admin</h3>
+        <div class="space-y-4">
+            <div><label class="block text-sm font-medium mb-1 dark:text-gray-300">Username</label><input type="text" id="login-user" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"></div>
+            <div><label class="block text-sm font-medium mb-1 dark:text-gray-300">Password</label><input type="password" id="login-pass" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"></div>
+            <div id="login-error" class="text-red-500 text-xs hidden text-center">Username/Password salah!</div>
+            <div class="flex gap-2 pt-2"><button onclick="closeLoginModal()" class="w-1/2 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">Batal</button><button onclick="doLogin()" class="w-1/2 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark">Masuk</button></div>
+        </div>
+    </div>
+</div>
+
+<div id="modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden justify-center items-center p-4">
+    <div class="bg-white dark:bg-card-dark w-full max-w-lg rounded-xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto transition-colors duration-300">
+        <h3 id="modal-title" class="text-xl font-bold text-primary-dark border-b border-gray-200 dark:border-gray-700 pb-3 mb-5">Form Data</h3>
+        <input type="hidden" id="inp-mode"><input type="hidden" id="inp-id"><input type="hidden" id="inp-parent">
+
+        <div class="mb-4">
+            <div class="flex justify-between items-end mb-2"><label class="text-sm font-semibold dark:text-gray-300">Daftar Anggota Keluarga</label></div>
+            <div id="children-inputs-container" class="space-y-3"></div>
+            <button type="button" id="btn-add-more-child" class="hidden mt-3 text-sm font-medium text-primary hover:text-primary-dark flex items-center gap-1" onclick="addChildInputRow()"><i class="fas fa-plus-circle"></i> Tambah anak lagi</button>
+        </div>
+
+        <div class="mb-4 pt-2 border-t border-gray-100 dark:border-gray-700">
+            <label class="block text-sm font-semibold mb-1 dark:text-gray-300">Pasangan Orang Tua (Ibu/Ayah)</label>
+            <input type="text" id="inp-mother" list="existing-members" class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-400 text-sm" placeholder="Cari nama keluarga atau ketik baru..." autocomplete="off">
+            <p class="text-[10px] text-gray-400 mt-1">*Pilih dari daftar untuk menautkan data</p>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 mt-6">
+            <button class="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200" onclick="closeModal()">Batal</button>
+            <button class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark shadow-md" onclick="submitData()">Simpan</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // === GANTI URL DEPLOYMENT DISINI ===
+    const API_URL = "https://script.google.com/macros/s/AKfycbw-b4icuMTUXsLY33VP35Qr6hqnR7WM4haccQUvtfV28la_FzMOZdK6qpyLn4VI11tT/exec"; 
+    
+    const ADMIN_USER = "ihsans", ADMIN_PASS = "ihsans123";
+    let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; 
+    let allData = [], searchableNamesList = []; 
+    // Variabel untuk menampung antrean
+    let pendingQueue = JSON.parse(localStorage.getItem('pendingChanges') || '[]');
+
+    const htmlEl = document.documentElement;
+
+    if (localStorage.getItem('theme') !== 'light') { htmlEl.classList.add('dark'); document.querySelector('#theme-btn i').classList.replace('fa-moon', 'fa-sun'); }
+    document.getElementById('theme-btn').addEventListener('click', () => {
+        htmlEl.classList.toggle('dark');
+        localStorage.setItem('theme', htmlEl.classList.contains('dark') ? 'dark' : 'light');
+        document.querySelector('#theme-btn i').classList.toggle('fa-sun'); document.querySelector('#theme-btn i').classList.toggle('fa-moon');
+    });
+
+    window.onload = function() { 
+        updateLoginUI(); 
+        updateSyncUI(); 
+        fetchData(); 
+    };
+
+    // ============================
+    // LOGIKA SYNC / ANTREAN
+    // ============================
+    
+    function updateSyncUI() {
+        const btn = document.getElementById('btn-sync');
+        const badge = document.getElementById('sync-badge');
+        const count = pendingQueue.length;
+        
+        if (count > 0) {
+            btn.classList.remove('hidden');
+            btn.classList.add('flex');
+            badge.textContent = count;
+            document.title = `(${count}) Menunggu Sync - Silsilah`;
+        } else {
+            btn.classList.add('hidden');
+            btn.classList.remove('flex');
+            document.title = "Silsilah Keluarga Puang Guru Nasing";
+        }
+    }
+
+    function enqueueAction(payload) {
+        pendingQueue.push(payload);
+        localStorage.setItem('pendingChanges', JSON.stringify(pendingQueue));
+        updateSyncUI();
+        closeModal();
+        // NOTIFIKASI DIHAPUS SESUAI PERMINTAAN
+    }
+
+    async function doSync() {
+        if (pendingQueue.length === 0) return;
+        if (!confirm(`Kirim ${pendingQueue.length} perubahan yang tertunda ke server sekarang?`)) return;
+
+        showLoader(true);
+        const btn = document.getElementById('btn-sync');
+        btn.disabled = true; 
+
+        try {
+            // Loop Sequential (Berurutan) agar ID parent terbuat sebelum ID anak
+            for (let i = 0; i < pendingQueue.length; i++) {
+                const payload = pendingQueue[i];
+                await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+            }
+
+            // Reset Queue setelah sukses
+            pendingQueue = [];
+            localStorage.removeItem('pendingChanges');
+            updateSyncUI();
+            
+            // Refresh Data Full dari Server
+            const r = await fetch(API_URL);
+            allData = await r.json();
+            prepareSearchableNames();
+            renderTree();
+            
+            alert("Sinkronisasi Berhasil! Semua data tersimpan.");
+
+        } catch (e) {
+            alert("Terjadi kesalahan saat Sync: " + e + "\n\nCek koneksi internet dan coba lagi.");
+        } finally {
+            showLoader(false);
+            btn.disabled = false;
+        }
+    }
+
+    // ============================
+    // LOGIKA STANDAR
+    // ============================
+
+    function openLoginModal() { document.getElementById('login-modal').classList.replace('hidden', 'flex'); document.getElementById('login-user').value=''; document.getElementById('login-pass').value=''; document.getElementById('login-error').classList.add('hidden'); }
+    function closeLoginModal() { document.getElementById('login-modal').classList.replace('flex', 'hidden'); }
+    function doLogin() {
+        if (document.getElementById('login-user').value === ADMIN_USER && document.getElementById('login-pass').value === ADMIN_PASS) {
+            isLoggedIn = true; localStorage.setItem('isLoggedIn', 'true'); closeLoginModal(); updateLoginUI(); renderTree(); alert("Login Berhasil!");
+        } else { document.getElementById('login-error').classList.remove('hidden'); }
+    }
+    function doLogout() { isLoggedIn = false; localStorage.removeItem('isLoggedIn'); updateLoginUI(); renderTree(); }
+    function updateLoginUI() {
+        document.getElementById('btn-login-trigger').classList.toggle('hidden', isLoggedIn);
+        document.getElementById('btn-logout-trigger').classList.toggle('hidden', !isLoggedIn);
+    }
+
+    async function fetchData() {
+        showLoader(true);
+        try {
+            const r = await fetch(API_URL); allData = await r.json();
+            prepareSearchableNames(); renderTree(); showLoader(false);
+        } catch (e) { alert("Error: " + e); showLoader(false); }
+    }
+
+    function showLoader(show) { 
+        document.getElementById('loader').style.display = show ? 'flex' : 'none'; 
+        document.getElementById('tree-root').style.display = show ? 'none' : 'block'; 
+    }
+
+    function prepareSearchableNames() {
+        const uniqueNames = new Set();
+        const datalist = document.getElementById('existing-members');
+        datalist.innerHTML = ''; 
+
+        allData.forEach(p => {
+            if(p.name) uniqueNames.add(p.name.trim());
+            if(p.spouse) p.spouse.split(',').forEach(s => { if(s.trim()) uniqueNames.add(s.trim()); });
+        });
+        
+        searchableNamesList = Array.from(uniqueNames).sort();
+        searchableNamesList.forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            datalist.appendChild(opt);
+        });
+    }
+
+    function handleSearchInput(v) {
+        const dd = document.getElementById('custom-search-results');
+        if (!v || v.length < 2) { dd.classList.add('hidden'); return; }
+        const f = searchableNamesList.filter(n => n.toLowerCase().includes(v.toLowerCase()));
+        dd.innerHTML = '';
+        if (f.length > 0) {
+            dd.classList.remove('hidden');
+            f.slice(0, 20).forEach(n => {
+                const li = document.createElement('li');
+                li.className = "px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-slate-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700";
+                li.textContent = n; li.onclick = () => { document.getElementById('search-box').value = n; handleSearchExecute(n); dd.classList.add('hidden'); };
+                dd.appendChild(li);
+            });
+        } else { dd.innerHTML = '<li class="px-4 py-2 text-gray-400 italic text-xs">Tidak ditemukan</li>'; dd.classList.remove('hidden'); }
+    }
+    function hideSearch() { document.getElementById('custom-search-results').classList.add('hidden'); }
+    function handleSearchExecute(n) {
+        let t = allData.find(d => d.name.toLowerCase() === n.toLowerCase());
+        if(!t) t = allData.find(d => d.spouse && d.spouse.toLowerCase().includes(n.toLowerCase()));
+        if(t) { document.getElementById('search-box').blur(); hideSearch(); expandAndHighlight(t.id); }
+    }
+
+    function renderTree() {
+        const c = document.getElementById('tree-root'); c.innerHTML = '';
+        const roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root');
+        const ul = document.createElement('ul'); ul.className = 'pl-0 border-none';
+        roots.forEach(r => ul.appendChild(createNode(r, 0)));
+        c.appendChild(ul);
+    }
+    function createNode(p, lvl) {
+        const li = document.createElement('li'); li.className = 'my-3';
+        const children = allData.filter(d => d.parentId == p.id || (d.motherName && d.motherName.trim() === p.name));
+        const hasChildren = children.length > 0;
+        
+        let pLabel = `<span class="block text-[0.7rem] uppercase text-primary mb-0.5">★ Leluhur</span>`;
+        if (p.parentId && p.parentId !== 'root') {
+            const f = allData.find(d => d.id === p.parentId);
+            let mName = p.motherName || (f && f.spouse ? f.spouse : "???");
+            pLabel = `<span class="block text-[0.7rem] uppercase text-gray-500 dark:text-gray-400 mb-0.5">Anak dari: <strong class="text-slate-700 dark:text-gray-200">${f ? f.name : '???'}</strong> & <strong class="text-slate-700 dark:text-gray-200">${mName}</strong></span>`;
+        }
+
+        let spHtml = '';
+        if (p.spouse) p.spouse.split(',').forEach(s => { if(s.trim()) spHtml += `<span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-white/60 text-pink-600 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800 cursor-default mr-1"><i class="fas fa-heart mr-1 text-[0.6rem]"></i> ${s.trim()}</span>`; });
+
+        const clr = ['bg-slate-100 border-slate-400 dark:bg-slate-800 dark:border-slate-500', 'bg-blue-50 border-blue-400 dark:bg-blue-900/20 dark:border-blue-500', 'bg-emerald-50 border-emerald-400 dark:bg-emerald-900/20 dark:border-emerald-500', 'bg-amber-50 border-amber-400 dark:bg-amber-900/20 dark:border-amber-500', 'bg-purple-50 border-purple-400 dark:bg-purple-900/20 dark:border-purple-500', 'bg-rose-50 border-rose-400 dark:bg-rose-900/20 dark:border-rose-500'];
+        const adm = isLoggedIn ? `<div class="flex gap-1.5 ml-2 opacity-10 group-hover:opacity-100 transition-opacity duration-300 self-center"><button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('edit','${p.id}')"><i class="fas fa-pen text-xs"></i></button><button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('add','${p.id}')"><i class="fas fa-plus text-xs"></i></button>${lvl>0?`<button class="w-8 h-8 rounded-full bg-red-100 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors dark:bg-red-900/40 dark:hover:bg-red-600" onclick="deleteItem('${p.id}')"><i class="fas fa-trash text-xs"></i></button>`:''}</div>` : '';
+
+        const div = document.createElement('div');
+        div.id = 'card-' + p.id;
+        div.className = `relative flex items-start p-4 rounded-lg shadow-sm hover:shadow-md border-[3px] transition-all duration-200 group ${clr[lvl % clr.length]} ${lvl===0?'shadow-md':''}`;
+        div.innerHTML = `<button class="toggle-btn w-5 mt-1 mr-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-transform duration-200 ${hasChildren?'cursor-pointer':'cursor-default'}" onclick="toggleChild(this)">${hasChildren?'<i class="fas fa-chevron-right"></i>':'<i class="fas fa-circle text-[6px] opacity-30"></i>'}</button><div class="flex-grow cursor-pointer" onclick="toggleChild(this.previousElementSibling)">${pLabel}<div class="flex flex-wrap items-center gap-2"><span class="text-lg font-bold text-slate-800 dark:text-gray-100">${p.name}</span>${spHtml}</div></div>${adm}`;
+        li.appendChild(div);
+
+        if (hasChildren) {
+            const cUl = document.createElement('ul'); cUl.className = 'children-container hidden pl-[22px] tree-line list-none';
+            if (lvl===0) { cUl.classList.replace('hidden','block'); div.querySelector('.toggle-btn').innerHTML='<i class="fas fa-chevron-down"></i>'; }
+            children.forEach(ch => cUl.appendChild(createNode(ch, lvl+1)));
+            li.appendChild(cUl);
+        }
+        return li;
+    }
+    function toggleChild(b) { const ul = b.parentElement.nextElementSibling; if(ul && ul.tagName==='UL' && ul.children.length>0) { const h = ul.classList.contains('hidden'); ul.classList.toggle('hidden'); ul.classList.toggle('block'); ul.classList.toggle('animate-slide-down', h); b.innerHTML = h ? '<i class="fas fa-chevron-down"></i>' : '<i class="fas fa-chevron-right"></i>'; } }
+    function expandAndHighlight(tid) {
+        document.querySelectorAll('.highlight-card').forEach(e => e.classList.remove('highlight-card'));
+        let c = allData.find(d => d.id === tid);
+        while (c && c.parentId && c.parentId !== 'root') {
+            const pc = document.getElementById('card-' + c.parentId);
+            if (pc) { const ul = pc.nextElementSibling; if(ul && ul.classList.contains('hidden')) { ul.classList.replace('hidden','block'); ul.classList.add('animate-slide-down'); pc.querySelector('.toggle-btn').innerHTML='<i class="fas fa-chevron-down"></i>'; } }
+            c = allData.find(d => d.id === c.parentId);
+        }
+        setTimeout(() => { const tc = document.getElementById('card-' + tid); if(tc){ tc.scrollIntoView({behavior:'smooth',block:'center'}); tc.classList.add('highlight-card'); setTimeout(()=>tc.classList.remove('highlight-card'),4500); } }, 300);
+    }
+
+    function toggleChildSpouseInput(chk) { const i = chk.closest('.child-input-row').querySelector('.inp-child-spouse'); if(chk.checked){ i.classList.remove('hidden'); i.focus(); } else { i.classList.add('hidden'); i.value=''; } }
+    function addChildInputRow(n="", s="") {
+        const c = document.getElementById('children-inputs-container');
+        const d = document.createElement('div');
+        d.className = 'child-input-row bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 relative animate-slide-down';
+        const del = c.children.length>0 ? `<button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500" onclick="this.closest('.child-input-row').remove()"><i class="fas fa-times"></i></button>` : ``;
+        const hasS = s && s.trim()!=="";
+        d.innerHTML = `${del}<div class="mb-2 pr-5"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Nama Lengkap</label><input type="text" class="inp-child-name w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Nama anak..." value="${n}" autocomplete="off"></div><div><div class="flex items-center gap-2 mb-1"><input type="checkbox" class="w-3.5 h-3.5 text-primary rounded focus:ring-primary" onchange="toggleChildSpouseInput(this)" ${hasS?"checked":""}><label class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer select-none" onclick="this.previousElementSibling.click()">Sudah Menikah?</label></div><input type="text" list="existing-members" class="inp-child-spouse ${hasS?"":"hidden"} w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Cari / Ketik nama pasangan..." value="${s}" autocomplete="off"></div>`;
+        c.appendChild(d);
+    }
+    function openModal(mode, id) {
+        document.getElementById('modal').classList.replace('hidden', 'flex');
+        document.getElementById('inp-mode').value = mode;
+        document.getElementById('children-inputs-container').innerHTML = ''; 
+        document.getElementById('inp-mother').value = ''; document.getElementById('inp-parent').value = '';
+        if (mode === 'add') {
+            document.getElementById('modal-title').innerText = "Tambah Keturunan"; document.getElementById('inp-parent').value = id; document.getElementById('btn-add-more-child').classList.remove('hidden'); addChildInputRow();
+            const f = allData.find(d => d.id == id);
+            if (f && f.spouse && f.spouse.split(',').length === 1) document.getElementById('inp-mother').value = f.spouse.trim();
+        } else {
+            document.getElementById('modal-title').innerText = "Edit Data"; document.getElementById('btn-add-more-child').classList.add('hidden');
+            const p = allData.find(d => d.id == id); document.getElementById('inp-id').value = id; addChildInputRow(p.name, p.spouse); document.getElementById('inp-mother').value = p.motherName || '';
+        }
+    }
+    function closeModal() { document.getElementById('modal').classList.replace('flex', 'hidden'); }
+    
+    function submitData() {
+        const mode = document.getElementById('inp-mode').value;
+        const rows = document.querySelectorAll('.child-input-row');
+        const childrenData = [];
+        rows.forEach(r => {
+            const n = r.querySelector('.inp-child-name').value.trim();
+            const sInp = r.querySelector('.inp-child-spouse');
+            let s = (!sInp.classList.contains('hidden')) ? sInp.value.trim() : "";
+            if (n) childrenData.push({ name: n, spouse: s });
+        });
+        if (childrenData.length === 0) { alert("Wajib isi minimal satu nama!"); return; }
+        const pl = { action: mode, motherName: document.getElementById('inp-mother').value };
+        if (mode === 'add') { pl.parentId = document.getElementById('inp-parent').value; pl.children = childrenData; }
+        else { pl.id = document.getElementById('inp-id').value; pl.name = childrenData[0].name; pl.spouse = childrenData[0].spouse; }
+        
+        enqueueAction(pl);
+    }
+    
+    function deleteItem(id) { 
+        if(confirm("Hapus data ini beserta keturunannya? (Akan masuk antrean Sync)")) {
+            enqueueAction({ action: 'delete', id: id });
+        } 
+    }
+</script>
+</body>
+</html>
