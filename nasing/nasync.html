@@ -36,6 +36,7 @@
         <p class="text-sm text-gray-300 mt-2">Aplikasi akan berjalan dalam layar penuh</p>
     </div>
 </div>
+
 <div class="max-w-4xl mx-auto pb-20">
     <header class="text-center mb-10 mt-5">
         <div class="flex justify-center items-center gap-3 mb-1 flex-wrap">
@@ -116,7 +117,6 @@
 </div>
 
 <script>
-    // === KONFIGURASI ===
     const API_URL = "https://script.google.com/macros/s/AKfycbw-b4icuMTUXsLY33VP35Qr6hqnR7WM4haccQUvtfV28la_FzMOZdK6qpyLn4VI11tT/exec"; 
     const ADMIN_USER = "ihsans", ADMIN_PASS = "ihsans123";
     
@@ -125,23 +125,14 @@
     let pendingQueue = JSON.parse(localStorage.getItem('pendingChanges') || '[]');
     const htmlEl = document.documentElement;
 
-    // === [BARU] FUNGSI FULL SCREEN ===
     function startApp() {
         const elem = document.documentElement;
         const overlay = document.getElementById('fullscreen-overlay');
-
-        // Trigger Full Screen
         if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => console.log(err)); } 
         else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } 
         else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
-
-        // Hilangkan Overlay dengan animasi
-        overlay.style.opacity = '0';
-        setTimeout(() => {
-            overlay.remove();
-        }, 500);
+        overlay.style.opacity = '0'; setTimeout(() => { overlay.remove(); }, 500);
     }
-    // =================================
 
     if (localStorage.getItem('theme') !== 'light') { htmlEl.classList.add('dark'); document.querySelector('#theme-btn i').classList.replace('fa-moon', 'fa-sun'); }
     document.getElementById('theme-btn').addEventListener('click', () => {
@@ -150,43 +141,36 @@
         document.querySelector('#theme-btn i').classList.toggle('fa-sun'); document.querySelector('#theme-btn i').classList.toggle('fa-moon');
     });
 
-    window.onload = function() { 
-        updateLoginUI(); 
-        updateSyncUI(); 
-        fetchData(); 
-    };
+    window.onload = function() { updateLoginUI(); updateSyncUI(); fetchData(); };
 
-    // === LOGIKA SYNC ===
     function updateSyncUI() {
         const btn = document.getElementById('btn-sync');
         const badge = document.getElementById('sync-badge');
         const count = pendingQueue.length;
-        if (count > 0) {
-            btn.classList.remove('hidden'); btn.classList.add('flex'); badge.textContent = count; document.title = `(${count}) Menunggu Sync`;
-        } else {
-            btn.classList.add('hidden'); btn.classList.remove('flex'); document.title = "Silsilah Keluarga";
-        }
+        if (count > 0) { btn.classList.remove('hidden'); btn.classList.add('flex'); badge.textContent = count; document.title = `(${count}) Menunggu Sync`; } 
+        else { btn.classList.add('hidden'); btn.classList.remove('flex'); document.title = "Silsilah Keluarga"; }
     }
+    
     function enqueueAction(payload) {
         pendingQueue.push(payload);
         localStorage.setItem('pendingChanges', JSON.stringify(pendingQueue));
         updateSyncUI();
         closeModal();
     }
+    
     async function doSync() {
         if (pendingQueue.length === 0) return;
-        if (!confirm(`Kirim ${pendingQueue.length} perubahan yang tertunda ke server sekarang?`)) return;
+        
         showLoader(true);
         const btn = document.getElementById('btn-sync'); btn.disabled = true; 
         try {
             for (let i = 0; i < pendingQueue.length; i++) { await fetch(API_URL, { method: "POST", body: JSON.stringify(pendingQueue[i]) }); }
             pendingQueue = []; localStorage.removeItem('pendingChanges'); updateSyncUI();
             const r = await fetch(API_URL); allData = await r.json(); prepareSearchableNames(); renderTree();
-            alert("Sinkronisasi Berhasil!");
+            // NOTIFIKASI SUKSES DIHAPUS
         } catch (e) { alert("Error Sync: " + e); } finally { showLoader(false); btn.disabled = false; }
     }
 
-    // === LOGIKA DATA & TREE ===
     function openLoginModal() { document.getElementById('login-modal').classList.replace('hidden', 'flex'); document.getElementById('login-user').value=''; document.getElementById('login-pass').value=''; document.getElementById('login-error').classList.add('hidden'); }
     function closeLoginModal() { document.getElementById('login-modal').classList.replace('flex', 'hidden'); }
     function doLogin() {
