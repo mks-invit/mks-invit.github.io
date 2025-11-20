@@ -167,17 +167,19 @@
             for (let i = 0; i < pendingQueue.length; i++) { await fetch(API_URL, { method: "POST", body: JSON.stringify(pendingQueue[i]) }); }
             pendingQueue = []; localStorage.removeItem('pendingChanges'); updateSyncUI();
             const r = await fetch(API_URL); allData = await r.json(); prepareSearchableNames(); renderTree();
-            // NOTIFIKASI SUKSES DIHAPUS
         } catch (e) { alert("Error Sync: " + e); } finally { showLoader(false); btn.disabled = false; }
     }
 
     function openLoginModal() { document.getElementById('login-modal').classList.replace('hidden', 'flex'); document.getElementById('login-user').value=''; document.getElementById('login-pass').value=''; document.getElementById('login-error').classList.add('hidden'); }
     function closeLoginModal() { document.getElementById('login-modal').classList.replace('flex', 'hidden'); }
+    
+    // [MODIFIKASI] ALERT HILANG DISINI
     function doLogin() {
         if (document.getElementById('login-user').value === ADMIN_USER && document.getElementById('login-pass').value === ADMIN_PASS) {
-            isLoggedIn = true; localStorage.setItem('isLoggedIn', 'true'); closeLoginModal(); updateLoginUI(); renderTree(); alert("Login Berhasil!");
+            isLoggedIn = true; localStorage.setItem('isLoggedIn', 'true'); closeLoginModal(); updateLoginUI(); renderTree(); 
         } else { document.getElementById('login-error').classList.remove('hidden'); }
     }
+
     function doLogout() { isLoggedIn = false; localStorage.removeItem('isLoggedIn'); updateLoginUI(); renderTree(); }
     function updateLoginUI() { document.getElementById('btn-login-trigger').classList.toggle('hidden', isLoggedIn); document.getElementById('btn-logout-trigger').classList.toggle('hidden', !isLoggedIn); }
 
