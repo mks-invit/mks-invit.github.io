@@ -139,10 +139,11 @@
     // =======================================================================
     // SETUP CREDENTIALS & API
     // =======================================================================
+    // 1. DEPLOY ULANG Code.gs > NEW DEPLOYMENT > Salin URL-nya kesini:
     const API_URL = "https://script.google.com/macros/s/AKfycbxaOo9p7QZHNNBNqt-s7_CPHh_J8672SRAVkSxUv0VljwovwN4zaYx9bkoL_VtB1dTB/exec"; 
+    
     const ADMIN_USER = "ihsan";
     const ADMIN_PASS = "ihsan123";
-    
     let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; 
     // =======================================================================
 
@@ -238,7 +239,7 @@
             renderTree();
             showLoader(false);
         } catch (error) {
-            alert("Gagal mengambil data. Pastikan URL API benar.");
+            alert("Gagal mengambil data. Pastikan URL API benar dan Deploy Terbaru.");
             showLoader(false);
         }
     }
@@ -334,7 +335,7 @@
 
         const colors = ['bg-slate-100 border-slate-400 dark:bg-slate-800 dark:border-slate-500', 'bg-blue-50 border-blue-400 dark:bg-blue-900/20 dark:border-blue-500', 'bg-emerald-50 border-emerald-400 dark:bg-emerald-900/20 dark:border-emerald-500', 'bg-amber-50 border-amber-400 dark:bg-amber-900/20 dark:border-amber-500', 'bg-purple-50 border-purple-400 dark:bg-purple-900/20 dark:border-purple-500', 'bg-rose-50 border-rose-400 dark:bg-rose-900/20 dark:border-rose-500'];
         
-        // LOGIC TOMBOL ADMIN (HIDDEN BY DEFAULT)
+        // TOMBOL ADMIN (Hanya muncul jika isLoggedIn == true)
         const adminButtons = isLoggedIn ? `
             <div class="flex gap-1.5 ml-2 opacity-10 group-hover:opacity-100 transition-opacity duration-300 self-center">
                 <button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('edit', '${person.id}')"><i class="fas fa-pen text-xs"></i></button>
@@ -448,7 +449,12 @@
         rows.forEach(row => {
             const name = row.querySelector('.inp-child-name').value.trim();
             const spouseInp = row.querySelector('.inp-child-spouse');
-            const spouse = (!spouseInp.classList.contains('hidden')) ? spouseInp.value.trim() : "";
+            let spouse = "";
+            // Hanya ambil nilai pasangan jika input terlihat (hidden class tidak ada)
+            if (!spouseInp.classList.contains('hidden')) {
+                spouse = spouseInp.value.trim();
+            }
+            
             if (name) childrenData.push({ name, spouse });
         });
 
@@ -457,7 +463,7 @@
         const payload = { action: mode, motherName: document.getElementById('inp-mother').value };
         if (mode === 'add') {
             payload.parentId = document.getElementById('inp-parent').value;
-            payload.children = childrenData;
+            payload.children = childrenData; // KIRIM DATA ARRAY ANAK (PERBAIKAN UTAMA)
         } else {
             payload.id = document.getElementById('inp-id').value;
             payload.name = childrenData[0].name;
