@@ -31,12 +31,11 @@
 
 <div id="fullscreen-overlay" onclick="startApp()" class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center text-white cursor-pointer transition-opacity duration-500">
     <div class="text-center animate-bounce">
-        <i class="fas fa-fingerprint text-6xl mb-4 text-primary"></i>
+        <i class="fas fa-expand text-6xl mb-4 text-primary"></i>
         <h2 class="text-2xl font-bold">Ketuk Layar untuk Masuk</h2>
-        <p class="text-sm text-gray-300 mt-2">Aplikasi akan berjalan dalam layar penuh</p>
+        <p class="text-sm text-gray-300 mt-2">Mode Layar Penuh Aktif</p>
     </div>
 </div>
-
 <div class="max-w-4xl mx-auto pb-20">
     <header class="text-center mb-10 mt-5">
         <div class="flex justify-center items-center gap-3 mb-1 flex-wrap">
@@ -76,7 +75,13 @@
         </p>
         <p class="text-xs text-gray-500 dark:text-gray-500">
             Original Design by 
-            <a href="https://wa.me/6282395223314" target="_blank" rel="noopener noreferrer" class="font-bold text-primary hover:text-primary-dark hover:underline transition-colors duration-200 ml-1">i.s Dg. Tawang</a> & <a href="https://wa.me/6285649117103" target="_blank" rel="noopener noreferrer" class="font-bold text-primary hover:text-primary-dark hover:underline transition-colors duration-200">Ratna Dg. Kebo</a>
+            <a href="https://wa.me/6282395223314" target="_blank" rel="noopener noreferrer" class="font-bold text-primary hover:text-primary-dark hover:underline transition-colors duration-200 ml-1">
+                i.s Dg. Tawang
+            </a> 
+            & 
+            <a href="https://wa.me/6285649117103" target="_blank" rel="noopener noreferrer" class="font-bold text-primary hover:text-primary-dark hover:underline transition-colors duration-200">
+                Ratna Dg. Kebo
+            </a>
         </p>
     </footer>
 </div>
@@ -125,14 +130,30 @@
     let pendingQueue = JSON.parse(localStorage.getItem('pendingChanges') || '[]');
     const htmlEl = document.documentElement;
 
+    // === [DIKEMBALIKAN & DIPERBAIKI] FULL SCREEN TANPA ROTASI ===
     function startApp() {
         const elem = document.documentElement;
         const overlay = document.getElementById('fullscreen-overlay');
+        
+        // Request Full Screen
         if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => console.log(err)); } 
         else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } 
         else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
-        overlay.style.opacity = '0'; setTimeout(() => { overlay.remove(); }, 500);
+        
+        // [BARU] Mencegah Lock Orientasi (Unlock agar mengikuti sensor HP)
+        try {
+            if (screen.orientation && screen.orientation.unlock) {
+                screen.orientation.unlock();
+            }
+        } catch (e) {
+            console.log("Orientation unlock not supported/needed");
+        }
+
+        // Hapus overlay
+        overlay.style.opacity = '0'; 
+        setTimeout(() => { overlay.remove(); }, 500);
     }
+    // ============================================================
 
     if (localStorage.getItem('theme') !== 'light') { htmlEl.classList.add('dark'); document.querySelector('#theme-btn i').classList.replace('fa-moon', 'fa-sun'); }
     document.getElementById('theme-btn').addEventListener('click', () => {
@@ -141,7 +162,11 @@
         document.querySelector('#theme-btn i').classList.toggle('fa-sun'); document.querySelector('#theme-btn i').classList.toggle('fa-moon');
     });
 
-    window.onload = function() { updateLoginUI(); updateSyncUI(); fetchData(); };
+    window.onload = function() { 
+        updateLoginUI(); 
+        updateSyncUI(); 
+        fetchData(); 
+    };
 
     function updateSyncUI() {
         const btn = document.getElementById('btn-sync');
@@ -160,7 +185,6 @@
     
     async function doSync() {
         if (pendingQueue.length === 0) return;
-        
         showLoader(true);
         const btn = document.getElementById('btn-sync'); btn.disabled = true; 
         try {
@@ -173,7 +197,6 @@
     function openLoginModal() { document.getElementById('login-modal').classList.replace('hidden', 'flex'); document.getElementById('login-user').value=''; document.getElementById('login-pass').value=''; document.getElementById('login-error').classList.add('hidden'); }
     function closeLoginModal() { document.getElementById('login-modal').classList.replace('flex', 'hidden'); }
     
-    // [MODIFIKASI] ALERT HILANG DISINI
     function doLogin() {
         if (document.getElementById('login-user').value === ADMIN_USER && document.getElementById('login-pass').value === ADMIN_PASS) {
             isLoggedIn = true; localStorage.setItem('isLoggedIn', 'true'); closeLoginModal(); updateLoginUI(); renderTree(); 
