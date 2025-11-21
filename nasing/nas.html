@@ -9,7 +9,20 @@
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: { extend: { colors: { primary: '#3498db', 'primary-dark': '#2980b9', 'bg-light': '#f4f7f6', 'bg-dark': '#121212', 'card-dark': '#1e1e1e' }, fontFamily: { sans: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif'] } } }
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3498db',
+                        'primary-dark': '#2980b9',
+                        'bg-light': '#f4f7f6',
+                        'bg-dark': '#121212',
+                        'card-dark': '#1e1e1e'
+                    },
+                    fontFamily: {
+                        sans: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif']
+                    }
+                }
+            }
         }
     </script>
     <style>
@@ -121,7 +134,20 @@
         <p class="text-sm font-semibold text-slate-600 dark:text-gray-300 mb-1">
             &copy; Copyright Keluarga Besar Puang Guru Nasing
         </p>
+        <p class="text-xs text-gray-500 dark:text-gray-500">
+            Original Design by 
+            <a href="https://wa.me/6282395223314" target="_blank" rel="noopener noreferrer" class="font-bold text-primary hover:text-primary-dark hover:underline transition-colors duration-200 ml-1">
+                i.s Dg. Tawang
+            </a> 
+            & 
+            <a href="https://#" target="_blank" rel="noopener noreferrer" class="font-bold text-primary hover:text-primary-dark hover:underline transition-colors duration-200">
+                Ratna Dg. Kebo
+            </a>
+            <br> Berkolaborasi degan Seluruh Keturunan Puang Guru Nasing
+            <br> Info & Pengembangan - Hubungi Admin Grup
+        </p>
     </footer>
+
 </div>
 
 <div class="fixed bottom-5 left-5 z-40 flex items-center gap-3">
@@ -174,7 +200,7 @@
 <datalist id="existing-members"></datalist>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyfV0P9tHT1bCQ8Nz8jXxxHd-xC5-FXaUuP6i4TeN11xjnm3V7B-xQ03i_pVr9KagaZ/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbwXYlXebuqH0DaXCR7CEX5o__71fwGzVng674d73eWtj6cFjvZprN5_p-MjBXNKfWmU/exec"; 
     
     let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; 
     let allData = [], searchableNamesList = []; 
