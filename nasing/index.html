@@ -84,7 +84,7 @@
             <div><label class="block text-sm font-medium mb-1 dark:text-gray-300">Username</label><input type="text" id="login-user" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"></div>
             <div><label class="block text-sm font-medium mb-1 dark:text-gray-300">Password</label><input type="password" id="login-pass" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"></div>
             <div id="login-error" class="text-red-500 text-xs hidden text-center">Username/Password salah!</div>
-            <div class="flex gap-2 pt-2"><button onclick="closeLoginModal()" class="w-1/2 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">Batal</button><button onclick="doLogin()" class="w-1/2 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark">Masuk</button></div>
+            <div class="flex gap-2 pt-2"><button onclick="closeLoginModal()" class="w-1/2 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">Batal</button><button id="btn-confirm-login" onclick="doLogin()" class="w-1/2 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark">Masuk</button></div>
         </div>
     </div>
 </div>
@@ -117,7 +117,8 @@
     // === GANTI URL DEPLOYMENT DISINI ===
     const API_URL = "https://script.google.com/macros/s/AKfycbw-b4icuMTUXsLY33VP35Qr6hqnR7WM4haccQUvtfV28la_FzMOZdK6qpyLn4VI11tT/exec"; 
     
-    const ADMIN_USER = "ihsans", ADMIN_PASS = "ihsans123";
+    // NOTE: ADMIN_USER dan ADMIN_PASS sudah dihapus. Password diatur di Google Apps Script (Code.gs).
+    
     let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; 
     let allData = [], searchableNamesList = []; 
     const htmlEl = document.documentElement;
@@ -133,11 +134,50 @@
 
     function openLoginModal() { document.getElementById('login-modal').classList.replace('hidden', 'flex'); document.getElementById('login-user').value=''; document.getElementById('login-pass').value=''; document.getElementById('login-error').classList.add('hidden'); }
     function closeLoginModal() { document.getElementById('login-modal').classList.replace('flex', 'hidden'); }
-    function doLogin() {
-        if (document.getElementById('login-user').value === ADMIN_USER && document.getElementById('login-pass').value === ADMIN_PASS) {
-            isLoggedIn = true; localStorage.setItem('isLoggedIn', 'true'); closeLoginModal(); updateLoginUI(); renderTree(); alert("Login Berhasil!");
-        } else { document.getElementById('login-error').classList.remove('hidden'); }
+    
+    // ==========================================
+    // FUNGSI LOGIN BARU (SECURE SERVER CHECK)
+    // ==========================================
+    async function doLogin() {
+        const u = document.getElementById('login-user').value;
+        const p = document.getElementById('login-pass').value;
+        const btn = document.getElementById('btn-confirm-login');
+        const err = document.getElementById('login-error');
+        
+        // UX: Ubah tombol jadi loading
+        const originalText = btn.innerText;
+        btn.innerText = "Checking...";
+        btn.disabled = true;
+        err.classList.add('hidden');
+
+        try {
+            // Kirim kredensial ke Google Script via POST (Encrypted by HTTPS)
+            const response = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ action: "login", u: u, p: p })
+            });
+            
+            const result = await response.json();
+
+            if (result.status === "success") {
+                isLoggedIn = true; 
+                localStorage.setItem('isLoggedIn', 'true'); 
+                closeLoginModal(); 
+                updateLoginUI(); 
+                renderTree(); 
+                // alert("Login Berhasil!"); // Opsional: tampilkan pesan sukses
+            } else { 
+                err.classList.remove('hidden'); 
+            }
+        } catch (e) {
+            alert("Gagal menghubungi server login: " + e);
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
     }
+    // ==========================================
+    
     function doLogout() { isLoggedIn = false; localStorage.removeItem('isLoggedIn'); updateLoginUI(); renderTree(); }
     function updateLoginUI() {
         document.getElementById('btn-login-trigger').classList.toggle('hidden', isLoggedIn);
