@@ -1,4 +1,4 @@
-var SPREADSHEET_ID = ""; 
+var SPREADSHEET_ID = ""; // Masukkan ID Spreadsheet jika diperlukan, atau biarkan kosong jika script terikat sheet
 var SHEET_NAME = 'DataSilsilah';
 
 /* ==========================================================================
@@ -15,8 +15,30 @@ function doPost(e) {
     var params = JSON.parse(e.postData.contents);
     var result = {};
     
+    // ==========================================
+    // LOGIKA LOGIN (KEAMANAN SISI SERVER)
+    // ==========================================
+    if (params.action === "login") {
+      // Username & Password DISIMPAN DI SINI (Server).
+      // Tidak akan terlihat oleh pengguna di browser (Inspect Element).
+      var SERVER_USER = "aic";
+      var SERVER_PASS = "aic123"; 
+
+      // Cek kecocokan
+      if (params.u === SERVER_USER && params.p === SERVER_PASS) {
+        return ContentService.createTextOutput(JSON.stringify({ status: "success" }))
+          .setMimeType(ContentService.MimeType.JSON);
+      } else {
+        return ContentService.createTextOutput(JSON.stringify({ status: "fail" }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+
+    // ==========================================
+    // LOGIKA CRUD BIASA
+    // ==========================================
     if (params.action === "add") result = addData(params);
-    else if (params.action === "edit") result = editData(params); // Edit logic yang baru
+    else if (params.action === "edit") result = editData(params);
     else if (params.action === "delete") result = deleteData(params.id);
     
     return ContentService.createTextOutput(JSON.stringify(getAllData())).setMimeType(ContentService.MimeType.JSON);
@@ -75,7 +97,6 @@ function addData(params) {
         params.motherName || ""
       ]);
       
-      // Jika saat ditambah sudah punya pasangan, update data pasangannya (reciprocal)
       if (childSpouse !== "") {
         updateReciprocalSpouse(sheet, child.name.trim(), childSpouse);
       }
@@ -85,53 +106,42 @@ function addData(params) {
   return getAllData();
 }
 
-// ==========================================
-// FUNGSI EDIT YANG DISEMPURNAKAN (AUTO UPDATE RELASI)
-// ==========================================
 function editData(params) {
   var sheet = getSheet();
-  var data = sheet.getDataRange().getValues(); // Ambil semua data ke memori
+  var data = sheet.getDataRange().getValues();
   
   var rowIndex = -1;
   var oldName = "";
   
-  // 1. Cari baris user dan simpan Nama Lama
   for (var i = 1; i < data.length; i++) {
     if (data[i][0] == params.id) {
-      oldName = data[i][2]; // Simpan nama lama (Kolom C)
+      oldName = data[i][2];
       rowIndex = i;
       break;
     }
   }
   
-  if (rowIndex === -1) return getAllData(); // ID tidak ketemu
+  if (rowIndex === -1) return getAllData();
 
   var newName = params.name.trim();
   var newSpouse = params.spouse ? params.spouse.trim() : "";
   var newMother = params.motherName ? params.motherName.trim() : "";
 
-  // 2. Update Data User tersebut di Array Memori
-  data[rowIndex][2] = newName;   // Nama
-  data[rowIndex][3] = newSpouse; // Pasangan
-  data[rowIndex][5] = newMother; // Ibu
+  data[rowIndex][2] = newName;
+  data[rowIndex][3] = newSpouse;
+  data[rowIndex][5] = newMother;
 
-  // 3. PROPAGASI PERUBAHAN NAMA (Jika nama berubah)
   if (oldName !== newName) {
     for (var k = 1; k < data.length; k++) {
-      if (k === rowIndex) continue; // Jangan cek baris sendiri lagi
-
-      // A. Cek Kolom Pasangan (Index 3)
+      if (k === rowIndex) continue;
+      
       var spouseStr = data[k][3].toString();
       if (spouseStr.indexOf(oldName) !== -1) {
-        // Split, ganti yang cocok, Join kembali (agar akurat)
         var parts = spouseStr.split(',').map(function(s){ return s.trim() });
-        var updatedParts = parts.map(function(s){ 
-          return s === oldName ? newName : s; 
-        });
+        var updatedParts = parts.map(function(s){ return s === oldName ? newName : s; });
         data[k][3] = updatedParts.join(', ');
       }
 
-      // B. Cek Kolom Nama Ibu (Index 5)
       var motherStr = data[k][5].toString();
       if (motherStr.trim() === oldName) {
         data[k][5] = newName;
@@ -139,12 +149,8 @@ function editData(params) {
     }
   }
 
-  // 4. Tulis Kembali Semua Data ke Sheet (Batch Update - Lebih Cepat & Aman)
   sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
 
-  // 5. Handle Integrasi Pasangan (Jika user mengubah isian pasangannya)
-  // Kita panggil fungsi helper ini terpisah karena dia membaca sheet ulang, 
-  // tapi karena kita sudah save di langkah 4, datanya sudah sinkron.
   if (newSpouse !== "") {
     updateReciprocalSpouse(sheet, newName, newSpouse);
   }
@@ -163,7 +169,6 @@ function deleteData(id) {
   return getAllData();
 }
 
-// Helper: Agar A <-> B saling terhubung
 function updateReciprocalSpouse(sheet, personName, spouseName) {
   var data = sheet.getDataRange().getValues();
   var targetSpouses = spouseName.split(',').map(function(s){ return s.trim() });
@@ -171,12 +176,10 @@ function updateReciprocalSpouse(sheet, personName, spouseName) {
   targetSpouses.forEach(function(targetName) {
     if(targetName === "") return;
     for (var i = 1; i < data.length; i++) {
-      // Cari baris si Pasangan berdasarkan Nama
       if (data[i][2].toString().toLowerCase() === targetName.toLowerCase()) {
         var currentSpouseStr = data[i][3].toString();
         var currentSpouses = currentSpouseStr.split(',').map(function(s){ return s.trim() });
         
-        // Jika nama personName belum ada di daftar pasangan target, tambahkan
         var isLinked = currentSpouses.some(function(s) { 
           return s.toLowerCase() === personName.toLowerCase(); 
         });
@@ -192,9 +195,6 @@ function updateReciprocalSpouse(sheet, personName, spouseName) {
   });
 }
 
-/* ==========================================================================
-   INITIAL SETUP
-   ========================================================================== */
 function getSheet() {
   var ss = SPREADSHEET_ID ? SpreadsheetApp.openById(SPREADSHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(SHEET_NAME);
