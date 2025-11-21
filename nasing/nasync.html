@@ -164,7 +164,7 @@
         if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => console.log(err)); } 
         else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } 
         else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
-        try { if (screen.orientation && screen.orientation.unlock) { screen.orientation.unlock(); } } catch (e) { console.log("Orientation unlock not supported"); }
+        try { if (screen.orientation && screen.orientation.lock) { screen.orientation.lock(); } } catch (e) { console.log("Orientation lock not supported"); }
         overlay.style.opacity = '0'; 
         setTimeout(() => { overlay.remove(); }, 500);
     }
