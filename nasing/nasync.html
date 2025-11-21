@@ -25,6 +25,27 @@
         .dark #custom-search-results::-webkit-scrollbar-thumb { background-color: #4b5563; }
         @keyframes bounce-gentle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
         .animate-bounce-gentle { animation: bounce-gentle 2s infinite; }
+
+        /* === TAMBAHAN: Style untuk Dropdown Custom Pasangan === */
+        .suggestion-list {
+            position: absolute;
+            width: 100%;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 50;
+            background-color: #ffffff; /* Solid Putih */
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-top: 4px;
+        }
+        .dark .suggestion-list {
+            background-color: #1e1e1e; /* Solid Gelap */
+            border-color: #4b5563;
+        }
+        .suggestion-list::-webkit-scrollbar { width: 6px; }
+        .suggestion-list::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        .dark .suggestion-list::-webkit-scrollbar-thumb { background-color: #4b5563; }
     </style>
 </head>
 <body class="bg-bg-light text-slate-700 dark:bg-bg-dark dark:text-gray-200 font-sans transition-colors duration-300 p-5 min-h-screen">
@@ -108,7 +129,11 @@
         </div>
         <div class="mb-4 pt-2 border-t border-gray-100 dark:border-gray-700">
             <label class="block text-sm font-semibold mb-1 dark:text-gray-300">Pasangan Orang Tua (Ibu/Ayah)</label>
-            <input type="text" id="inp-mother" list="existing-members" class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-400 text-sm" placeholder="Cari nama keluarga atau ketik baru..." autocomplete="off">
+            
+            <div class="relative">
+                <input type="text" id="inp-mother" class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-400 text-sm" placeholder="Ketik min. 3 huruf..." autocomplete="off" oninput="handleSpouseSuggest(this)">
+            </div>
+            
             <p class="text-[10px] text-gray-400 mt-1">*Pilih dari daftar untuk menautkan data</p>
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 mt-6">
@@ -155,6 +180,41 @@
         fetchData(); 
     };
 
+    // === NEW: LOGIKA DROPDOWN SUGGESTION (MIN 3 HURUF & SOLID) ===
+    function handleSpouseSuggest(input) {
+        let oldList = input.parentNode.querySelector('.suggestion-list');
+        if (oldList) oldList.remove();
+
+        const val = input.value.trim();
+        if (val.length < 3) return; // SYARAT MINIMAL 3 HURUF
+
+        const matches = searchableNamesList.filter(n => n.toLowerCase().includes(val.toLowerCase()));
+        if (matches.length === 0) return;
+
+        const ul = document.createElement('ul');
+        ul.className = 'suggestion-list animate-slide-down';
+        
+        matches.slice(0, 10).forEach(name => {
+            const li = document.createElement('li');
+            li.className = "px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700 last:border-0";
+            li.textContent = name;
+            li.onclick = function() {
+                input.value = name;
+                ul.remove();
+            };
+            ul.appendChild(li);
+        });
+        input.parentNode.appendChild(ul);
+    }
+
+    // Tutup dropdown jika klik di luar
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.relative')) {
+            document.querySelectorAll('.suggestion-list').forEach(el => el.remove());
+        }
+    });
+    // ============================================================
+
     function updateSyncUI() {
         const btn = document.getElementById('btn-sync');
         const badge = document.getElementById('sync-badge');
@@ -184,9 +244,6 @@
     function openLoginModal() { document.getElementById('login-modal').classList.replace('hidden', 'flex'); document.getElementById('login-user').value=''; document.getElementById('login-pass').value=''; document.getElementById('login-error').classList.add('hidden'); }
     function closeLoginModal() { document.getElementById('login-modal').classList.replace('flex', 'hidden'); }
     
-    // ==========================================
-    // FUNGSI LOGIN (UPDATED UNTUK ROOT ID)
-    // ==========================================
     async function doLogin() {
         const u = document.getElementById('login-user').value;
         const p = document.getElementById('login-pass').value;
@@ -209,10 +266,7 @@
             if (result.status === "success") {
                 isLoggedIn = true; 
                 localStorage.setItem('isLoggedIn', 'true'); 
-                
-                // SIMPAN ROOT ID DARI SERVER
                 localStorage.setItem('userRootId', result.rootId || 'all'); 
-
                 closeLoginModal(); 
                 updateLoginUI(); 
                 renderTree(); 
@@ -230,7 +284,7 @@
     function doLogout() { 
         isLoggedIn = false; 
         localStorage.removeItem('isLoggedIn'); 
-        localStorage.removeItem('userRootId'); // Hapus root ID saat logout
+        localStorage.removeItem('userRootId');
         updateLoginUI(); 
         renderTree(); 
     }
@@ -266,16 +320,11 @@
         if(t) { document.getElementById('search-box').blur(); hideSearch(); expandAndHighlight(t.id); }
     }
 
-    // ==========================================
-    // RENDER TREE (UPDATED UNTUK FILTER ROOT)
-    // ==========================================
     function renderTree() {
         const c = document.getElementById('tree-root'); c.innerHTML = '';
         const userRootId = localStorage.getItem('userRootId');
         
         let roots = [];
-
-        // JIKA USER LOGIN & ROOT ID BUKAN 'all'
         if (isLoggedIn && userRootId && userRootId !== 'all') {
             roots = allData.filter(d => d.id == userRootId);
             if(roots.length === 0) {
@@ -283,7 +332,6 @@
                  return;
             }
         } else {
-            // DEFAULT (ADMIN / PUBLIC)
             roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root');
         }
 
@@ -318,11 +366,29 @@
     }
 
     function toggleChildSpouseInput(chk) { const i = chk.closest('.child-input-row').querySelector('.inp-child-spouse'); if(chk.checked){ i.classList.remove('hidden'); i.focus(); } else { i.classList.add('hidden'); i.value=''; } }
+    
+    // === UPDATED: addChildInputRow dengan div relative dan oninput handler ===
     function addChildInputRow(n="", s="") {
         const c = document.getElementById('children-inputs-container'); const d = document.createElement('div'); d.className = 'child-input-row bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 relative animate-slide-down';
         const del = c.children.length>0 ? `<button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500" onclick="this.closest('.child-input-row').remove()"><i class="fas fa-times"></i></button>` : ``; const hasS = s && s.trim()!=="";
-        d.innerHTML = `${del}<div class="mb-2 pr-5"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Nama Lengkap</label><input type="text" class="inp-child-name w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Nama anak..." value="${n}" autocomplete="off"></div><div><div class="flex items-center gap-2 mb-1"><input type="checkbox" class="w-3.5 h-3.5 text-primary rounded focus:ring-primary" onchange="toggleChildSpouseInput(this)" ${hasS?"checked":""}><label class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer select-none" onclick="this.previousElementSibling.click()">Sudah Menikah?</label></div><input type="text" list="existing-members" class="inp-child-spouse ${hasS?"":"hidden"} w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Cari / Ketik nama pasangan..." value="${s}" autocomplete="off"></div>`; c.appendChild(d);
+        d.innerHTML = `
+            ${del}
+            <div class="mb-2 pr-5">
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Nama Lengkap</label>
+                <input type="text" class="inp-child-name w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Nama anak..." value="${n}" autocomplete="off">
+            </div>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <input type="checkbox" class="w-3.5 h-3.5 text-primary rounded focus:ring-primary" onchange="toggleChildSpouseInput(this)" ${hasS?"checked":""}>
+                    <label class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer select-none" onclick="this.previousElementSibling.click()">Sudah Menikah?</label>
+                </div>
+                <div class="relative">
+                    <input type="text" class="inp-child-spouse ${hasS?"":"hidden"} w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Cari / Ketik nama pasangan (min 3 huruf)..." value="${s}" autocomplete="off" oninput="handleSpouseSuggest(this)">
+                </div>
+            </div>`; 
+        c.appendChild(d);
     }
+    
     function openModal(mode, id) {
         document.getElementById('modal').classList.replace('hidden', 'flex'); document.getElementById('inp-mode').value = mode; document.getElementById('children-inputs-container').innerHTML = ''; document.getElementById('inp-mother').value = ''; document.getElementById('inp-parent').value = '';
         if (mode === 'add') { document.getElementById('modal-title').innerText = "Tambah Keturunan"; document.getElementById('inp-parent').value = id; document.getElementById('btn-add-more-child').classList.remove('hidden'); addChildInputRow(); const f = allData.find(d => d.id == id); if (f && f.spouse && f.spouse.split(',').length === 1) document.getElementById('inp-mother').value = f.spouse.trim(); } 
