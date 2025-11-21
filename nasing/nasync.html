@@ -26,21 +26,21 @@
         @keyframes bounce-gentle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
         .animate-bounce-gentle { animation: bounce-gentle 2s infinite; }
 
-        /* === TAMBAHAN: Style untuk Dropdown Custom Pasangan === */
+        /* Style Dropdown Custom */
         .suggestion-list {
             position: absolute;
             width: 100%;
             max-height: 150px;
             overflow-y: auto;
             z-index: 50;
-            background-color: #ffffff; /* Solid Putih */
+            background-color: #ffffff; 
             border: 1px solid #d1d5db;
             border-radius: 0.5rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             margin-top: 4px;
         }
         .dark .suggestion-list {
-            background-color: #1e1e1e; /* Solid Gelap */
+            background-color: #1e1e1e; 
             border-color: #4b5563;
         }
         .suggestion-list::-webkit-scrollbar { width: 6px; }
@@ -57,16 +57,12 @@
         <p class="text-sm text-gray-300 mt-2">Mode Layar Penuh Aktif</p>
     </div>
 </div>
+
 <div class="max-w-4xl mx-auto pb-20">
     <header class="text-center mb-10 mt-5">
         <div class="flex justify-center items-center gap-3 mb-1 flex-wrap">
             <button onclick="fetchData()" class="w-8 h-8 rounded-full border border-gray-400 text-gray-500 dark:text-gray-300 dark:border-gray-500 hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200" title="Muat Ulang Data Server"><i class="fas fa-sync-alt"></i></button>
             
-            <button id="btn-sync" onclick="doSync()" class="hidden relative w-8 h-8 rounded-full border border-orange-400 text-orange-500 hover:bg-orange-500 hover:text-white flex items-center justify-center transition-all duration-200 animate-bounce-gentle shadow-lg" title="Kirim Data ke Server">
-                <i class="fas fa-cloud-upload-alt"></i>
-                <span id="sync-badge" class="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm border border-white dark:border-gray-800">0</span>
-            </button>
-
             <h4 class="text-xl font-bold text-slate-800 dark:text-gray-100 m-0 px-2">Silsilah Puang Guru Nasing</h4>
             
             <button id="theme-btn" class="w-8 h-8 rounded-full border border-gray-400 text-gray-500 dark:text-gray-300 dark:border-gray-500 hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200"><i class="fas fa-moon"></i></button>
@@ -104,7 +100,18 @@
     </footer>
 </div>
 
-<datalist id="existing-members"></datalist>
+<div class="fixed bottom-5 left-5 z-40 flex items-center gap-3">
+    
+    <button id="btn-undo" onclick="doUndo()" class="hidden w-12 h-12 rounded-full bg-yellow-500 text-white shadow-lg items-center justify-center hover:bg-yellow-600 hover:scale-110 transition-all duration-200 group" title="Batalkan Perubahan Terakhir">
+        <i class="fas fa-undo group-hover:-rotate-12 transition-transform"></i>
+    </button>
+
+    <button id="btn-sync" onclick="doSync()" class="hidden relative w-12 h-12 rounded-full bg-orange-500 text-white shadow-lg items-center justify-center hover:bg-orange-600 hover:scale-110 transition-all duration-200 animate-bounce-gentle" title="Kirim Data ke Server">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <span id="sync-badge" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-sm border border-white dark:border-gray-800">0</span>
+    </button>
+
+</div>
 
 <div id="login-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden justify-center items-center p-4">
     <div class="bg-white dark:bg-card-dark w-full max-w-sm rounded-xl shadow-2xl p-6 animate-slide-down">
@@ -129,11 +136,9 @@
         </div>
         <div class="mb-4 pt-2 border-t border-gray-100 dark:border-gray-700">
             <label class="block text-sm font-semibold mb-1 dark:text-gray-300">Pasangan Orang Tua (Ibu/Ayah)</label>
-            
             <div class="relative">
                 <input type="text" id="inp-mother" class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-400 text-sm" placeholder="Ketik min. 3 huruf..." autocomplete="off" oninput="handleSpouseSuggest(this)">
             </div>
-            
             <p class="text-[10px] text-gray-400 mt-1">*Pilih dari daftar untuk menautkan data</p>
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 mt-6">
@@ -143,8 +148,9 @@
     </div>
 </div>
 
+<datalist id="existing-members"></datalist>
+
 <script>
-    // GANTI URL DI BAWAH INI DENGAN URL DEPLOYMENT GOOGLE SCRIPT ANDA
     const API_URL = "https://script.google.com/macros/s/AKfycbzRxSUTl_xJ1LCdPOJ3rVZy1DxgzMfAcGocttS8X_sYmKAbDvs2BP489fADHYbek2Pm/exec"; 
     
     let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; 
@@ -152,20 +158,16 @@
     let pendingQueue = JSON.parse(localStorage.getItem('pendingChanges') || '[]');
     const htmlEl = document.documentElement;
 
-    // === FULL SCREEN TANPA ROTASI ===
     function startApp() {
         const elem = document.documentElement;
         const overlay = document.getElementById('fullscreen-overlay');
-        
         if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => console.log(err)); } 
         else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } 
         else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
-        
         try { if (screen.orientation && screen.orientation.unlock) { screen.orientation.unlock(); } } catch (e) { console.log("Orientation unlock not supported"); }
         overlay.style.opacity = '0'; 
         setTimeout(() => { overlay.remove(); }, 500);
     }
-    // ================================
 
     if (localStorage.getItem('theme') !== 'light') { htmlEl.classList.add('dark'); document.querySelector('#theme-btn i').classList.replace('fa-moon', 'fa-sun'); }
     document.getElementById('theme-btn').addEventListener('click', () => {
@@ -180,47 +182,50 @@
         fetchData(); 
     };
 
-    // === NEW: LOGIKA DROPDOWN SUGGESTION (MIN 3 HURUF & SOLID) ===
     function handleSpouseSuggest(input) {
         let oldList = input.parentNode.querySelector('.suggestion-list');
         if (oldList) oldList.remove();
-
         const val = input.value.trim();
-        if (val.length < 3) return; // SYARAT MINIMAL 3 HURUF
-
+        if (val.length < 3) return; 
         const matches = searchableNamesList.filter(n => n.toLowerCase().includes(val.toLowerCase()));
         if (matches.length === 0) return;
-
         const ul = document.createElement('ul');
         ul.className = 'suggestion-list animate-slide-down';
-        
         matches.slice(0, 10).forEach(name => {
             const li = document.createElement('li');
             li.className = "px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700 last:border-0";
             li.textContent = name;
-            li.onclick = function() {
-                input.value = name;
-                ul.remove();
-            };
+            li.onclick = function() { input.value = name; ul.remove(); };
             ul.appendChild(li);
         });
         input.parentNode.appendChild(ul);
     }
-
-    // Tutup dropdown jika klik di luar
     document.addEventListener('click', function(e) {
-        if (!e.target.closest('.relative')) {
-            document.querySelectorAll('.suggestion-list').forEach(el => el.remove());
-        }
+        if (!e.target.closest('.relative')) { document.querySelectorAll('.suggestion-list').forEach(el => el.remove()); }
     });
-    // ============================================================
 
     function updateSyncUI() {
         const btn = document.getElementById('btn-sync');
         const badge = document.getElementById('sync-badge');
+        const btnUndo = document.getElementById('btn-undo'); 
         const count = pendingQueue.length;
-        if (count > 0) { btn.classList.remove('hidden'); btn.classList.add('flex'); badge.textContent = count; document.title = `(${count}) Menunggu Sync`; } 
-        else { btn.classList.add('hidden'); btn.classList.remove('flex'); document.title = "Silsilah Keluarga"; }
+        
+        if (count > 0) { 
+            btn.classList.remove('hidden'); btn.classList.add('flex'); badge.textContent = count; 
+            document.title = `(${count}) Menunggu Sync`; 
+            btnUndo.classList.remove('hidden'); btnUndo.classList.add('flex');
+        } else { 
+            btn.classList.add('hidden'); btn.classList.remove('flex'); 
+            document.title = "Silsilah Keluarga"; 
+            btnUndo.classList.add('hidden'); btnUndo.classList.remove('flex');
+        }
+    }
+
+    function doUndo() {
+        if (pendingQueue.length === 0) return;
+        pendingQueue.pop();
+        localStorage.setItem('pendingChanges', JSON.stringify(pendingQueue));
+        updateSyncUI();
     }
     
     function enqueueAction(payload) {
@@ -234,11 +239,12 @@
         if (pendingQueue.length === 0) return;
         showLoader(true);
         const btn = document.getElementById('btn-sync'); btn.disabled = true; 
+        document.getElementById('btn-undo').classList.add('hidden'); 
         try {
             for (let i = 0; i < pendingQueue.length; i++) { await fetch(API_URL, { method: "POST", body: JSON.stringify(pendingQueue[i]) }); }
             pendingQueue = []; localStorage.removeItem('pendingChanges'); updateSyncUI();
             const r = await fetch(API_URL); allData = await r.json(); prepareSearchableNames(); renderTree();
-        } catch (e) { alert("Error Sync: " + e); } finally { showLoader(false); btn.disabled = false; }
+        } catch (e) { alert("Error Sync: " + e); } finally { showLoader(false); btn.disabled = false; updateSyncUI(); }
     }
 
     function openLoginModal() { document.getElementById('login-modal').classList.replace('hidden', 'flex'); document.getElementById('login-user').value=''; document.getElementById('login-pass').value=''; document.getElementById('login-error').classList.add('hidden'); }
@@ -249,46 +255,16 @@
         const p = document.getElementById('login-pass').value;
         const btn = document.getElementById('btn-confirm-login');
         const err = document.getElementById('login-error');
-        
-        const originalText = btn.innerText;
-        btn.innerText = "Checking...";
-        btn.disabled = true;
-        err.classList.add('hidden');
-
+        const originalText = btn.innerText; btn.innerText = "Checking..."; btn.disabled = true; err.classList.add('hidden');
         try {
-            const response = await fetch(API_URL, {
-                method: "POST",
-                body: JSON.stringify({ action: "login", u: u, p: p })
-            });
-            
+            const response = await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "login", u: u, p: p }) });
             const result = await response.json();
-
-            if (result.status === "success") {
-                isLoggedIn = true; 
-                localStorage.setItem('isLoggedIn', 'true'); 
-                localStorage.setItem('userRootId', result.rootId || 'all'); 
-                closeLoginModal(); 
-                updateLoginUI(); 
-                renderTree(); 
-            } else { 
-                err.classList.remove('hidden'); 
-            }
-        } catch (e) {
-            alert("Gagal menghubungi server login: " + e);
-        } finally {
-            btn.innerText = originalText;
-            btn.disabled = false;
-        }
+            if (result.status === "success") { isLoggedIn = true; localStorage.setItem('isLoggedIn', 'true'); localStorage.setItem('userRootId', result.rootId || 'all'); closeLoginModal(); updateLoginUI(); renderTree(); } 
+            else { err.classList.remove('hidden'); }
+        } catch (e) { alert("Gagal menghubungi server login: " + e); } finally { btn.innerText = originalText; btn.disabled = false; }
     }
 
-    function doLogout() { 
-        isLoggedIn = false; 
-        localStorage.removeItem('isLoggedIn'); 
-        localStorage.removeItem('userRootId');
-        updateLoginUI(); 
-        renderTree(); 
-    }
-    
+    function doLogout() { isLoggedIn = false; localStorage.removeItem('isLoggedIn'); localStorage.removeItem('userRootId'); updateLoginUI(); renderTree(); }
     function updateLoginUI() { document.getElementById('btn-login-trigger').classList.toggle('hidden', isLoggedIn); document.getElementById('btn-logout-trigger').classList.toggle('hidden', !isLoggedIn); }
 
     async function fetchData() {
@@ -323,18 +299,11 @@
     function renderTree() {
         const c = document.getElementById('tree-root'); c.innerHTML = '';
         const userRootId = localStorage.getItem('userRootId');
-        
         let roots = [];
         if (isLoggedIn && userRootId && userRootId !== 'all') {
             roots = allData.filter(d => d.id == userRootId);
-            if(roots.length === 0) {
-                 c.innerHTML = '<div class="text-center text-gray-500 mt-4 text-sm">Data root id "'+userRootId+'" tidak ditemukan di database. Hubungi Admin Utama.</div>';
-                 return;
-            }
-        } else {
-            roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root');
-        }
-
+            if(roots.length === 0) { c.innerHTML = '<div class="text-center text-gray-500 mt-4 text-sm">Data root id "'+userRootId+'" tidak ditemukan.</div>'; return; }
+        } else { roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root'); }
         const ul = document.createElement('ul'); ul.className = 'pl-0 border-none';
         roots.forEach(r => ul.appendChild(createNode(r, 0))); c.appendChild(ul);
     }
@@ -367,7 +336,6 @@
 
     function toggleChildSpouseInput(chk) { const i = chk.closest('.child-input-row').querySelector('.inp-child-spouse'); if(chk.checked){ i.classList.remove('hidden'); i.focus(); } else { i.classList.add('hidden'); i.value=''; } }
     
-    // === UPDATED: addChildInputRow dengan div relative dan oninput handler ===
     function addChildInputRow(n="", s="") {
         const c = document.getElementById('children-inputs-container'); const d = document.createElement('div'); d.className = 'child-input-row bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 relative animate-slide-down';
         const del = c.children.length>0 ? `<button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500" onclick="this.closest('.child-input-row').remove()"><i class="fas fa-times"></i></button>` : ``; const hasS = s && s.trim()!=="";
