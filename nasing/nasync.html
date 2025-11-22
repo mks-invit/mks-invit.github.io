@@ -178,7 +178,7 @@
         <input type="hidden" id="inp-mode"><input type="hidden" id="inp-id"><input type="hidden" id="inp-parent">
         
         <div class="mb-4">
-            <div class="flex justify-between items-end mb-2"><label class="text-sm font-semibold dark:text-gray-300">Gunakan Nama yang Berbeda untuk <br>Menghindari Data Ganda</label></div>
+            <div class="flex justify-between items-end mb-2"><label class="text-sm font-semibold dark:text-gray-300">Daftar Nama Anak</label></div>
             <div id="children-inputs-container" class="space-y-3"></div>
             <button type="button" id="btn-add-more-child" class="hidden mt-3 text-sm font-medium text-primary hover:text-primary-dark flex items-center gap-1" onclick="addChildInputRow()"><i class="fas fa-plus-circle"></i> Tambah anak lagi</button>
         </div>
@@ -429,7 +429,7 @@ function handleChildNameInput(input) {
     if (val.length > 0 && isDuplicate) {
         // JIKA DUPLIKAT:
         warningEl.classList.remove('hidden');
-        warningEl.innerHTML = '<i class="fas fa-times-circle mr-1"></i> Error: Nama ini sudah terdaftar!';
+        warningEl.innerHTML = '<i class="fas fa-times-circle mr-1"></i> Error: Nama ini sudah terdaftar sebagai Keluarga! <br>Gunakan nama lain untuk menghindari Data Ganda!';
         warningEl.classList.replace('text-amber-600', 'text-red-600'); // Ubah warna jadi Merah
         warningEl.classList.replace('dark:text-amber-400', 'dark:text-red-400');
 
