@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Silsilah Keluarga Puang Guru Nasing</title>
+    <title>Silsilah Keluarga Besar</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -25,24 +26,28 @@
             }
         }
     </script>
+
     <style>
-        /* Animasi Dasar */
+        /* Animasi & Custom Styles */
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-slide-down { animation: slideDown 0.3s ease-out; }
+        
         .tree-line { border-left: 2px dashed #d1d5db; }
         .dark .tree-line { border-left: 2px dashed #4b5563; }
+        
         @keyframes pulse-highlight { 0%, 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7); transform: scale(1); } 50% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0); transform: scale(1.02); } }
         .highlight-card { animation: pulse-highlight 1.5s ease-in-out 3; border-color: #facc15 !important; z-index: 10; }
+        
         @keyframes bounce-gentle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
         .animate-bounce-gentle { animation: bounce-gentle 2s infinite; }
 
-        /* Scrollbar Custom */
-        #custom-search-results::-webkit-scrollbar, .suggestion-list::-webkit-scrollbar { width: 6px; }
-        #custom-search-results::-webkit-scrollbar-track, .suggestion-list::-webkit-scrollbar-track { background: transparent; }
-        #custom-search-results::-webkit-scrollbar-thumb, .suggestion-list::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
-        .dark #custom-search-results::-webkit-scrollbar-thumb, .dark .suggestion-list::-webkit-scrollbar-thumb { background-color: #4b5563; }
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        .dark .custom-scroll::-webkit-scrollbar-thumb { background-color: #4b5563; }
 
-        /* Custom Dropdown */
+        /* Auto Suggestion List */
         .suggestion-list {
             position: absolute; width: 100%; max-height: 150px; overflow-y: auto; z-index: 50;
             background-color: #ffffff; border: 1px solid #d1d5db; border-radius: 0.5rem;
@@ -50,7 +55,7 @@
         }
         .dark .suggestion-list { background-color: #1e1e1e; border-color: #4b5563; }
 
-        /* === STYLE LINEAGE TRACER (SAFE) === */
+        /* Lineage Tracer Highlight */
         .trace-active {
             border-color: #f59e0b !important;
             background-color: #fffbeb !important;
@@ -59,15 +64,12 @@
             z-index: 20;
             opacity: 1 !important;
         }
-        .dark .trace-active {
-            background-color: #78350f !important; 
-            border-color: #fcd34d !important;
-        }
-        .dimmed-mode .group:not(.trace-active) {
-            opacity: 0.3;
-            filter: grayscale(80%);
-            transition: all 0.3s ease;
-        }
+        .dark .trace-active { background-color: #78350f !important; border-color: #fcd34d !important; }
+        .dimmed-mode .group:not(.trace-active) { opacity: 0.3; filter: grayscale(80%); transition: all 0.3s ease; }
+
+        /* Input Error State */
+        .input-error { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
+        .dark .input-error { border-color: #ef4444 !important; background-color: #450a0a !important; }
     </style>
 </head>
 <body class="bg-bg-light text-slate-700 dark:bg-bg-dark dark:text-gray-200 font-sans transition-colors duration-300 p-5 min-h-screen">
@@ -81,37 +83,39 @@
 </div>
 
 <div class="max-w-4xl mx-auto pb-24">
-    <header class="text-center mb-8 mt-2">
+    <header class="text-center mb-6 mt-2">
         <div class="flex justify-center items-center gap-3 mb-4 flex-wrap">
-            <button onclick="fetchData()" class="w-8 h-8 rounded-full border border-gray-400 text-gray-500 dark:text-gray-300 dark:border-gray-500 hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200" title="Muat Ulang Data Server"><i class="fas fa-sync-alt"></i></button>
-            <h4 class="text-xl font-bold text-slate-800 dark:text-gray-100 m-0 px-2">Silsilah Puang Guru Nasing</h4>
+            <button onclick="fetchData()" class="w-8 h-8 rounded-full border border-gray-400 text-gray-500 dark:text-gray-300 dark:border-gray-500 hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
+            <h4 class="text-xl font-bold text-slate-800 dark:text-gray-100 m-0 px-2">Silsilah Keluarga</h4>
             <button id="theme-btn" class="w-8 h-8 rounded-full border border-gray-400 text-gray-500 dark:text-gray-300 dark:border-gray-500 hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200"><i class="fas fa-moon"></i></button>
             <button id="btn-login-trigger" onclick="openLoginModal()" class="w-8 h-8 rounded-full border border-gray-400 text-gray-500 dark:text-gray-300 dark:border-gray-500 hover:bg-green-600 hover:text-white hover:border-green-600 flex items-center justify-center transition-all duration-200"><i class="fas fa-lock"></i></button>
             <button id="btn-logout-trigger" onclick="doLogout()" class="hidden w-8 h-8 rounded-full border border-red-400 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all duration-200"><i class="fas fa-sign-out-alt"></i></button>
         </div>
 
-        <div id="stats-container" class="grid grid-cols-3 gap-2 max-w-md mx-auto mb-4 animate-slide-down hidden">
-            <div class="bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 uppercase">Total</div>
-                <div class="text-lg font-bold text-primary" id="stat-total">0</div>
+        <div id="stats-container" class="hidden animate-slide-down mb-6">
+            <div class="grid grid-cols-4 gap-2 max-w-2xl mx-auto">
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow border-b-4 border-primary text-center">
+                    <div class="text-[10px] text-gray-500 uppercase">Total</div>
+                    <div class="text-xl font-bold text-slate-700 dark:text-white" id="stat-total">0</div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow border-b-4 border-blue-500 text-center">
+                    <div class="text-[10px] text-gray-500 uppercase"><i class="fas fa-mars text-blue-500 mr-1"></i>Pria</div>
+                    <div class="text-xl font-bold text-slate-700 dark:text-white" id="stat-male">0</div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow border-b-4 border-pink-500 text-center">
+                    <div class="text-[10px] text-gray-500 uppercase"><i class="fas fa-venus text-pink-500 mr-1"></i>Wanita</div>
+                    <div class="text-xl font-bold text-slate-700 dark:text-white" id="stat-female">0</div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow border-b-4 border-green-500 text-center">
+                    <div class="text-[10px] text-gray-500 uppercase">Hidup</div>
+                    <div class="text-xl font-bold text-slate-700 dark:text-white" id="stat-living">0</div>
+                </div>
             </div>
-            <div class="bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 uppercase">Generasi</div>
-                <div class="text-lg font-bold text-purple-500" id="stat-gen">0</div>
+            <div class="text-center mt-3">
+                <button onclick="openCalcModal()" class="text-xs bg-slate-200 dark:bg-gray-700 text-slate-600 dark:text-gray-300 px-3 py-1 rounded-full hover:bg-slate-300 transition-colors">
+                    <i class="fas fa-calculator mr-1"></i> Cek Hubungan Keluarga
+                </button>
             </div>
-            <div class="bg-white dark:bg-gray-800 p-2 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-                <div class="text-xs text-gray-500 dark:text-gray-400 uppercase">Hidup</div>
-                <div class="text-lg font-bold text-green-500" id="stat-living">0</div>
-            </div>
-        </div>
-
-        <div id="gen-legend" class="flex flex-wrap justify-center gap-2 mb-4 text-[10px] text-gray-500 dark:text-gray-400 hidden">
-            <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-slate-200 border border-slate-400"></span>Gen 1</div>
-            <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-blue-100 border border-blue-400"></span>Gen 2</div>
-            <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-emerald-100 border border-emerald-400"></span>Gen 3</div>
-            <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-amber-100 border border-amber-400"></span>Gen 4</div>
-            <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-purple-100 border border-purple-400"></span>Gen 5</div>
-            <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-rose-100 border border-rose-400"></span>Gen 6+</div>
         </div>
         
         <div class="relative w-full max-w-xs mx-auto mt-2 group z-30">
@@ -119,7 +123,7 @@
                 <i class="fas fa-search text-gray-400 mr-3 group-focus-within:text-primary"></i>
                 <input type="text" id="search-box" class="w-full bg-transparent border-none focus:ring-0 text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none" placeholder="Cari nama keluarga..." oninput="handleSearchInput(this.value)" onkeydown="if(event.key === 'Enter') handleSearchExecute(this.value)" onblur="setTimeout(() => hideSearch(), 200)" autocomplete="off">
             </div>
-            <ul id="custom-search-results" class="absolute w-full bg-white dark:bg-card-dark mt-2 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden border border-gray-200 dark:border-gray-600 z-50 text-sm text-left"></ul>
+            <ul id="custom-search-results" class="absolute w-full bg-white dark:bg-card-dark mt-2 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden border border-gray-200 dark:border-gray-600 z-50 text-sm text-left custom-scroll"></ul>
         </div>
     </header>
 
@@ -131,30 +135,14 @@
     <div id="tree-root" class="hidden"></div>
 
     <footer class="mt-16 border-t border-gray-200 dark:border-gray-700 pt-6 pb-8 text-center transition-colors duration-300">
-        <p class="text-sm font-semibold text-slate-600 dark:text-gray-300 mb-1">
-            &copy; Copyright Keluarga Besar Puang Guru Nasing
-        </p>
-        <p class="text-xs text-gray-500 dark:text-gray-500">
-            Original Design by 
-            <a href="https://wa.me/6282395223314" target="_blank" rel="noopener noreferrer" class="font-bold text-primary hover:text-primary-dark hover:underline transition-colors duration-200 ml-1">
-                i.s Dg. Tawang
-            </a> 
-            & 
-            <a href="https://#" target="_blank" rel="noopener noreferrer" class="font-bold text-primary hover:text-primary-dark hover:underline transition-colors duration-200">
-                Ratna Dg. Kebo
-            </a>
-            <br> Berkolaborasi degan Seluruh Keturunan Puang Guru Nasing
-            <br> Info & Pengembangan - Hubungi Admin Grup
-        </p>
+        <p class="text-sm font-semibold text-slate-600 dark:text-gray-300 mb-1">&copy; Keluarga Besar</p>
+        <p class="text-xs text-gray-500 dark:text-gray-500">App Version 2.0 (Gender & Stats Support)</p>
     </footer>
-
 </div>
 
 <div class="fixed bottom-5 left-5 z-40 flex items-center gap-3">
-    <button id="btn-undo" onclick="doUndo()" class="hidden w-12 h-12 rounded-full bg-yellow-500 text-white shadow-lg items-center justify-center hover:bg-yellow-600 hover:scale-110 transition-all duration-200 group" title="Batalkan">
-        <i class="fas fa-undo group-hover:-rotate-12 transition-transform"></i>
-    </button>
-    <button id="btn-sync" onclick="doSync()" class="hidden relative w-12 h-12 rounded-full bg-orange-500 text-white shadow-lg items-center justify-center hover:bg-orange-600 hover:scale-110 transition-all duration-200 animate-bounce-gentle" title="Sync">
+    <button id="btn-undo" onclick="doUndo()" class="hidden w-12 h-12 rounded-full bg-yellow-500 text-white shadow-lg items-center justify-center hover:bg-yellow-600 hover:scale-110 transition-all duration-200 group" title="Batalkan Perubahan"><i class="fas fa-undo group-hover:-rotate-12 transition-transform"></i></button>
+    <button id="btn-sync" onclick="doSync()" class="hidden relative w-12 h-12 rounded-full bg-orange-500 text-white shadow-lg items-center justify-center hover:bg-orange-600 hover:scale-110 transition-all duration-200 animate-bounce-gentle" title="Sync ke Server">
         <i class="fas fa-cloud-upload-alt"></i>
         <span id="sync-badge" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-sm border border-white dark:border-gray-800">0</span>
     </button>
@@ -172,13 +160,51 @@
     </div>
 </div>
 
+<div id="calc-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] hidden justify-center items-center p-4">
+    <div class="bg-white dark:bg-card-dark w-full max-w-md rounded-xl shadow-2xl p-6 animate-slide-down relative">
+        <button onclick="document.getElementById('calc-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+        <h3 class="text-lg font-bold text-center mb-4 dark:text-white">Cek Hubungan Keluarga</h3>
+        
+        <div class="space-y-4">
+            <div class="relative">
+    <label class="block text-xs font-medium text-gray-500 mb-1">Orang Pertama (A)</label>
+    <input type="text" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none transition" 
+           placeholder="Ketik nama..." 
+           oninput="suggestCalc(this, 'list-a', 'calc-id-a')" autocomplete="off">
+           
+    <input type="hidden" id="calc-id-a">
+    
+    <ul id="list-a" class="absolute w-full bg-white dark:bg-card-dark border dark:border-gray-600 rounded shadow-lg mt-1 max-h-48 overflow-y-auto hidden z-50"></ul>
+</div>
+
+<div class="relative mt-3">
+    <label class="block text-xs font-medium text-gray-500 mb-1">Orang Kedua (B)</label>
+    <input type="text" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none transition" 
+           placeholder="Ketik nama..." 
+           oninput="suggestCalc(this, 'list-b', 'calc-id-b')" autocomplete="off">
+           
+    <input type="hidden" id="calc-id-b">
+    
+    <ul id="list-b" class="absolute w-full bg-white dark:bg-card-dark border dark:border-gray-600 rounded shadow-lg mt-1 max-h-48 overflow-y-auto hidden z-50"></ul>
+</div>
+            <button onclick="calculateRelation()" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-semibold shadow-lg">Analisis Hubungan</button>
+        </div>
+
+        <div id="calc-result" class="mt-6 p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg border border-indigo-100 dark:border-indigo-800 hidden text-center">
+            <p class="text-sm text-gray-600 dark:text-gray-300 mb-1">Hubungan:</p>
+            <h4 id="res-title" class="text-xl font-bold text-indigo-700 dark:text-indigo-300 mb-2"></h4>
+            <p id="res-desc" class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed"></p>
+        </div>
+    </div>
+</div>
+
 <div id="modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden justify-center items-center p-4">
-    <div class="bg-white dark:bg-card-dark w-full max-w-lg rounded-xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto transition-colors duration-300">
+    <div class="bg-white dark:bg-card-dark w-full max-w-lg rounded-xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto transition-colors duration-300 custom-scroll">
         <h3 id="modal-title" class="text-xl font-bold text-primary-dark border-b border-gray-200 dark:border-gray-700 pb-3 mb-5">Form Data</h3>
         <input type="hidden" id="inp-mode"><input type="hidden" id="inp-id"><input type="hidden" id="inp-parent">
         
         <div class="mb-4">
-            <div class="flex justify-between items-end mb-2"><label class="text-sm font-semibold dark:text-gray-300">Daftar Nama Anak</label></div>
+            <div class="flex justify-between items-end mb-2"><label class="text-sm font-semibold dark:text-gray-300">Daftar Anggota Keluarga</label></div>
             <div id="children-inputs-container" class="space-y-3"></div>
             <button type="button" id="btn-add-more-child" class="hidden mt-3 text-sm font-medium text-primary hover:text-primary-dark flex items-center gap-1" onclick="addChildInputRow()"><i class="fas fa-plus-circle"></i> Tambah anak lagi</button>
         </div>
@@ -188,26 +214,20 @@
             <div class="relative">
                 <input type="text" id="inp-mother" class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-400 text-sm" placeholder="Ketik min. 3 huruf..." autocomplete="off" oninput="handleSpouseSuggest(this)">
             </div>
-            <p class="text-[10px] text-gray-400 mt-1">*Pilih dari daftar untuk menautkan data</p>
+            <p class="text-[10px] text-gray-400 mt-1">*Pilih dari daftar untuk menautkan data secara otomatis</p>
         </div>
         
         <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 mt-6">
             <button class="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200" onclick="closeModal()">Batal</button>
-
-            
-            <button id="btn-save" class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400" onclick="submitData()">
-    Simpan
-</button>
-
-            
-            
+            <button id="btn-save" class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400" onclick="submitData()">Simpan</button>
         </div>
     </div>
 </div>
 <datalist id="existing-members"></datalist>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwXYlXebuqH0DaXCR7CEX5o__71fwGzVng674d73eWtj6cFjvZprN5_p-MjBXNKfWmU/exec"; 
+    // ⚠️ PENTING: Ganti URL ini dengan URL Web App Anda yang baru!
+    const API_URL = "https://script.google.com/macros/s/AKfycbzyyYGVG9PAmSmq9-N0K9FJFpniLtGjraXMbJkoocUy4KnpsiIYXEhf9hrG6fnnXqsZ/exec"; 
     
     let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; 
     let allData = [], searchableNamesList = []; 
@@ -221,8 +241,6 @@
         const overlay = document.getElementById('fullscreen-overlay');
         if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => console.log(err)); } 
         else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } 
-        else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
-        try { if (screen.orientation && screen.orientation.unlock) { screen.orientation.unlock(); } } catch (e) { console.log("Unlock not supported"); }
         overlay.style.opacity = '0'; 
         setTimeout(() => { overlay.remove(); }, 500);
     }
@@ -238,23 +256,29 @@
 
     async function fetchData() {
         showLoader(true);
-        try { const r = await fetch(API_URL); allData = await r.json(); prepareSearchableNames(); renderTree(); updateStats(); showLoader(false); } catch (e) { alert("Error: " + e); showLoader(false); }
+        try { const r = await fetch(API_URL); allData = await r.json(); prepareSearchableNames(); renderTree(); updateStats(); showLoader(false); } 
+        catch (e) { alert("Gagal mengambil data: " + e); showLoader(false); }
     }
 
     function updateStats() {
         if(!allData) return;
         const total = allData.length;
-        const maxGen = allData.length > 0 ? Math.max(...allData.map(d => parseInt(d.generation)||0)) : 0;
         const living = allData.filter(d => d.isDead != 1).length;
+        const male = allData.filter(d => d.gender === 'L' || !d.gender).length; 
+        const female = allData.filter(d => d.gender === 'P').length;
+
         document.getElementById('stat-total').textContent = total;
-        document.getElementById('stat-gen').textContent = maxGen;
         document.getElementById('stat-living').textContent = living;
+        document.getElementById('stat-male').textContent = male;
+        document.getElementById('stat-female').textContent = female;
         document.getElementById('stats-container').classList.remove('hidden');
-        document.getElementById('gen-legend').classList.remove('hidden');
     }
+    
     function showLoader(show) { document.getElementById('loader').style.display = show ? 'flex' : 'none'; document.getElementById('tree-root').style.display = show ? 'none' : 'block'; }
 
-    // === CORE RENDER ===
+
+
+    // === RENDER TREE (Updated with Gender Logic) ===
     function renderTree() {
         const c = document.getElementById('tree-root'); c.innerHTML = '';
         const userRootId = localStorage.getItem('userRootId');
@@ -268,10 +292,22 @@
     }
 
     function createNode(p, lvl) {
+
         const li = document.createElement('li'); li.className = 'my-3';
+
+        // Bagian ini WAJIB ada agar search bisa menemukan elemennya
+        li.setAttribute('data-id', p.id); 
+        li.classList.add('node-card'); 
+        // ...
+
+
         const children = allData.filter(d => d.parentId == p.id || (d.motherName && d.motherName.trim() === p.name));
-        const hasChildren = children.length > 0;
         
+        // GENDER LOGIC
+        let genderIcon = ''; let genderClass = 'border-l-4 border-l-gray-300';
+        if (p.gender === 'L') { genderIcon = '<i class="fas fa-mars text-blue-500 mr-2 text-sm"></i>'; genderClass = 'border-l-4 border-l-blue-400'; } 
+        else if (p.gender === 'P') { genderIcon = '<i class="fas fa-venus text-pink-500 mr-2 text-sm"></i>'; genderClass = 'border-l-4 border-l-pink-400'; }
+
         let pLabel = `<span class="block text-[0.7rem] uppercase text-primary mb-0.5">★ Leluhur</span>`;
         if (p.parentId && p.parentId !== 'root') {
             const f = allData.find(d => d.id === p.parentId); let mName = p.motherName || (f && f.spouse ? f.spouse : "???");
@@ -280,25 +316,22 @@
         let spHtml = ''; if (p.spouse) p.spouse.split(',').forEach(s => { if(s.trim()) spHtml += `<span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-white/60 text-pink-600 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800 cursor-default mr-1"><i class="fas fa-heart mr-1 text-[0.6rem]"></i> ${s.trim()}</span>`; });
         
         const isDeceased = p.isDead == 1;
-        let deadBadge = isDeceased ? `<span class="ml-2 text-[10px] px-1.5 py-0.5 bg-gray-600 text-white rounded-full" title="Almarhum/Almarhumah"><i class="fas fa-dove mr-1"></i>Wafat</span>` : "";
-
+        let deadBadge = isDeceased ? `<span class="ml-2 text-[10px] px-1.5 py-0.5 bg-gray-600 text-white rounded-full" title="Almarhum"><i class="fas fa-dove mr-1"></i></span>` : "";
         const clr = ['bg-slate-100 border-slate-400 dark:bg-slate-800 dark:border-slate-500', 'bg-blue-50 border-blue-400 dark:bg-blue-900/20 dark:border-blue-500', 'bg-emerald-50 border-emerald-400 dark:bg-emerald-900/20 dark:border-emerald-500', 'bg-amber-50 border-amber-400 dark:bg-amber-900/20 dark:border-amber-500', 'bg-purple-50 border-purple-400 dark:bg-purple-900/20 dark:border-purple-500', 'bg-rose-50 border-rose-400 dark:bg-rose-900/20 dark:border-rose-500'];
         const cardColor = clr[lvl % clr.length];
         
-        // SAFE TRACE CALL
-        const traceBtn = `<button class="w-8 h-8 rounded-full bg-white/80 text-orange-500 hover:bg-orange-500 hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-orange-400 dark:hover:bg-orange-500 border border-orange-200 dark:border-orange-900 ml-1" onclick="traceLineage('${p.id}', event)" title="Lihat Jalur Leluhur"><i class="fas fa-shoe-prints text-xs"></i></button>`;
+        const traceBtn = `<button class="w-8 h-8 rounded-full bg-white/80 text-orange-500 hover:bg-orange-500 hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-orange-400 dark:hover:bg-orange-500 border border-orange-200 dark:border-orange-900 ml-1" onclick="traceLineage('${p.id}', event)"><i class="fas fa-shoe-prints text-xs"></i></button>`;
         const adminBtns = isLoggedIn ? `<button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('edit','${p.id}')"><i class="fas fa-pen text-xs"></i></button><button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('add','${p.id}')"><i class="fas fa-plus text-xs"></i></button>${lvl>0?`<button class="w-8 h-8 rounded-full bg-red-100 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors dark:bg-red-900/40 dark:hover:bg-red-600" onclick="deleteItem('${p.id}')"><i class="fas fa-trash text-xs"></i></button>`:''}` : '';
         const adm = `<div class="flex gap-1.5 ml-2 opacity-10 group-hover:opacity-100 transition-opacity duration-300 self-center z-20">${traceBtn}${adminBtns}</div>`;
         
         const div = document.createElement('div'); div.id = 'card-' + p.id; 
-        div.className = `relative flex items-start p-4 rounded-lg shadow-sm hover:shadow-md border-[3px] transition-all duration-200 group ${cardColor} ${lvl===0?'shadow-md':''}`;
-        div.innerHTML = `<button class="toggle-btn w-5 mt-1 mr-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-transform duration-200 ${hasChildren?'cursor-pointer':'cursor-default'}" onclick="toggleChild(this)">${hasChildren?'<i class="fas fa-chevron-right"></i>':'<i class="fas fa-circle text-[6px] opacity-30"></i>'}</button><div class="flex-grow cursor-pointer" onclick="toggleChild(this.previousElementSibling)">${pLabel}<div class="flex flex-wrap items-center gap-2"><span class="text-lg font-bold text-slate-800 dark:text-gray-100">${p.name}</span>${deadBadge}${spHtml}</div></div>${adm}`;
+        div.className = `relative flex items-start p-4 rounded-lg shadow-sm hover:shadow-md border-[3px] transition-all duration-200 group ${cardColor} ${genderClass} ${lvl===0?'shadow-md':''}`;
+        div.innerHTML = `<button class="toggle-btn w-5 mt-1 mr-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-transform duration-200 ${children.length>0?'cursor-pointer':'cursor-default'}" onclick="toggleChild(this)">${children.length>0?'<i class="fas fa-chevron-right"></i>':'<i class="fas fa-circle text-[6px] opacity-30"></i>'}</button><div class="flex-grow cursor-pointer" onclick="toggleChild(this.previousElementSibling)">${pLabel}<div class="flex flex-wrap items-center gap-2"><span class="text-lg font-bold text-slate-800 dark:text-gray-100 flex items-center">${genderIcon} ${p.name}</span>${deadBadge}${spHtml}</div></div>${adm}`;
         li.appendChild(div);
-        if (hasChildren) { const cUl = document.createElement('ul'); cUl.className = 'children-container hidden pl-[22px] tree-line list-none'; if (lvl===0) { cUl.classList.replace('hidden','block'); div.querySelector('.toggle-btn').innerHTML='<i class="fas fa-chevron-down"></i>'; } children.forEach(ch => cUl.appendChild(createNode(ch, lvl+1))); li.appendChild(cUl); }
+        if (children.length>0) { const cUl = document.createElement('ul'); cUl.className = 'children-container hidden pl-[22px] tree-line list-none'; if (lvl===0) { cUl.classList.replace('hidden','block'); div.querySelector('.toggle-btn').innerHTML='<i class="fas fa-chevron-down"></i>'; } children.forEach(ch => cUl.appendChild(createNode(ch, lvl+1))); li.appendChild(cUl); }
         return li;
     }
 
-    // === ANTI-CRASH TOGGLE ===
     function toggleChild(b) { 
         if(!b || !b.parentElement) return;
         const ul = b.parentElement.nextElementSibling; 
@@ -309,14 +342,12 @@
         } 
     }
 
-    // === ANTI-CRASH LINEAGE TRACER ===
+    // === LINEAGE TRACER ===
     function traceLineage(id, event) {
         if (event) event.stopPropagation();
         if (isTraceActive === id) { clearTrace(); return; } 
-        clearTrace();
-        isTraceActive = id;
+        clearTrace(); isTraceActive = id;
         document.getElementById('tree-root').classList.add('dimmed-mode');
-        
         let currentId = id;
         while (currentId && currentId !== 'root') {
             const card = document.getElementById('card-' + currentId);
@@ -324,12 +355,9 @@
                 card.classList.add('trace-active');
                 card.scrollIntoView({behavior: 'smooth', block: 'center'});
             }
-            
-            // Safe find with string comparison
             const data = allData.find(d => String(d.id) == String(currentId));
             if (data && data.parentId && data.parentId !== 'root') {
                 currentId = data.parentId;
-                // Auto open parent folder
                 const parentCard = document.getElementById('card-' + currentId);
                 if (parentCard) {
                      const ul = parentCard.nextElementSibling;
@@ -339,9 +367,7 @@
                          if(toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i>';
                      }
                 }
-            } else { 
-                currentId = null; 
-            }
+            } else { currentId = null; }
         }
     }
     function clearTrace() {
@@ -351,11 +377,11 @@
     }
     document.addEventListener('click', function(e) { if (!e.target.closest('.group') && isTraceActive) { clearTrace(); } });
 
-    // === SEARCH ===
+    // === SEARCH SYSTEM ===
     function prepareSearchableNames() {
-        const uniqueNames = new Set(); const datalist = document.getElementById('existing-members'); datalist.innerHTML = ''; 
+        const uniqueNames = new Set(); 
         allData.forEach(p => { if(p.name) uniqueNames.add(p.name.trim()); if(p.spouse) p.spouse.split(',').forEach(s => { if(s.trim()) uniqueNames.add(s.trim()); }); });
-        searchableNamesList = Array.from(uniqueNames).sort(); searchableNamesList.forEach(name => { const opt = document.createElement('option'); opt.value = name; datalist.appendChild(opt); });
+        searchableNamesList = Array.from(uniqueNames).sort();
     }
     function handleSearchInput(v) {
         const dd = document.getElementById('custom-search-results');
@@ -370,132 +396,141 @@
         } else { dd.innerHTML = '<li class="px-4 py-2 text-gray-400 italic text-xs">Tidak ditemukan</li>'; dd.classList.remove('hidden'); }
     }
     function hideSearch() { document.getElementById('custom-search-results').classList.add('hidden'); }
+
     
-    // === ANTI-CRASH SEARCH EXECUTE ===
+    
     function handleSearchExecute(n) {
-        let t = allData.find(d => d.name.toLowerCase() === n.toLowerCase()); if(!t) t = allData.find(d => d.spouse && d.spouse.toLowerCase().includes(n.toLowerCase()));
-        if(t) { document.getElementById('search-box').blur(); hideSearch(); expandAndHighlight(t.id); }
+    if (!n) return;
+    const lowerName = n.toLowerCase();
+    
+    // 1. Cari data di memori (match nama atau pasangan)
+    let targets = allData.filter(d => 
+        (d.name && d.name.toLowerCase().includes(lowerName)) ||
+        (d.spouse && d.spouse.toLowerCase().includes(lowerName))
+    );
+
+    if (targets.length === 0) {
+        alert("Nama tidak ditemukan!");
+        return;
     }
-    function expandAndHighlight(tid) {
-        document.querySelectorAll('.highlight-card').forEach(e => e.classList.remove('highlight-card'));
+
+    // Bersihkan highlight lama
+    document.querySelectorAll('.highlight-card').forEach(el => el.classList.remove('highlight-card'));
+
+    // 2. Loop setiap orang yang ditemukan
+    targets.forEach(targetData => {
+        const targetId = targetData.id;
+
+        // Cari elemen visual berdasarkan attribute data-id
+        // (Ini akan menemukan kartu di jalur Ayah DAN jalur Ibu sekaligus)
+        const domElements = document.querySelectorAll(`.node-card[data-id="${targetId}"]`);
+
+        domElements.forEach(card => {
+            // --- LANGKAH A: EXPAND KE ATAS (Buka semua folder yang menutup) ---
+            let currentElement = card;
+            
+            // Loop naik ke atas (parents) via struktur HTML
+            while (currentElement) {
+                // Cari UL (folder container) terdekat di atas elemen ini
+                const parentUl = currentElement.closest('ul');
+                
+                if (parentUl) {
+                    // Jika folder tertutup (hidden), kita buka paksa
+                    if (parentUl.classList.contains('hidden')) {
+                        parentUl.classList.remove('hidden');
+                        parentUl.classList.add('block');
+                        parentUl.classList.add('animate-slide-down');
+                    }
+
+                    // Cari Kartu Parent yang mengontrol UL ini (Sibling di atas UL)
+                    const parentCard = parentUl.previousElementSibling;
+                    
+                    if (parentCard) {
+                        // Ubah icon panah parent jadi ke bawah (terbuka)
+                        const toggleBtn = parentCard.querySelector('.toggle-btn');
+                        if (toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i>';
+                        
+                        // Lanjut naik ke level di atasnya
+                        currentElement = parentCard;
+                    } else {
+                        // Sudah sampai root (tidak punya parent card lagi)
+                        break;
+                    }
+                } else {
+                    // Tidak ada UL lagi di atas (sudah paling luar)
+                    break; 
+                }
+            }
+
+            // --- LANGKAH B: SCROLL & HIGHLIGHT ---
+            // Kita beri sedikit delay (100ms) untuk memastikan browser selesai merender pembukaan folder
+            setTimeout(() => {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Tambahkan efek kedip/kuning
+                card.classList.add('highlight-card');
+                
+                // Hapus efek setelah 3 detik
+                setTimeout(() => card.classList.remove('highlight-card'), 3000);
+            }, 100);
+        });
+    });
+    
+    hideSearch();
+}
+    
+    
+    
+    function expandAndHighlight(tid, clearPrevious = true) {
+        
+        // Hanya hapus highlight lama jika diminta
+        if (clearPrevious) {
+            document.querySelectorAll('.highlight-card').forEach(e => e.classList.remove('highlight-card'));
+        }
+
         let c = allData.find(d => d.id === tid);
+        
+        // --- LOGIKA EXPAND KE ATAS ---
+        // Membuka semua folder parent yang tertutup sampai ke root
         while (c && c.parentId && c.parentId !== 'root') { 
             const pc = document.getElementById('card-' + c.parentId); 
             if (pc) { 
                 const ul = pc.nextElementSibling; 
+                // Jika folder tertutup (hidden), buka!
                 if(ul && ul.classList.contains('hidden')) { 
-                    ul.classList.replace('hidden','block'); ul.classList.add('animate-slide-down'); 
-                    const btn = pc.querySelector('.toggle-btn');
-                    if(btn) btn.innerHTML='<i class="fas fa-chevron-down"></i>'; 
+                    ul.classList.replace('hidden','block'); 
+                    ul.classList.add('animate-slide-down'); 
+                    
+                    // Putar panah ke bawah
+                    const toggleBtn = pc.querySelector('.toggle-btn');
+                    if(toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i>'; 
                 } 
             } 
+            // Naik ke parent berikutnya
             c = allData.find(d => d.id === c.parentId); 
         }
+
+        // --- LOGIKA HIGHLIGHT ---
         setTimeout(() => { 
             const tc = document.getElementById('card-' + tid); 
             if(tc){ 
-                tc.scrollIntoView({behavior:'smooth',block:'center'}); 
                 tc.classList.add('highlight-card'); 
-                setTimeout(()=>tc.classList.remove('highlight-card'),4500); 
+                // Hapus warna highlight setelah 5 detik agar bersih kembali
+                setTimeout(() => tc.classList.remove('highlight-card'), 5000); 
             } 
         }, 300);
     }
-    
-    
-    
-    
-    
-    
-    
-    
-function handleChildNameInput(input) {
-    // 1. Bersihkan UI Suggestion lama
-    let oldList = input.parentNode.querySelector('.suggestion-list');
-    if (oldList) oldList.remove();
-
-    const val = input.value.trim();
-    const wrapper = input.parentNode;
-    const warningEl = wrapper.querySelector('.duplicate-warning');
-    
-    // 2. LOGIKA VALIDASI DUPLIKAT (STRICT)
-    // Cek apakah nama ada di database (Case Insensitive)
-    const isDuplicate = allData.some(d => d.name.toLowerCase() === val.toLowerCase());
-    
-    // Hapus class error dulu untuk reset
-    input.classList.remove('input-error', 'border-red-500', 'focus:ring-red-500');
-    input.classList.add('focus:ring-primary'); // Balikin warna biru normal
-    warningEl.classList.add('hidden');
-
-    if (val.length > 0 && isDuplicate) {
-        // JIKA DUPLIKAT:
-        warningEl.classList.remove('hidden');
-        warningEl.innerHTML = '<i class="fas fa-times-circle mr-1"></i> Error: Nama ini sudah terdaftar sebagai Keluarga! <br>Gunakan nama lain untuk menghindari Data Ganda!';
-        warningEl.classList.replace('text-amber-600', 'text-red-600'); // Ubah warna jadi Merah
-        warningEl.classList.replace('dark:text-amber-400', 'dark:text-red-400');
-
-        // Tambah penanda visual & class flag 'input-error'
-        input.classList.add('input-error', 'border-red-500', 'focus:ring-red-500');
-        input.classList.remove('focus:ring-primary');
-    }
-
-    // 3. UPDATE STATUS TOMBOL SIMPAN
-    updateSaveButtonState();
-
-    // 4. LOGIKA AUTO SUGGEST (Tetap jalan untuk referensi)
-    if (val.length < 3) return; 
-    const matches = searchableNamesList.filter(n => n.toLowerCase().includes(val.toLowerCase()));
-    if (matches.length === 0) return;
-
-    const ul = document.createElement('ul'); 
-    ul.className = 'suggestion-list animate-slide-down';
-    
-    matches.slice(0, 10).forEach(name => {
-        const li = document.createElement('li'); 
-        li.className = "px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700 last:border-0 flex justify-between items-center";
-        li.innerHTML = `<span>${name}</span> <i class="fas fa-history text-xs text-gray-300"></i>`;
-        li.onclick = function() { 
-            input.value = name; 
-            ul.remove();
-            handleChildNameInput(input); // Cek validasi lagi setelah klik
-        }; 
-        ul.appendChild(li);
-    });
-    input.parentNode.appendChild(ul);
-}
 
 
-    
-   function updateSaveButtonState() {
-    const btn = document.getElementById('btn-save');
-    // Cari apakah ada elemen dengan class 'input-error'
-    const errors = document.querySelectorAll('.input-error');
-    
-    if (errors.length > 0) {
-        // Jika ada error -> Matikan tombol
-        btn.disabled = true;
-        btn.title = "Perbaiki data merah sebelum menyimpan";
-    } else {
-        // Jika bersih -> Hidupkan tombol
-        btn.disabled = false;
-        btn.title = "";
-    }
-}
- 
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
     function handleSpouseSuggest(input) {
-        let oldList = input.parentNode.querySelector('.suggestion-list');
-        if (oldList) oldList.remove();
-        const val = input.value.trim();
-        if (val.length < 3) return; 
-        const matches = searchableNamesList.filter(n => n.toLowerCase().includes(val.toLowerCase()));
-        if (matches.length === 0) return;
-        const ul = document.createElement('ul'); ul.className = 'suggestion-list animate-slide-down';
+        let oldList = input.parentNode.querySelector('.suggestion-list'); if (oldList) oldList.remove();
+        const val = input.value.trim(); if (val.length < 3) return; 
+        const matches = searchableNamesList.filter(n => n.toLowerCase().includes(val.toLowerCase())); if (matches.length === 0) return;
+        const ul = document.createElement('ul'); ul.className = 'suggestion-list animate-slide-down custom-scroll';
         matches.slice(0, 10).forEach(name => {
             const li = document.createElement('li'); li.className = "px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700 last:border-0"; li.textContent = name; li.onclick = function() { input.value = name; ul.remove(); }; ul.appendChild(li);
         });
@@ -503,7 +538,81 @@ function handleChildNameInput(input) {
     }
     document.addEventListener('click', function(e) { if (!e.target.closest('.relative')) { document.querySelectorAll('.suggestion-list').forEach(el => el.remove()); } });
 
-    // === SYNC, UNDO, AUTH ===
+    // === FORM INPUT LOGIC (STRICT DUPLICATE & GENDER) ===
+    function toggleChildSpouseInput(chk) { const i = chk.closest('.child-input-row').querySelector('.inp-child-spouse'); if(chk.checked){ i.classList.remove('hidden'); i.focus(); } else { i.classList.add('hidden'); i.value=''; } }
+    
+    function addChildInputRow(n="", s="", isDead=0, gender="L") {
+        const c = document.getElementById('children-inputs-container'); 
+        const d = document.createElement('div'); 
+        d.className = 'child-input-row bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 relative animate-slide-down mb-3';
+        const del = c.children.length > 0 ? `<button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500" onclick="this.closest('.child-input-row').remove(); updateSaveButtonState();"><i class="fas fa-times"></i></button>` : ``; 
+        const hasS = s && s.trim() !== "";
+        
+        d.innerHTML = `
+            ${del}
+            <div class="mb-2 pr-5 relative">
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Nama Lengkap</label>
+                <div class="relative">
+                    <input type="text" class="inp-child-name w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Nama anak..." value="${n}" autocomplete="off" oninput="handleChildNameInput(this)">
+                    <div class="duplicate-warning hidden mt-1 text-[10px] text-red-600 dark:text-red-400 font-bold flex items-center animate-pulse"></div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Jenis Kelamin</label>
+                <div class="flex gap-4">
+                    <label class="flex items-center cursor-pointer"><input type="radio" name="gender-${Math.random()}" value="L" class="inp-child-gender text-blue-600 focus:ring-blue-500" ${gender!=='P'?'checked':''}><span class="ml-2 text-sm text-gray-700 dark:text-gray-300"><i class="fas fa-mars text-blue-500 mr-1"></i>Laki-laki</span></label>
+                    <label class="flex items-center cursor-pointer"><input type="radio" name="gender-${Math.random()}" value="P" class="inp-child-gender text-pink-600 focus:ring-pink-500" ${gender==='P'?'checked':''}><span class="ml-2 text-sm text-gray-700 dark:text-gray-300"><i class="fas fa-venus text-pink-500 mr-1"></i>Perempuan</span></label>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 mb-2">
+                <div class="flex items-center gap-2"><input type="checkbox" class="inp-child-dead w-3.5 h-3.5 text-red-500 rounded focus:ring-red-500" ${isDead==1?"checked":""}><label class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer select-none" onclick="this.previousElementSibling.click()">Alm/Almh?</label></div>
+                <div class="flex items-center gap-2"><input type="checkbox" class="w-3.5 h-3.5 text-primary rounded focus:ring-primary" onchange="toggleChildSpouseInput(this)" ${hasS?"checked":""}><label class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer select-none" onclick="this.previousElementSibling.click()">Sudah Menikah?</label></div>
+            </div>
+            <div class="relative"><input type="text" class="inp-child-spouse ${hasS?"":"hidden"} w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Cari / Ketik nama pasangan..." value="${s}" autocomplete="off" oninput="handleSpouseSuggest(this)"></div>
+        `; 
+        c.appendChild(d);
+    }
+
+    function handleChildNameInput(input) {
+        let oldList = input.parentNode.querySelector('.suggestion-list'); if (oldList) oldList.remove();
+        const val = input.value.trim();
+        const wrapper = input.parentNode;
+        const warningEl = wrapper.querySelector('.duplicate-warning');
+        
+        // Strict Check
+        const isDuplicate = allData.some(d => d.name.toLowerCase() === val.toLowerCase());
+        input.classList.remove('input-error', 'border-red-500', 'focus:ring-red-500');
+        input.classList.add('focus:ring-primary'); warningEl.classList.add('hidden');
+
+        if (val.length > 0 && isDuplicate) {
+            warningEl.classList.remove('hidden');
+            warningEl.innerHTML = '<i class="fas fa-times-circle mr-1"></i> Error: Nama ini sudah terdaftar!';
+            input.classList.add('input-error', 'border-red-500', 'focus:ring-red-500');
+            input.classList.remove('focus:ring-primary');
+        }
+        updateSaveButtonState();
+
+        // Auto Suggest
+        if (val.length < 3) return; 
+        const matches = searchableNamesList.filter(n => n.toLowerCase().includes(val.toLowerCase())); if (matches.length === 0) return;
+        const ul = document.createElement('ul'); ul.className = 'suggestion-list animate-slide-down custom-scroll';
+        matches.slice(0, 10).forEach(name => {
+            const li = document.createElement('li'); li.className = "px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700 last:border-0 flex justify-between items-center";
+            li.innerHTML = `<span>${name}</span> <i class="fas fa-history text-xs text-gray-300"></i>`;
+            li.onclick = function() { input.value = name; ul.remove(); handleChildNameInput(input); }; 
+            ul.appendChild(li);
+        });
+        input.parentNode.appendChild(ul);
+    }
+
+    function updateSaveButtonState() {
+        const btn = document.getElementById('btn-save');
+        const errors = document.querySelectorAll('.input-error');
+        if (errors.length > 0) { btn.disabled = true; btn.title = "Perbaiki data merah"; } 
+        else { btn.disabled = false; btn.title = ""; }
+    }
+
+    // === SYNC & AUTH ===
     function updateSyncUI() {
         const btn = document.getElementById('btn-sync'); const badge = document.getElementById('sync-badge'); const btnUndo = document.getElementById('btn-undo'); 
         const count = pendingQueue.length;
@@ -517,7 +626,7 @@ function handleChildNameInput(input) {
         showLoader(true); const btn = document.getElementById('btn-sync'); btn.disabled = true; document.getElementById('btn-undo').classList.add('hidden'); 
         try {
             for (let i = 0; i < pendingQueue.length; i++) { await fetch(API_URL, { method: "POST", body: JSON.stringify(pendingQueue[i]) }); }
-            pendingQueue = []; localStorage.removeItem('pendingChanges'); updateSyncUI(); const r = await fetch(API_URL); allData = await r.json(); prepareSearchableNames(); renderTree();
+            pendingQueue = []; localStorage.removeItem('pendingChanges'); updateSyncUI(); const r = await fetch(API_URL); allData = await r.json(); prepareSearchableNames(); renderTree(); updateStats();
         } catch (e) { alert("Error Sync: " + e); } finally { showLoader(false); btn.disabled = false; updateSyncUI(); }
     }
     function openLoginModal() { document.getElementById('login-modal').classList.replace('hidden', 'flex'); document.getElementById('login-user').value=''; document.getElementById('login-pass').value=''; document.getElementById('login-error').classList.add('hidden'); }
@@ -533,78 +642,164 @@ function handleChildNameInput(input) {
     function doLogout() { isLoggedIn = false; localStorage.removeItem('isLoggedIn'); localStorage.removeItem('userRootId'); updateLoginUI(); renderTree(); }
     function updateLoginUI() { document.getElementById('btn-login-trigger').classList.toggle('hidden', isLoggedIn); document.getElementById('btn-logout-trigger').classList.toggle('hidden', !isLoggedIn); }
 
-    function toggleChildSpouseInput(chk) { const i = chk.closest('.child-input-row').querySelector('.inp-child-spouse'); if(chk.checked){ i.classList.remove('hidden'); i.focus(); } else { i.classList.add('hidden'); i.value=''; } }
-    
-    
-    
-function addChildInputRow(n="", s="", isDead=0) {
-    const c = document.getElementById('children-inputs-container'); 
-    const d = document.createElement('div'); 
-    d.className = 'child-input-row bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 relative animate-slide-down mb-3';
-    
-    const del = c.children.length > 0 ? `<button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500" onclick="this.closest('.child-input-row').remove()"><i class="fas fa-times"></i></button>` : ``; 
-    const hasS = s && s.trim() !== "";
-    
-    d.innerHTML = `
-        ${del}
-        <div class="mb-2 pr-5 relative">
-            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Nama Lengkap</label>
-            
-            <div class="relative">
-                <input type="text" class="inp-child-name w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
-                    placeholder="Nama anak..." 
-                    value="${n}" 
-                    autocomplete="off"
-                    oninput="handleChildNameInput(this)"> <div class="duplicate-warning hidden mt-1 text-[10px] text-red-600 dark:text-red-400 font-bold flex items-center animate-pulse">
-                    <i class="fas fa-exclamation-triangle mr-1"></i> Perhatian: Nama ini sudah ada di database!
-                </div>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-4 mb-2">
-            <div class="flex items-center gap-2">
-                <input type="checkbox" class="inp-child-dead w-3.5 h-3.5 text-red-500 rounded focus:ring-red-500" ${isDead==1 ? "checked" : ""}>
-                <label class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer select-none" onclick="this.previousElementSibling.click()">Alm/Almh?</label>
-            </div>
-            <div class="flex items-center gap-2">
-                <input type="checkbox" class="w-3.5 h-3.5 text-primary rounded focus:ring-primary" onchange="toggleChildSpouseInput(this)" ${hasS?"checked":""}>
-                <label class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer select-none" onclick="this.previousElementSibling.click()">Sudah Menikah?</label>
-            </div>
-        </div>
-        
-        <div class="relative">
-            <input type="text" class="inp-child-spouse ${hasS?"":"hidden"} w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
-                placeholder="Cari / Ketik nama pasangan..." 
-                value="${s}" 
-                autocomplete="off" 
-                oninput="handleSpouseSuggest(this)">
-        </div>`; 
-    c.appendChild(d);
-}
-
-    
-    
-    
-    
-
-
-
-
+    // === MODAL & SUBMIT ===
     function openModal(mode, id) {
         document.getElementById('modal').classList.replace('hidden', 'flex'); document.getElementById('inp-mode').value = mode; document.getElementById('children-inputs-container').innerHTML = ''; document.getElementById('inp-mother').value = ''; document.getElementById('inp-parent').value = '';
-        if (mode === 'add') { document.getElementById('modal-title').innerText = "Tambah Keturunan"; document.getElementById('inp-parent').value = id; document.getElementById('btn-add-more-child').classList.remove('hidden'); addChildInputRow(); const f = allData.find(d => d.id == id); if (f && f.spouse && f.spouse.split(',').length === 1) document.getElementById('inp-mother').value = f.spouse.trim(); } 
-        else { document.getElementById('modal-title').innerText = "Edit Data"; document.getElementById('btn-add-more-child').classList.add('hidden'); const p = allData.find(d => d.id == id); document.getElementById('inp-id').value = id; addChildInputRow(p.name, p.spouse, p.isDead); document.getElementById('inp-mother').value = p.motherName || ''; }
+        if (mode === 'add') { 
+            document.getElementById('modal-title').innerText = "Tambah Keturunan"; document.getElementById('inp-parent').value = id; document.getElementById('btn-add-more-child').classList.remove('hidden'); 
+            addChildInputRow(); 
+            const f = allData.find(d => d.id == id); if (f && f.spouse && f.spouse.split(',').length === 1) document.getElementById('inp-mother').value = f.spouse.trim(); 
+        } else { 
+            document.getElementById('modal-title').innerText = "Edit Data"; document.getElementById('btn-add-more-child').classList.add('hidden'); const p = allData.find(d => d.id == id); document.getElementById('inp-id').value = id; 
+            addChildInputRow(p.name, p.spouse, p.isDead, p.gender); 
+            document.getElementById('inp-mother').value = p.motherName || ''; 
+        }
     }
     function closeModal() { document.getElementById('modal').classList.replace('flex', 'hidden'); }
     function submitData() {
         const mode = document.getElementById('inp-mode').value; const rows = document.querySelectorAll('.child-input-row'); const childrenData = [];
-        rows.forEach(r => { const n = r.querySelector('.inp-child-name').value.trim(); const sInp = r.querySelector('.inp-child-spouse'); let s = (!sInp.classList.contains('hidden')) ? sInp.value.trim() : ""; const isDead = r.querySelector('.inp-child-dead').checked; if (n) childrenData.push({ name: n, spouse: s, isDead: isDead }); });
+        rows.forEach(r => { 
+            const n = r.querySelector('.inp-child-name').value.trim(); const sInp = r.querySelector('.inp-child-spouse'); let s = (!sInp.classList.contains('hidden')) ? sInp.value.trim() : ""; const isDead = r.querySelector('.inp-child-dead').checked; 
+            let genderVal = 'L'; r.querySelectorAll('.inp-child-gender').forEach(rd => { if(rd.checked) genderVal = rd.value; });
+            if (n) childrenData.push({ name: n, spouse: s, isDead: isDead, gender: genderVal }); 
+        });
         if (childrenData.length === 0) { alert("Wajib isi minimal satu nama!"); return; }
         const pl = { action: mode, motherName: document.getElementById('inp-mother').value }; 
-        if (mode === 'add') { pl.parentId = document.getElementById('inp-parent').value; pl.children = childrenData; } else { pl.id = document.getElementById('inp-id').value; pl.name = childrenData[0].name; pl.spouse = childrenData[0].spouse; pl.isDead = childrenData[0].isDead; }
+        if (mode === 'add') { pl.parentId = document.getElementById('inp-parent').value; pl.children = childrenData; } 
+        else { pl.id = document.getElementById('inp-id').value; pl.name = childrenData[0].name; pl.spouse = childrenData[0].spouse; pl.isDead = childrenData[0].isDead; pl.gender = childrenData[0].gender; }
         enqueueAction(pl);
     }
     function deleteItem(id) { if(confirm("Hapus data ini beserta keturunannya? (Akan masuk antrean Sync)")) { enqueueAction({ action: 'delete', id: id }); } }
+
+    // === CALCULATOR LOGIC ===
+    function openCalcModal() { document.getElementById('calc-modal').classList.replace('hidden','flex'); document.getElementById('calc-result').classList.add('hidden'); document.getElementById('calc-name-a').value = ''; document.getElementById('calc-name-b').value = ''; document.getElementById('calc-id-a').value = ''; document.getElementById('calc-id-b').value = ''; }
+    
+    // --- SEARCH SUGGESTION ---
+    function suggestCalc(input, listId, hiddenInputId) {
+        const val = input.value.trim().toLowerCase();
+        const list = document.getElementById(listId);
+        const hiddenIdInput = document.getElementById(hiddenInputId);
+
+        if(hiddenIdInput) hiddenIdInput.value = '';
+        if(list) list.innerHTML = ''; else return;
+
+        if(val.length < 2) { list.classList.add('hidden'); return; }
+        if (typeof allData === 'undefined' || allData.length === 0) return;
+
+        const matches = allData.filter(d => (d.name && d.name.toLowerCase().includes(val)) || (d.spouse && d.spouse.toLowerCase().includes(val))).slice(0, 7);
+
+        if(matches.length > 0) {
+            list.classList.remove('hidden');
+            matches.forEach(m => {
+                const li = document.createElement('li');
+                li.className = "px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm border-b border-gray-100 dark:border-gray-600 last:border-0 flex justify-between items-center";
+                const parentInfo = getShortParentName(m.parentId);
+                const genderIcon = m.gender === 'P' ? '<i class="fas fa-venus text-pink-400 ml-2"></i>' : '<i class="fas fa-mars text-blue-400 ml-2"></i>';
+                const displayName = highlightMatch(m.name, val);
+                li.innerHTML = `<div class="flex-1"><div class="font-semibold text-slate-700 dark:text-gray-200">${displayName}</div><div class="text-[10px] text-gray-400">Ortu: ${parentInfo}</div></div>${genderIcon}`;
+                li.onclick = () => { input.value = m.name; if(hiddenIdInput) hiddenIdInput.value = m.id; list.classList.add('hidden'); }; 
+                list.appendChild(li);
+            });
+        } else {
+            const li = document.createElement('li'); li.className = "px-3 py-2 text-xs text-gray-400 italic text-center"; li.innerText = "Tidak ditemukan"; list.appendChild(li); list.classList.remove('hidden');
+        }
+    }
+
+    // --- HELPER FUNCTIONS ---
+    function getShortParentName(pid) { 
+        if(!pid || pid==='root') return 'Root'; 
+        const p = allData.find(d=>d.id == pid); 
+        return p ? p.name : 'Tidak Diketahui'; 
+    }
+    function highlightMatch(text, search) {
+        if (!search) return text;
+        const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`(${safeSearch})`, 'gi');
+        return text.replace(regex, '<span class="text-primary font-bold">$1</span>');
+    }
+    document.addEventListener('click', function(e) { if (!e.target.closest('.relative')) { document.querySelectorAll('ul[id^="list-"]').forEach(el => { el.classList.add('hidden'); }); } });
+
+    // === LOGIKA HITUNG HUBUNGAN (DINAMIS) ===
+    function calculateRelation() {
+        const idA = document.getElementById('calc-id-a').value;
+        const idB = document.getElementById('calc-id-b').value;
+
+        if(!idA || !idB) { alert("Pilih kedua orang dari daftar saran!"); return; }
+        if(idA === idB) { alert("Itu adalah orang yang sama!"); return; }
+
+        const pA = allData.find(d => d.id == idA);
+        const pB = allData.find(d => d.id == idB);
+
+        // 1. Cek Saudara via ParentID (Cepat)
+        if (pA.parentId && pB.parentId && pA.parentId !== 'root' && pA.parentId === pB.parentId) {
+            showResult("Saudara", `Mereka memiliki orang tua yang sama (Jarak = 1).`);
+            return;
+        }
+
+        // 2. Cari LCA (Leluhur Bersama)
+        const pathA = getPathToRoot(idA);
+        const pathB = getPathToRoot(idB);
+        
+        let lca = null;
+        for (let id of pathA) {
+            if (pathB.includes(id)) {
+                lca = allData.find(d => d.id == id);
+                break;
+            }
+        }
+
+        if (!lca) {
+            showResult("Tidak Ada Hubungan", "Tidak ditemukan leluhur yang sama.");
+            return;
+        }
+
+        // Hitung Jarak Generasi
+        const distA = pathA.indexOf(lca.id);
+        const distB = pathB.indexOf(lca.id);
+
+        let relationName = "Kerabat Jauh";
+        let description = `Leluhur bersama: <strong>${lca.name}</strong>.<br>Jarak A ke leluhur: ${distA}<br>Jarak B ke leluhur: ${distB}`;
+
+        // 3. Logika Penamaan
+        if (distA === 0 || distB === 0) {
+            if (distA === 0) relationNa	me = (distB === 1) ? "Orang Tua" : "Leluhur";
+            if (distB === 0) relationName = (distA === 1) ? "Anak" : "Keturunan";
+        } 
+        else if (distA === distB) {
+            // Generasi Sejajar
+            if (distA === 1) {
+                relationName = "Saudara";
+            } else {
+                // Rumus: Jarak 2=Sepupu 1, Jarak 3=Sepupu 2, dst.
+                const tingkat = distA - 1;
+                const textAngka = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam"];
+                const sebutan = (tingkat < textAngka.length) ? textAngka[tingkat] : tingkat;
+                relationName = `Sepupu ${sebutan} Kali`;
+            }
+        } 
+        else {
+            // Beda Generasi (Paman/Keponakan)
+            if (distA === 1 && distB === 2) relationName = "Paman/Bibi";
+            else if (distA === 2 && distB === 1) relationName = "Keponakan";
+            else relationName = "Kerabat Beda Generasi";
+        }
+
+        showResult(relationName, description);
+    }
+
+    function showResult(title, desc) {
+        const div = document.getElementById('calc-result');
+        const titleEl = document.getElementById('res-title');
+        const descEl = document.getElementById('res-desc');
+        
+        div.classList.remove('hidden');
+        div.classList.add('animate-slide-down');
+        
+        titleEl.innerText = title;
+        descEl.innerHTML = desc;
+    }
+
+    function getPathToRoot(startId) { let path = []; let curr = allData.find(d => d.id == startId); while(curr) { path.push(curr.id); if(!curr.parentId || curr.parentId === 'root') break; curr = allData.find(d => d.id == curr.parentId); } return path; }
 </script>
 </body>
 </html>
