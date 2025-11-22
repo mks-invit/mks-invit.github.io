@@ -929,50 +929,83 @@ document.getElementById('theme-btn').addEventListener('click', () => {
         container.innerHTML = html;
     }
 
-    function recursiveNarrative(person, level) {
-        // 1. Siapkan Variabel
-        const children = allData.filter(d => d.parentId == person.id || (d.motherName && d.motherName.trim() === person.name));
-        const spouseName = person.spouse ? person.spouse : "pasangan";
-        const isDead = person.isDead == 1;
-        const genderTitle = person.gender === 'P' ? "Ibu" : "Bapak";
-        const statusAlm = isDead ? "(Alm/Almh) " : "";
-        
-        // Style Indentasi berdasarkan level generasi
-        const marginLeft = level * 20;
-        const borderClass = level > 0 ? "border-l-2 border-indigo-200 dark:border-indigo-800 pl-4" : "";
-        
-        let story = `<div style="margin-left: ${marginLeft}px" class="mb-4 ${borderClass}">`;
 
-        // 2. Buat Kalimat Pembuka
-        story += `<p class="mb-1"><strong class="text-lg text-slate-800 dark:text-gray-100">${statusAlm}${person.name}</strong>`;
+
+
+
+
+
+function recursiveNarrative(person, level) {
+        // Cari anak-anaknya
+        const children = allData.filter(d => d.parentId == person.id || (d.motherName && d.motherName.trim() === person.name));
         
-        if (person.spouse) {
-            story += ` menikah dengan <strong>${person.spouse}</strong>.`;
-        } else {
-            story += `.`;
+        // --- LOGIKA GELAR ALM/ALMH (BARU) ---
+        const isDead = person.isDead == 1;
+        let statusAlm = "";
+        
+        if (isDead) {
+            // Jika P (Perempuan) = Almh, Jika L (Laki-laki) atau lainnya = Alm
+            if (person.gender === 'P') {
+                statusAlm = "(Almh) ";
+            } else {
+                statusAlm = "(Alm) ";
+            }
+        }
+        // -------------------------------------
+
+        // Styling Indentasi (Menjorok ke dalam)
+        const marginLeft = level * 20; // 20px per level
+        const borderClass = level > 0 ? "border-l-4 border-indigo-100 dark:border-indigo-900 pl-4" : "";
+        
+        let story = `<div style="margin-left: ${marginLeft}px" class="mb-4 ${borderClass} relative">`;
+        
+        // Dekorasi visual kecil untuk timeline (titik bulat di kiri)
+        if(level > 0) {
+            story += `<div class="absolute -left-[21px] top-2 w-3 h-3 rounded-full bg-indigo-200 dark:bg-indigo-700"></div>`;
         }
 
-        // 3. Kalimat Tentang Anak
+        // --- KALIMAT CERITA ---
+        story += `<div class="text-lg leading-relaxed text-slate-700 dark:text-gray-300 font-serif">`;
+        
+        // Tampilkan Nama dengan Gelar yang sudah diperbaiki
+        story += `<span class="font-bold text-slate-900 dark:text-white">${statusAlm}${person.name}</span>`;
+        
+        if (person.spouse) {
+            story += ` menikah dengan <span class="font-semibold text-indigo-600 dark:text-indigo-400">${person.spouse}</span>.`;
+        }
+        
         if (children.length > 0) {
             story += ` Pasangan ini dikaruniai <strong>${children.length}</strong> orang anak, yaitu: `;
-            // List nama anak inline
-            const childNames = children.map(c => c.name).join(', ');
-            story += `<em>${childNames}</em>.</p>`;
             
-            // 4. Rekursif (Looping ke bawah untuk anak-anaknya)
-            // Hanya buat paragraf baru detail jika anak tersebut punya keturunan/pasangan (agar tidak terlalu panjang)
-            // Atau kita tampilkan semua agar lengkap. Mari tampilkan semua mode hierarki.
+            // List nama anak simple
+            const childNames = children.map(c => {
+                // Opsional: Jika ingin anak yang sudah meninggal juga diberi gelar di list ini
+                let childStatus = "";
+                if(c.isDead == 1) {
+                    childStatus = (c.gender === 'P') ? "(Almh) " : "(Alm) ";
+                }
+                return childStatus + c.name;
+            }).join(', ');
+
+            story += `<span class="italic text-slate-600 dark:text-gray-400">${childNames}</span>.`;
+            story += `</div>`; // Tutup div text
+
+            // REKURSIF: Tulis kisah anak-anaknya di bawahnya
             children.forEach(child => {
                 story += recursiveNarrative(child, level + 1);
             });
             
         } else {
-            story += `</p>`; // Tutup paragraf jika tidak punya anak
+            story += `</div>`; // Tutup div text jika tidak punya anak
         }
 
-        story += `</div>`;
+        story += `</div>`; // Tutup container utama
         return story;
     }
+
+
+
+
 
     function copyNarrative() {
         const text = document.getElementById('narrative-content').innerText;
