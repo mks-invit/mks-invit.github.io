@@ -174,6 +174,56 @@
     </div>
 </div>
 
+
+
+
+
+
+
+<div class="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3">
+    <button onclick="openNarrativeMode()" class="w-14 h-14 rounded-full bg-indigo-600 text-white shadow-xl flex items-center justify-center hover:bg-indigo-700 hover:scale-110 transition-all duration-200 group relative" title="Mode Cerita (Buku Silsilah)">
+        <i class="fas fa-book-open text-xl group-hover:animate-pulse"></i>
+        <span class="absolute right-full mr-3 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Baca Kisah Keluarga</span>
+    </button>
+</div>
+
+<div id="narrative-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[80] hidden justify-center items-center p-4">
+    <div class="bg-white dark:bg-card-dark w-full max-w-2xl h-[85vh] rounded-xl shadow-2xl flex flex-col animate-slide-down relative border border-gray-200 dark:border-gray-700">
+        
+        <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800 rounded-t-xl">
+            <div>
+                <h3 class="text-xl font-bold font-serif text-slate-800 dark:text-gray-100"><i class="fas fa-scroll text-indigo-500 mr-2"></i>Kisah Keluarga Besar</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Silsilah dalam format cerita narasi</p>
+            </div>
+            <button onclick="document.getElementById('narrative-modal').classList.add('hidden')" class="w-8 h-8 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center text-gray-500 transition-colors">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 custom-scroll bg-[#fdfbf7] dark:bg-[#1a1a1a]">
+            <div id="narrative-content" class="prose dark:prose-invert max-w-none font-serif leading-relaxed text-slate-700 dark:text-gray-300">
+                <p class="text-center text-gray-400 italic">Memuat kisah...</p>
+            </div>
+        </div>
+
+        <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-white dark:bg-card-dark rounded-b-xl">
+            <button onclick="copyNarrative()" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-sm transition-colors flex items-center gap-2">
+                <i class="fas fa-copy"></i> Salin Teks
+            </button>
+            <button onclick="document.getElementById('narrative-modal').classList.add('hidden')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm transition-colors">
+                Tutup
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
 <div id="calc-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] hidden justify-center items-center p-4">
     <div class="bg-white dark:bg-card-dark w-full max-w-md rounded-xl shadow-2xl p-6 animate-slide-down relative">
         <button onclick="document.getElementById('calc-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
@@ -840,6 +890,106 @@ document.getElementById('theme-btn').addEventListener('click', () => {
     }
 
     function getPathToRoot(startId) { let path = []; let curr = allData.find(d => d.id == startId); while(curr) { path.push(curr.id); if(!curr.parentId || curr.parentId === 'root') break; curr = allData.find(d => d.id == curr.parentId); } return path; }
+	
+	
+	
+	
+	// === NARRATIVE MODE LOGIC (Generate Story) ===
+    function openNarrativeMode() {
+        document.getElementById('narrative-modal').classList.remove('hidden');
+        document.getElementById('narrative-modal').classList.add('flex');
+        generateStoryHTML();
+    }
+
+    function generateStoryHTML() {
+        const container = document.getElementById('narrative-content');
+        if (!allData || allData.length === 0) {
+            container.innerHTML = '<p class="text-center italic">Belum ada data keluarga.</p>';
+            return;
+        }
+
+        // Cari Root (Leluhur Utama)
+        const userRootId = localStorage.getItem('userRootId');
+        let roots = [];
+        if (isLoggedIn && userRootId && userRootId !== 'all') {
+            roots = allData.filter(d => d.id == userRootId);
+        } else {
+            roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root');
+        }
+
+        let html = '';
+        
+        roots.forEach(root => {
+            html += `<div class="mb-8 pb-4 border-b border-gray-300 dark:border-gray-700 last:border-0">`;
+            html += `<h2 class="text-2xl font-bold text-center text-indigo-800 dark:text-indigo-400 mb-6">Garis Keturunan ${root.name}</h2>`;
+            html += recursiveNarrative(root, 0);
+            html += `</div>`;
+        });
+
+        container.innerHTML = html;
+    }
+
+    function recursiveNarrative(person, level) {
+        // 1. Siapkan Variabel
+        const children = allData.filter(d => d.parentId == person.id || (d.motherName && d.motherName.trim() === person.name));
+        const spouseName = person.spouse ? person.spouse : "pasangan";
+        const isDead = person.isDead == 1;
+        const genderTitle = person.gender === 'P' ? "Ibu" : "Bapak";
+        const statusAlm = isDead ? "(Alm/Almh) " : "";
+        
+        // Style Indentasi berdasarkan level generasi
+        const marginLeft = level * 20;
+        const borderClass = level > 0 ? "border-l-2 border-indigo-200 dark:border-indigo-800 pl-4" : "";
+        
+        let story = `<div style="margin-left: ${marginLeft}px" class="mb-4 ${borderClass}">`;
+
+        // 2. Buat Kalimat Pembuka
+        story += `<p class="mb-1"><strong class="text-lg text-slate-800 dark:text-gray-100">${statusAlm}${person.name}</strong>`;
+        
+        if (person.spouse) {
+            story += ` menikah dengan <strong>${person.spouse}</strong>.`;
+        } else {
+            story += `.`;
+        }
+
+        // 3. Kalimat Tentang Anak
+        if (children.length > 0) {
+            story += ` Pasangan ini dikaruniai <strong>${children.length}</strong> orang anak, yaitu: `;
+            // List nama anak inline
+            const childNames = children.map(c => c.name).join(', ');
+            story += `<em>${childNames}</em>.</p>`;
+            
+            // 4. Rekursif (Looping ke bawah untuk anak-anaknya)
+            // Hanya buat paragraf baru detail jika anak tersebut punya keturunan/pasangan (agar tidak terlalu panjang)
+            // Atau kita tampilkan semua agar lengkap. Mari tampilkan semua mode hierarki.
+            children.forEach(child => {
+                story += recursiveNarrative(child, level + 1);
+            });
+            
+        } else {
+            story += `</p>`; // Tutup paragraf jika tidak punya anak
+        }
+
+        story += `</div>`;
+        return story;
+    }
+
+    function copyNarrative() {
+        const text = document.getElementById('narrative-content').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Teks cerita berhasil disalin!");
+        }).catch(err => {
+            alert("Gagal menyalin teks.");
+        });
+    }
+	
+	
+	
+	
+	
+	
+	
+	
 </script>
 </body>
 </html>
