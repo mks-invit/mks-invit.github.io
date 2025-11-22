@@ -259,13 +259,39 @@
         setTimeout(() => { overlay.remove(); }, 500);
     }
 
-    if (localStorage.getItem('theme') !== 'light') { htmlEl.classList.add('dark'); document.querySelector('#theme-btn i').classList.replace('fa-moon', 'fa-sun'); }
-    document.getElementById('theme-btn').addEventListener('click', () => {
-        htmlEl.classList.toggle('dark');
-        localStorage.setItem('theme', htmlEl.classList.contains('dark') ? 'dark' : 'light');
-        document.querySelector('#theme-btn i').classList.toggle('fa-sun'); document.querySelector('#theme-btn i').classList.toggle('fa-moon');
-    });
+    
 
+// KODE BARU (Default Light Mode)
+// Hanya aktifkan dark mode jika user PERNAH memilih 'dark' sebelumnya
+if (localStorage.getItem('theme') === 'dark') { 
+    htmlEl.classList.add('dark'); 
+    document.querySelector('#theme-btn i').classList.replace('fa-moon', 'fa-sun'); 
+} else {
+    // Jika kosong atau 'light', paksa hapus class dark
+    htmlEl.classList.remove('dark');
+}
+
+document.getElementById('theme-btn').addEventListener('click', () => {
+    const isDarkNow = htmlEl.classList.toggle('dark');
+    // Simpan pilihan user
+    localStorage.setItem('theme', isDarkNow ? 'dark' : 'light');
+    
+    // Ubah Icon
+    const icon = document.querySelector('#theme-btn i');
+    if (isDarkNow) {
+        icon.classList.replace('fa-moon', 'fa-sun');
+    } else {
+        icon.classList.replace('fa-sun', 'fa-moon');
+    }
+});
+
+
+
+    
+
+
+
+    
     window.onload = function() { updateLoginUI(); updateSyncUI(); fetchData(); };
 
     async function fetchData() {
