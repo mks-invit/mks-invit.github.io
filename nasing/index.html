@@ -292,7 +292,7 @@
 
 
 
-    // === RENDER TREE (Updated with Gender Logic) ===
+    // === RENDER TREE (Updated with Gender & Islamic Nisan Marker) ===
     function renderTree() {
         const c = document.getElementById('tree-root'); c.innerHTML = '';
         const userRootId = localStorage.getItem('userRootId');
@@ -306,14 +306,9 @@
     }
 
     function createNode(p, lvl) {
-
         const li = document.createElement('li'); li.className = 'my-3';
-
-        // Bagian ini WAJIB ada agar search bisa menemukan elemennya
         li.setAttribute('data-id', p.id); 
         li.classList.add('node-card'); 
-        // ...
-
 
         const children = allData.filter(d => d.parentId == p.id || (d.motherName && d.motherName.trim() === p.name));
         
@@ -330,17 +325,22 @@
         let spHtml = ''; if (p.spouse) p.spouse.split(',').forEach(s => { if(s.trim()) spHtml += `<span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-white/60 text-pink-600 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800 cursor-default mr-1"><i class="fas fa-heart mr-1 text-[0.6rem]"></i> ${s.trim()}</span>`; });
         
         const isDeceased = p.isDead == 1;
-        let deadBadge = isDeceased ? `<span class="ml-2 text-[10px] px-1.5 py-0.5 bg-gray-600 text-white rounded-full" title="Almarhum"><i class="fas fa-dove mr-1"></i></span>` : "";
+        // LOGO NISAN ISLAMI (Pengganti Wafar) - Diletakkan di samping Gender
+        const nisanIcon = isDeceased ? `<i class="fas fa-monument text-gray-500 dark:text-gray-400 mr-2 text-sm" title="Almarhum/ah"></i>` : '';
+
         const clr = ['bg-slate-100 border-slate-400 dark:bg-slate-800 dark:border-slate-500', 'bg-blue-50 border-blue-400 dark:bg-blue-900/20 dark:border-blue-500', 'bg-emerald-50 border-emerald-400 dark:bg-emerald-900/20 dark:border-emerald-500', 'bg-amber-50 border-amber-400 dark:bg-amber-900/20 dark:border-amber-500', 'bg-purple-50 border-purple-400 dark:bg-purple-900/20 dark:border-purple-500', 'bg-rose-50 border-rose-400 dark:bg-rose-900/20 dark:border-rose-500'];
         const cardColor = clr[lvl % clr.length];
         
         const traceBtn = `<button class="w-8 h-8 rounded-full bg-white/80 text-orange-500 hover:bg-orange-500 hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-orange-400 dark:hover:bg-orange-500 border border-orange-200 dark:border-orange-900 ml-1" onclick="traceLineage('${p.id}', event)"><i class="fas fa-shoe-prints text-xs"></i></button>`;
         const adminBtns = isLoggedIn ? `<button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('edit','${p.id}')"><i class="fas fa-pen text-xs"></i></button><button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('add','${p.id}')"><i class="fas fa-plus text-xs"></i></button>${lvl>0?`<button class="w-8 h-8 rounded-full bg-red-100 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors dark:bg-red-900/40 dark:hover:bg-red-600" onclick="deleteItem('${p.id}')"><i class="fas fa-trash text-xs"></i></button>`:''}` : '';
+        
         const adm = `<div class="flex gap-1.5 ml-2 opacity-10 group-hover:opacity-100 transition-opacity duration-300 self-center z-20">${traceBtn}${adminBtns}</div>`;
         
         const div = document.createElement('div'); div.id = 'card-' + p.id; 
         div.className = `relative flex items-start p-4 rounded-lg shadow-sm hover:shadow-md border-[3px] transition-all duration-200 group ${cardColor} ${genderClass} ${lvl===0?'shadow-md':''}`;
-        div.innerHTML = `<button class="toggle-btn w-5 mt-1 mr-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-transform duration-200 ${children.length>0?'cursor-pointer':'cursor-default'}" onclick="toggleChild(this)">${children.length>0?'<i class="fas fa-chevron-right"></i>':'<i class="fas fa-circle text-[6px] opacity-30"></i>'}</button><div class="flex-grow cursor-pointer" onclick="toggleChild(this.previousElementSibling)">${pLabel}<div class="flex flex-wrap items-center gap-2"><span class="text-lg font-bold text-slate-800 dark:text-gray-100 flex items-center">${genderIcon} ${p.name}</span>${deadBadge}${spHtml}</div></div>${adm}`;
+        
+        // Struktur HTML: Gender -> Nisan -> Nama
+        div.innerHTML = `<button class="toggle-btn w-5 mt-1 mr-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-transform duration-200 ${children.length>0?'cursor-pointer':'cursor-default'}" onclick="toggleChild(this)">${children.length>0?'<i class="fas fa-chevron-right"></i>':'<i class="fas fa-circle text-[6px] opacity-30"></i>'}</button><div class="flex-grow cursor-pointer" onclick="toggleChild(this.previousElementSibling)">${pLabel}<div class="flex flex-wrap items-center gap-2"><span class="text-lg font-bold text-slate-800 dark:text-gray-100 flex items-center">${genderIcon}${nisanIcon}${p.name}</span>${spHtml}</div></div>${adm}`;
         li.appendChild(div);
         if (children.length>0) { const cUl = document.createElement('ul'); cUl.className = 'children-container hidden pl-[22px] tree-line list-none'; if (lvl===0) { cUl.classList.replace('hidden','block'); div.querySelector('.toggle-btn').innerHTML='<i class="fas fa-chevron-down"></i>'; } children.forEach(ch => cUl.appendChild(createNode(ch, lvl+1))); li.appendChild(cUl); }
         return li;
