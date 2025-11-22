@@ -178,7 +178,7 @@
         <input type="hidden" id="inp-mode"><input type="hidden" id="inp-id"><input type="hidden" id="inp-parent">
         
         <div class="mb-4">
-            <div class="flex justify-between items-end mb-2"><label class="text-sm font-semibold dark:text-gray-300">Daftar Anggota Keluarga</label></div>
+            <div class="flex justify-between items-end mb-2"><label class="text-sm font-semibold dark:text-gray-300">Gunakan Nama yang Berbeda untuk <br>Menghindari Data Ganda</label></div>
             <div id="children-inputs-container" class="space-y-3"></div>
             <button type="button" id="btn-add-more-child" class="hidden mt-3 text-sm font-medium text-primary hover:text-primary-dark flex items-center gap-1" onclick="addChildInputRow()"><i class="fas fa-plus-circle"></i> Tambah anak lagi</button>
         </div>
@@ -193,7 +193,14 @@
         
         <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 mt-6">
             <button class="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200" onclick="closeModal()">Batal</button>
-            <button class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark shadow-md" onclick="submitData()">Simpan</button>
+
+            
+            <button id="btn-save" class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400" onclick="submitData()">
+    Simpan
+</button>
+
+            
+            
         </div>
     </div>
 </div>
@@ -393,6 +400,94 @@
             } 
         }, 300);
     }
+    
+    
+    
+    
+    
+    
+    
+    
+function handleChildNameInput(input) {
+    // 1. Bersihkan UI Suggestion lama
+    let oldList = input.parentNode.querySelector('.suggestion-list');
+    if (oldList) oldList.remove();
+
+    const val = input.value.trim();
+    const wrapper = input.parentNode;
+    const warningEl = wrapper.querySelector('.duplicate-warning');
+    
+    // 2. LOGIKA VALIDASI DUPLIKAT (STRICT)
+    // Cek apakah nama ada di database (Case Insensitive)
+    const isDuplicate = allData.some(d => d.name.toLowerCase() === val.toLowerCase());
+    
+    // Hapus class error dulu untuk reset
+    input.classList.remove('input-error', 'border-red-500', 'focus:ring-red-500');
+    input.classList.add('focus:ring-primary'); // Balikin warna biru normal
+    warningEl.classList.add('hidden');
+
+    if (val.length > 0 && isDuplicate) {
+        // JIKA DUPLIKAT:
+        warningEl.classList.remove('hidden');
+        warningEl.innerHTML = '<i class="fas fa-times-circle mr-1"></i> Error: Nama ini sudah terdaftar!';
+        warningEl.classList.replace('text-amber-600', 'text-red-600'); // Ubah warna jadi Merah
+        warningEl.classList.replace('dark:text-amber-400', 'dark:text-red-400');
+
+        // Tambah penanda visual & class flag 'input-error'
+        input.classList.add('input-error', 'border-red-500', 'focus:ring-red-500');
+        input.classList.remove('focus:ring-primary');
+    }
+
+    // 3. UPDATE STATUS TOMBOL SIMPAN
+    updateSaveButtonState();
+
+    // 4. LOGIKA AUTO SUGGEST (Tetap jalan untuk referensi)
+    if (val.length < 3) return; 
+    const matches = searchableNamesList.filter(n => n.toLowerCase().includes(val.toLowerCase()));
+    if (matches.length === 0) return;
+
+    const ul = document.createElement('ul'); 
+    ul.className = 'suggestion-list animate-slide-down';
+    
+    matches.slice(0, 10).forEach(name => {
+        const li = document.createElement('li'); 
+        li.className = "px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700 last:border-0 flex justify-between items-center";
+        li.innerHTML = `<span>${name}</span> <i class="fas fa-history text-xs text-gray-300"></i>`;
+        li.onclick = function() { 
+            input.value = name; 
+            ul.remove();
+            handleChildNameInput(input); // Cek validasi lagi setelah klik
+        }; 
+        ul.appendChild(li);
+    });
+    input.parentNode.appendChild(ul);
+}
+
+
+    
+   function updateSaveButtonState() {
+    const btn = document.getElementById('btn-save');
+    // Cari apakah ada elemen dengan class 'input-error'
+    const errors = document.querySelectorAll('.input-error');
+    
+    if (errors.length > 0) {
+        // Jika ada error -> Matikan tombol
+        btn.disabled = true;
+        btn.title = "Perbaiki data merah sebelum menyimpan";
+    } else {
+        // Jika bersih -> Hidupkan tombol
+        btn.disabled = false;
+        btn.title = "";
+    }
+}
+ 
+    
+    
+    
+    
+    
+    
+    
     function handleSpouseSuggest(input) {
         let oldList = input.parentNode.querySelector('.suggestion-list');
         if (oldList) oldList.remove();
@@ -439,19 +534,62 @@
     function updateLoginUI() { document.getElementById('btn-login-trigger').classList.toggle('hidden', isLoggedIn); document.getElementById('btn-logout-trigger').classList.toggle('hidden', !isLoggedIn); }
 
     function toggleChildSpouseInput(chk) { const i = chk.closest('.child-input-row').querySelector('.inp-child-spouse'); if(chk.checked){ i.classList.remove('hidden'); i.focus(); } else { i.classList.add('hidden'); i.value=''; } }
-    function addChildInputRow(n="", s="", isDead=0) {
-        const c = document.getElementById('children-inputs-container'); const d = document.createElement('div'); d.className = 'child-input-row bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 relative animate-slide-down';
-        const del = c.children.length>0 ? `<button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500" onclick="this.closest('.child-input-row').remove()"><i class="fas fa-times"></i></button>` : ``; const hasS = s && s.trim()!=="";
-        d.innerHTML = `
-            ${del}
-            <div class="mb-2 pr-5"><label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Nama Lengkap</label><input type="text" class="inp-child-name w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Nama anak..." value="${n}" autocomplete="off"></div>
-            <div class="flex items-center gap-4 mb-2">
-                <div class="flex items-center gap-2"><input type="checkbox" class="inp-child-dead w-3.5 h-3.5 text-red-500 rounded focus:ring-red-500" ${isDead==1 ? "checked" : ""}><label class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer select-none" onclick="this.previousElementSibling.click()">Alm/Almh?</label></div>
-                <div class="flex items-center gap-2"><input type="checkbox" class="w-3.5 h-3.5 text-primary rounded focus:ring-primary" onchange="toggleChildSpouseInput(this)" ${hasS?"checked":""}><label class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer select-none" onclick="this.previousElementSibling.click()">Sudah Menikah?</label></div>
+    
+    
+    
+function addChildInputRow(n="", s="", isDead=0) {
+    const c = document.getElementById('children-inputs-container'); 
+    const d = document.createElement('div'); 
+    d.className = 'child-input-row bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 relative animate-slide-down mb-3';
+    
+    const del = c.children.length > 0 ? `<button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500" onclick="this.closest('.child-input-row').remove()"><i class="fas fa-times"></i></button>` : ``; 
+    const hasS = s && s.trim() !== "";
+    
+    d.innerHTML = `
+        ${del}
+        <div class="mb-2 pr-5 relative">
+            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Nama Lengkap</label>
+            
+            <div class="relative">
+                <input type="text" class="inp-child-name w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
+                    placeholder="Nama anak..." 
+                    value="${n}" 
+                    autocomplete="off"
+                    oninput="handleChildNameInput(this)"> <div class="duplicate-warning hidden mt-1 text-[10px] text-red-600 dark:text-red-400 font-bold flex items-center animate-pulse">
+                    <i class="fas fa-exclamation-triangle mr-1"></i> Perhatian: Nama ini sudah ada di database!
+                </div>
             </div>
-            <div class="relative"><input type="text" class="inp-child-spouse ${hasS?"":"hidden"} w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Cari / Ketik nama pasangan (min 3 huruf)..." value="${s}" autocomplete="off" oninput="handleSpouseSuggest(this)"></div>`; 
-        c.appendChild(d);
-    }
+        </div>
+
+        <div class="flex items-center gap-4 mb-2">
+            <div class="flex items-center gap-2">
+                <input type="checkbox" class="inp-child-dead w-3.5 h-3.5 text-red-500 rounded focus:ring-red-500" ${isDead==1 ? "checked" : ""}>
+                <label class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer select-none" onclick="this.previousElementSibling.click()">Alm/Almh?</label>
+            </div>
+            <div class="flex items-center gap-2">
+                <input type="checkbox" class="w-3.5 h-3.5 text-primary rounded focus:ring-primary" onchange="toggleChildSpouseInput(this)" ${hasS?"checked":""}>
+                <label class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer select-none" onclick="this.previousElementSibling.click()">Sudah Menikah?</label>
+            </div>
+        </div>
+        
+        <div class="relative">
+            <input type="text" class="inp-child-spouse ${hasS?"":"hidden"} w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
+                placeholder="Cari / Ketik nama pasangan..." 
+                value="${s}" 
+                autocomplete="off" 
+                oninput="handleSpouseSuggest(this)">
+        </div>`; 
+    c.appendChild(d);
+}
+
+    
+    
+    
+    
+
+
+
+
     function openModal(mode, id) {
         document.getElementById('modal').classList.replace('hidden', 'flex'); document.getElementById('inp-mode').value = mode; document.getElementById('children-inputs-container').innerHTML = ''; document.getElementById('inp-mother').value = ''; document.getElementById('inp-parent').value = '';
         if (mode === 'add') { document.getElementById('modal-title').innerText = "Tambah Keturunan"; document.getElementById('inp-parent').value = id; document.getElementById('btn-add-more-child').classList.remove('hidden'); addChildInputRow(); const f = allData.find(d => d.id == id); if (f && f.spouse && f.spouse.split(',').length === 1) document.getElementById('inp-mother').value = f.spouse.trim(); } 
