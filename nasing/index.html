@@ -202,18 +202,30 @@
     
     <div id="admin-menu-container" class="hidden relative items-center justify-end">
         
-        <div id="admin-menu-options" class="absolute right-16 flex gap-3 transition-all duration-300 opacity-0 translate-x-10 pointer-events-none scale-90 origin-right">
-            
-            <button onclick="exportGedcom()" class="w-12 h-12 rounded-full bg-blue-600 text-white shadow-lg flex items-center justify-center hover:bg-blue-700 hover:scale-110 transition-all duration-200 group/item" title="Export GEDCOM">
-                <i class="fas fa-project-diagram"></i>
-                <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">GEDCOM</span>
-            </button>
+        
+        
+        
+     <div id="admin-menu-options" class="absolute right-16 flex gap-3 transition-all duration-300 opacity-0 translate-x-10 pointer-events-none scale-90 origin-right">
+    
+    <button onclick="triggerRestore()" class="w-12 h-12 rounded-full bg-purple-600 text-white shadow-lg flex items-center justify-center hover:bg-purple-700 hover:scale-110 transition-all duration-200 group/item" title="Restore Data">
+        <i class="fas fa-upload"></i>
+        <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Restore JSON</span>
+    </button>
+    
+    <input type="file" id="restore-file-input" class="hidden" accept=".json" onchange="handleRestoreFile(this)">
 
-            <button onclick="downloadData()" class="w-12 h-12 rounded-full bg-emerald-600 text-white shadow-lg flex items-center justify-center hover:bg-emerald-700 hover:scale-110 transition-all duration-200 group/item" title="Download CSV">
-                <i class="fas fa-file-csv"></i>
-                <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Excel/CSV</span>
-            </button>
-        </div>
+    <button onclick="backupJSON()" class="w-12 h-12 rounded-full bg-slate-600 text-white shadow-lg flex items-center justify-center hover:bg-slate-700 hover:scale-110 transition-all duration-200 group/item" title="Backup Data JSON">
+        <i class="fas fa-file-code"></i>
+        <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Backup JSON</span>
+    </button>
+
+</div>
+
+        
+        
+        
+        
+        
 
         <button id="btn-admin-menu" onclick="toggleAdminMenu()" class="w-14 h-14 rounded-full bg-slate-700 text-white shadow-xl flex items-center justify-center hover:bg-slate-800 transition-all duration-200 z-50 relative">
             <i class="fas fa-ellipsis-v text-xl transition-transform duration-300" id="icon-admin-menu"></i>
@@ -388,7 +400,7 @@
 
 <script>
     // â ï¸ PENTING: Pastikan URL Web App Anda sudah diupdate di sini!
-    const API_URL = "https://script.google.com/macros/s/AKfycbzWHO4gMKdW1phiQorakzo2BVVe9YGCPA9wkdCnt6bHci2inSprOrmm3_un_Lr1oqFF/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbwDe8mzrmYJQDv_RJK3VyicAwNSNYs2E-ZDU-4YAt_7avEDk2Z3QmbgKQwhKc1M0VlJ/exec"; 
     
     let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; 
     let allData = [], searchableNamesList = []; 
@@ -1438,52 +1450,44 @@ function createNode(p, lvl) {
 
 
 
-    // === FITUR DOWNLOAD / BACKUP DATA (CSV) ===
-    function downloadData() {
-        if (!allData || allData.length === 0) { alert("Tidak ada data untuk diunduh."); return; }
-        if (!confirm("Unduh backup data silsilah ke file Excel/CSV?")) return;
-
-        // 1. Tentukan Header Kolom (Sesuai urutan data)
-        const headers = [
-            "ID", "Parent ID", "Nama Lengkap", "Nama Pasangan", "Generasi", 
-            "Nama Ibu", "Meninggal (1=Ya)", "Gender (L/P)", "Urutan Lahir", "Status Pernikahan"
-        ];
-
-        // 2. Konversi Data ke baris CSV
-        const csvRows = allData.map(row => {
-            // Bungkus text dengan tanda kutip untuk menangani koma dalam nama
-            const escape = (txt) => txt ? `"${txt.toString().replace(/"/g, '""')}"` : '""';
-            
-            return [
-                escape(row.id),
-                escape(row.parentId),
-                escape(row.name),
-                escape(row.spouse),
-                row.generation,
-                escape(row.motherName),
-                row.isDead,
-                row.gender,
-                row.birthOrder || "",
-                escape(row.maritalStatus)
-            ].join(",");
-        });
-
-        // 3. Gabungkan Header dan Rows
-        const csvContent = "\uFEFF" + [headers.join(",")].concat(csvRows).join("\n"); // \uFEFF untuk support UTF-8 Excel
-
-        // 4. Trigger Download File
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        const dateStr = new Date().toISOString().slice(0,10);
-        
-        link.setAttribute("href", url);
-        link.setAttribute("download", `Backup_Silsilah_${dateStr}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+// === FITUR BACKUP JSON (PENGGANTI CSV) ===
+function backupJSON() {
+    // 1. Cek ketersediaan data
+    if (!allData || allData.length === 0) { 
+        alert("Tidak ada data untuk dibackup."); 
+        return; 
     }
 
+    // 2. Konfirmasi User
+    if (!confirm("Unduh file Backup Database (JSON)?\nFile ini berguna untuk memulihkan data jika terjadi kerusakan.")) return;
+
+    try {
+        // 3. Konversi Data Object ke String JSON yang rapi (pretty print)
+        const jsonContent = JSON.stringify(allData, null, 2);
+
+        // 4. Buat File Blob
+        const blob = new Blob([jsonContent], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        // 5. Buat Link Download Palsu & Klik Otomatis
+        const link = document.createElement("a");
+        const dateStr = new Date().toISOString().slice(0,10); // Format YYYY-MM-DD
+        
+        link.href = url;
+        link.download = `Backup_Silsilah_Full_${dateStr}.json`; // Nama file
+        
+        document.body.appendChild(link);
+        link.click();
+        
+        // 6. Bersihkan
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+    } catch (e) {
+        console.error(e);
+        alert("Gagal membuat backup: " + e.message);
+    }
+}
 
 
 
@@ -1525,100 +1529,57 @@ function createNode(p, lvl) {
 
 
 
+// === FITUR RESTORE DATA (IMPORT JSON) ===
 
-    // === FITUR EXPORT GEDCOM ===
-    function exportGedcom() {
-        if (!allData || allData.length === 0) { alert("Data kosong."); return; }
-        
-        let ged = "";
-        
-        // 1. HEADER GEDCOM
-        ged += "0 HEAD\n";
-        ged += "1 SOUR KeluargaApp\n";
-        ged += "1 GEDC\n";
-        ged += "2 VERS 5.5.1\n";
-        ged += "2 FORM LINEAGE-LINKED\n";
-        ged += "1 CHAR UTF-8\n";
+// 1. Fungsi Pemicu: Klik tombol input file yang tersembunyi
+function triggerRestore() {
+    document.getElementById('restore-file-input').click();
+}
 
-        // 2. INDIVIDUAL RECORDS (INDI)
-        allData.forEach(p => {
-            // ID harus dibungkus @...@. Kita pakai ID asli.
-            ged += `0 @I${p.id}@ INDI\n`;
-            
-            // Nama (Format: Nama Depan /Nama Belakang/)
-            // Kita pakai nama lengkap di antara slash agar aman
-            ged += `1 NAME ${p.name} //\n`; 
-            
-            // Gender (M=Male, F=Female)
-            const sex = (p.gender === 'P') ? 'F' : 'M';
-            ged += `1 SEX ${sex}\n`;
-            
-            // Status Kematian
-            if (p.isDead == 1) {
-                ged += `1 DEAT Y\n`;
+// 2. Fungsi Handler: Saat file dipilih
+function handleRestoreFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    // Reset value input agar bisa upload file yang sama berturut-turut jika perlu
+    const resetInput = () => { input.value = ''; };
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            // Parsing JSON
+            const importedData = JSON.parse(e.target.result);
+
+            // Validasi Sederhana: Pastikan data berbentuk Array
+            if (!Array.isArray(importedData)) {
+                throw new Error("Format file salah! File harus berisi Array data JSON.");
             }
 
-            // Link ke Keluarga Orang Tua (Sebagai Anak)
-            // Jika dia punya parentId, berarti dia adalah anak di keluarga 'F_parentId'
-            if (p.parentId && p.parentId !== 'root') {
-                ged += `1 FAMC @F${p.parentId}@\n`;
-            }
-
-            // Link ke Keluarga Sendiri (Sebagai Pasangan/Kepala Keluarga)
-            // Kita asumsikan setiap orang yang punya pasangan/anak membuat Family Record sendiri
-            // Logic sederhana: ID dia jadi ID Family
-            const hasChildren = allData.some(c => c.parentId == p.id);
-            if (hasChildren || p.spouse) {
-                ged += `1 FAMS @F${p.id}@\n`;
-            }
-        });
-
-        // 3. FAMILY RECORDS (FAM)
-        // Kita buat Record Keluarga berdasarkan ID Kepala Keluarga (Ayah/Ibu utama)
-        allData.forEach(p => {
-            const children = allData.filter(c => c.parentId == p.id);
+            // Konfirmasi User
+            const confirmMsg = `Ditemukan ${importedData.length} data anggota keluarga.\n\nPERINGATAN: \nTindakan ini akan MENGHAPUS semua data lama di server dan menggantinya dengan data dari file ini.\n\nApakah Anda yakin ingin melanjutkan?`;
             
-            // Syarat Family Record: Punya Anak ATAU Punya Pasangan
-            if (children.length > 0 || p.spouse) {
-                ged += `0 @F${p.id}@ FAM\n`;
-                
-                // Tentukan Suami/Istri berdasarkan Gender Kepala Keluarga
-                if (p.gender === 'P') {
-                    ged += `1 WIFE @I${p.id}@\n`; // Kepala Keluarga Perempuan
-                } else {
-                    ged += `1 HUSB @I${p.id}@\n`; // Kepala Keluarga Laki-laki (Default)
-                }
-
-                // Anak-anak
-                children.forEach(child => {
-                    ged += `1 CHIL @I${child.id}@\n`;
+            if (confirm(confirmMsg)) {
+                // Masukkan ke antrean Sync dengan action khusus 'restore_all'
+                // Pastikan Script Google Apps Anda nanti disiapkan untuk menangani action 'restore_all'
+                enqueueAction({
+                    action: 'restore_all',
+                    data: importedData
                 });
                 
-                // Catatan Pasangan (Karena spouse kita string, kita masukkan sbg NOTE atau Event nikah teks)
-                // GEDCOM standar butuh ID pasangan (Cross reference), tapi data kita spouse = string.
-                // Jadi kita simpan sebagai Catatan Pernikahan.
-                if (p.spouse) {
-                    ged += `1 MARR\n`;
-                    ged += `2 NOTE Pasangan: ${p.spouse}\n`;
-                }
+                alert("Permintaan Restore telah masuk antrean Sync (Tombol Oranye).\nSilakan klik tombol Sync untuk memproses ke server.");
             }
-        });
 
-        // 4. TRAILER
-        ged += "0 TRLR\n";
-
-        // 5. DOWNLOAD FILE
-        const blob = new Blob([ged], { type: 'text/plain;charset=utf-8;' });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        const dateStr = new Date().toISOString().slice(0,10);
-        
-        link.setAttribute("href", url);
-        link.setAttribute("download", `Silsilah_${dateStr}.ged`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
+        } catch (err) {
+            console.error(err);
+            alert("Gagal membaca file: " + err.message);
+        } finally {
+            resetInput();
+        }
+    };
+    
+    // Mulai baca file sebagai teks
+    reader.readAsText(file);
+}
 
 
 
