@@ -191,12 +191,25 @@
     </button>
 </div>
 
+
+
+
 <div class="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3">
+    <button id="btn-download-data" onclick="downloadData()" class="hidden w-14 h-14 rounded-full bg-emerald-600 text-white shadow-xl items-center justify-center hover:bg-emerald-700 hover:scale-110 transition-all duration-200 group relative" title="Download Database">
+        <i class="fas fa-file-csv text-xl"></i>
+        <span class="absolute right-full mr-3 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Backup Data (CSV)</span>
+    </button>
+
     <button onclick="openNarrativeMode()" class="w-14 h-14 rounded-full bg-indigo-600 text-white shadow-xl flex items-center justify-center hover:bg-indigo-700 hover:scale-110 transition-all duration-200 group relative" title="Mode Cerita (Buku Silsilah)">
         <i class="fas fa-book-open text-xl group-hover:animate-pulse"></i>
         <span class="absolute right-full mr-3 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Baca Kisah Keluarga</span>
     </button>
 </div>
+
+
+
+
+
 
 <div id="login-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden justify-center items-center p-4">
     <div class="bg-white dark:bg-card-dark w-full max-w-sm rounded-xl shadow-2xl p-6 animate-slide-down">
@@ -918,7 +931,29 @@ function createNode(p, lvl) {
         } catch (e) { alert("Gagal Login: " + e); } finally { btn.innerText = originalText; btn.disabled = false; }
     }
     function doLogout() { isLoggedIn = false; localStorage.removeItem('isLoggedIn'); localStorage.removeItem('userRootId'); updateLoginUI(); renderTree(); }
-    function updateLoginUI() { document.getElementById('btn-login-trigger').classList.toggle('hidden', isLoggedIn); document.getElementById('btn-logout-trigger').classList.toggle('hidden', !isLoggedIn); }
+    
+    
+    
+    function updateLoginUI() { 
+        // UI Header
+        document.getElementById('btn-login-trigger').classList.toggle('hidden', isLoggedIn); 
+        document.getElementById('btn-logout-trigger').classList.toggle('hidden', !isLoggedIn);
+        
+        // UI Floating Button (Download)
+        // Menggunakan classList.toggle dengan 'flex' agar display-nya benar saat muncul
+        const btnDownload = document.getElementById('btn-download-data');
+        if (isLoggedIn) {
+            btnDownload.classList.remove('hidden');
+            btnDownload.classList.add('flex');
+        } else {
+            btnDownload.classList.add('hidden');
+            btnDownload.classList.remove('flex');
+        }
+    }
+
+
+
+
 
     // === MODAL & SUBMIT (Updated for New Fields) ===
     function openModal(mode, id) {
@@ -1373,6 +1408,54 @@ function createNode(p, lvl) {
         condEl.className = (p.isDead == 1) ? "font-semibold text-red-500" : "font-semibold text-green-600";
     }
 
+
+
+
+    // === FITUR DOWNLOAD / BACKUP DATA (CSV) ===
+    function downloadData() {
+        if (!allData || allData.length === 0) { alert("Tidak ada data untuk diunduh."); return; }
+        if (!confirm("Unduh backup data silsilah ke file Excel/CSV?")) return;
+
+        // 1. Tentukan Header Kolom (Sesuai urutan data)
+        const headers = [
+            "ID", "Parent ID", "Nama Lengkap", "Nama Pasangan", "Generasi", 
+            "Nama Ibu", "Meninggal (1=Ya)", "Gender (L/P)", "Urutan Lahir", "Status Pernikahan"
+        ];
+
+        // 2. Konversi Data ke baris CSV
+        const csvRows = allData.map(row => {
+            // Bungkus text dengan tanda kutip untuk menangani koma dalam nama
+            const escape = (txt) => txt ? `"${txt.toString().replace(/"/g, '""')}"` : '""';
+            
+            return [
+                escape(row.id),
+                escape(row.parentId),
+                escape(row.name),
+                escape(row.spouse),
+                row.generation,
+                escape(row.motherName),
+                row.isDead,
+                row.gender,
+                row.birthOrder || "",
+                escape(row.maritalStatus)
+            ].join(",");
+        });
+
+        // 3. Gabungkan Header dan Rows
+        const csvContent = "\uFEFF" + [headers.join(",")].concat(csvRows).join("\n"); // \uFEFF untuk support UTF-8 Excel
+
+        // 4. Trigger Download File
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        const dateStr = new Date().toISOString().slice(0,10);
+        
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Backup_Silsilah_${dateStr}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
 
 
 
