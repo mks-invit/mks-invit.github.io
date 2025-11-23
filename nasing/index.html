@@ -72,7 +72,8 @@
         .dark .input-error { border-color: #ef4444 !important; background-color: #450a0a !important; }
     </style>
 </head>
-<body class="bg-bg-light text-slate-700 dark:bg-bg-dark dark:text-gray-200 font-sans transition-colors duration-300 p-5 min-h-screen">
+
+<body class="bg-bg-light text-slate-700 dark:bg-bg-dark dark:text-gray-200 font-sans transition-colors duration-300 px-5 pt-5 pb-0 min-h-screen">
 
 <div id="fullscreen-overlay" onclick="startApp()" class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center text-white cursor-pointer transition-opacity duration-500">
     <div class="text-center animate-bounce">
@@ -82,7 +83,7 @@
     </div>
 </div>
 
-<div class="max-w-4xl mx-auto pb-24">
+<div class="max-w-4xl mx-auto pb-6">
     <header class="text-center mb-6 mt-2">
         <div class="flex justify-center items-center gap-3 mb-4 flex-wrap">
             <button onclick="fetchData()" class="w-8 h-8 rounded-full border border-gray-400 text-gray-500 dark:text-gray-300 dark:border-gray-500 hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
@@ -111,11 +112,7 @@
                     <div class="text-xl font-bold text-slate-700 dark:text-white" id="stat-living">0</div>
                 </div>
             </div>
-            <div class="text-center mt-3">
-                <button onclick="openCalcModal()" class="text-xs bg-slate-200 dark:bg-gray-700 text-slate-600 dark:text-gray-300 px-3 py-1 rounded-full hover:bg-slate-300 transition-colors">
-                    <i class="fas fa-calculator mr-1"></i> Cek Hubungan Keluarga
-                </button>
-            </div>
+			
         </div>
         
         <div class="relative w-full max-w-xs mx-auto mt-2 group z-30">
@@ -134,8 +131,31 @@
 
     <div id="tree-root" class="hidden"></div>
 
-    
-    <footer class="mt-16 border-t border-gray-200 dark:border-gray-700 pt-6 pb-8 text-center transition-colors duration-300">
+
+
+
+
+
+
+
+<div class="max-w-2xl mx-auto text-center mt-8 mb-2 px-4">
+        <div class="relative group cursor-pointer inline-block" onclick="openCalcModal()">
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-400 to-indigo-600 rounded-full blur opacity-20 group-hover:opacity-40 transition duration-200"></div>
+            
+            <button class="relative px-5 py-2 bg-white dark:bg-card-dark rounded-full flex items-center justify-center gap-2 shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <span class="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-900 dark:text-indigo-300">
+                    <i class="fas fa-calculator text-xs"></i>
+                </span>
+                <span class="text-sm text-slate-700 dark:text-gray-200 font-medium">Cek Hubungan Keluarga</span>
+            </button>
+        </div>
+        <p class="text-[10px] text-gray-400 mt-2 uppercase tracking-widest">Bingung memanggil apa?</p>
+    </div>
+	
+	
+	
+
+    <footer class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-6 pb-4 text-center transition-colors duration-300">
         <p class="text-sm font-semibold text-slate-600 dark:text-gray-300 mb-1">
             &copy; Copyright Keluarga Besar Puang Guru Nasing
         </p>
@@ -152,6 +172,11 @@
             <br> Info & Pengembangan - Hubungi Admin Grup
         </p>
     </footer>
+
+
+
+
+
 </div>
 
 <div class="fixed bottom-5 left-5 z-40 flex items-center gap-3">
@@ -956,15 +981,38 @@ function createNode(p, lvl) {
     }
     function deleteItem(id) { if(confirm("Hapus data ini beserta keturunannya? (Akan masuk antrean Sync)")) { enqueueAction({ action: 'delete', id: id }); } }
 
-    // === CALCULATOR LOGIC ===
-    function openCalcModal() { document.getElementById('calc-modal').classList.replace('hidden','flex'); document.getElementById('calc-result').classList.add('hidden'); document.getElementById('calc-name-a').value = ''; document.getElementById('calc-name-b').value = ''; document.getElementById('calc-id-a').value = ''; document.getElementById('calc-id-b').value = ''; }
+
+
+
+
+
+
+
+
+
+
+
+
+// === CALCULATOR LOGIC (AUTO-SHORTEST PATH: BLOOD & MARRIAGE) ===
     
+    function openCalcModal() { 
+        document.getElementById('calc-modal').classList.replace('hidden','flex'); 
+        document.getElementById('calc-result').classList.add('hidden'); 
+        document.getElementById('calc-id-a').value = ''; 
+        document.getElementById('calc-id-b').value = ''; 
+        document.querySelectorAll('#calc-modal input[type="text"]').forEach(i => i.value = '');
+    }
+    
+    // --- SUGGESTION SYSTEM ---
     function suggestCalc(input, listId, hiddenInputId) {
         const val = input.value.trim().toLowerCase(); const list = document.getElementById(listId); const hiddenIdInput = document.getElementById(hiddenInputId);
         if(hiddenIdInput) hiddenIdInput.value = ''; if(list) list.innerHTML = ''; else return;
         if(val.length < 2) { list.classList.add('hidden'); return; }
         if (typeof allData === 'undefined' || allData.length === 0) return;
+        
+        // Cari berdasarkan Nama ATAU Nama Pasangan
         const matches = allData.filter(d => (d.name && d.name.toLowerCase().includes(val)) || (d.spouse && d.spouse.toLowerCase().includes(val))).slice(0, 7);
+        
         if(matches.length > 0) {
             list.classList.remove('hidden');
             matches.forEach(m => {
@@ -976,36 +1024,285 @@ function createNode(p, lvl) {
                 li.onclick = () => { input.value = m.name; if(hiddenIdInput) hiddenIdInput.value = m.id; list.classList.add('hidden'); }; 
                 list.appendChild(li);
             });
-        } else { const li = document.createElement('li'); li.className = "px-3 py-2 text-xs text-gray-400 italic text-center"; li.innerText = "Tidak ditemukan"; list.appendChild(li); list.classList.remove('hidden'); }
+        } else { 
+            const li = document.createElement('li'); li.className = "px-3 py-2 text-xs text-gray-400 italic text-center"; li.innerText = "Tidak ditemukan"; list.appendChild(li); list.classList.remove('hidden'); 
+        }
     }
-
+    
     function getShortParentName(pid) { if(!pid || pid==='root') return 'Root'; const p = allData.find(d=>d.id == pid); return p ? p.name : 'Tidak Diketahui'; }
     document.addEventListener('click', function(e) { if (!e.target.closest('.relative')) { document.querySelectorAll('ul[id^="list-"]').forEach(el => { el.classList.add('hidden'); }); } });
 
+    // --- CORE LOGIC: GRAPH BUILDER & PATHFINDER ---
+    
     function calculateRelation() {
-        const idA = document.getElementById('calc-id-a').value; const idB = document.getElementById('calc-id-b').value;
-        if(!idA || !idB) { alert("Pilih kedua orang dari daftar saran!"); return; }
-        if(idA === idB) { alert("Itu adalah orang yang sama!"); return; }
-        const pA = allData.find(d => d.id == idA); const pB = allData.find(d => d.id == idB);
-        if (pA.parentId && pB.parentId && pA.parentId !== 'root' && pA.parentId === pB.parentId) { showResult("Saudara", `Mereka memiliki orang tua yang sama.`); return; }
-        const pathA = getPathToRoot(idA); const pathB = getPathToRoot(idB);
-        let lca = null; for (let id of pathA) { if (pathB.includes(id)) { lca = allData.find(d => d.id == id); break; } }
-        if (!lca) { showResult("Tidak Ada Hubungan", "Tidak ditemukan leluhur yang sama."); return; }
-        const distA = pathA.indexOf(lca.id); const distB = pathB.indexOf(lca.id);
-        let relationName = "Kerabat Jauh";
-        let description = `Leluhur bersama: <strong>${lca.name}</strong>.`;
-        if (distA === 0 || distB === 0) {
-            if (distA === 0) relationName = (distB === 1) ? "Orang Tua" : "Leluhur";
-            if (distB === 0) relationName = (distA === 1) ? "Anak" : "Keturunan";
-        } else if (distA === distB) {
-            if (distA === 1) relationName = "Saudara";
-            else { const t = distA - 1; const n = ["", "Satu", "Dua", "Tiga", "Empat"]; relationName = `Sepupu ${n[t]||t} Kali`; }
-        } else { relationName = "Kerabat Beda Generasi"; }
-        showResult(relationName, description);
-    }
-    function showResult(title, desc) { document.getElementById('calc-result').classList.remove('hidden'); document.getElementById('res-title').innerText = title; document.getElementById('res-desc').innerHTML = desc; }
-    function getPathToRoot(startId) { let path = []; let curr = allData.find(d => d.id == startId); while(curr) { path.push(curr.id); if(!curr.parentId || curr.parentId === 'root') break; curr = allData.find(d => d.id == curr.parentId); } return path; }
+        const idA = document.getElementById('calc-id-a').value;
+        const idB = document.getElementById('calc-id-b').value;
 
+        if(!idA || !idB) { alert("Pilih kedua orang dari daftar saran!"); return; }
+        if(idA === idB) { showResult("Orang Sama", "Anda memilih orang yang sama."); return; }
+
+        // 1. Bangun Graph yang menghubungkan Ayah, Ibu (Cross Lineage), dan Pasangan
+        const graph = buildRelationshipGraph();
+
+        // 2. Cari jalur terpendek (BFS)
+        const path = findShortestPath(graph, idA, idB);
+
+        // 3. Terjemahkan Jalur
+        if (!path) {
+            showResult("Tidak Ada Hubungan Dekat", "Tidak ditemukan jalur hubungan (darah maupun pernikahan) dalam database ini, atau jalurnya terlalu jauh (>15 langkah).");
+        } else {
+            const explanation = interpretPath(path);
+            showResult(explanation.title, explanation.desc);
+        }
+    }
+
+    function buildRelationshipGraph() {
+        const adj = {}; // Adjacency List
+
+        // Inisialisasi array untuk setiap ID
+        allData.forEach(d => adj[d.id] = []);
+
+        allData.forEach(p => {
+            // A. HUBUNGAN KE AYAH (ParentID)
+            if (p.parentId && p.parentId !== 'root') {
+                // Child -> Parent (Ayah)
+                adj[p.id].push({ target: p.parentId, type: 'parent' });
+                // Parent (Ayah) -> Child
+                if (adj[p.parentId]) adj[p.parentId].push({ target: p.id, type: 'child' });
+            }
+
+            // B. HUBUNGAN KE IBU (Nama Ibu / Cross Lineage) - INI KUNCINYA
+            if (p.motherName && p.motherName.trim().length > 1) {
+                // Cari data Ibu di database berdasarkan Nama
+                const motherObj = allData.find(d => d.name.toLowerCase() === p.motherName.trim().toLowerCase());
+                if (motherObj) {
+                    // Child -> Parent (Ibu)
+                    adj[p.id].push({ target: motherObj.id, type: 'parent' });
+                    // Parent (Ibu) -> Child
+                    if (adj[motherObj.id]) {
+                        // Cek duplikasi agar rapi
+                        if(!adj[motherObj.id].some(x => x.target === p.id)) {
+                            adj[motherObj.id].push({ target: p.id, type: 'child' });
+                        }
+                    }
+                }
+            }
+
+            // C. HUBUNGAN KE PASANGAN (Cross Marriage)
+            if (p.spouse) {
+                const spouseNames = p.spouse.split(',').map(s => s.trim().toLowerCase());
+                // Cari pasangan di database
+                const spouseMatches = allData.filter(d => spouseNames.includes(d.name.toLowerCase()));
+                
+                spouseMatches.forEach(match => {
+                    // A -> Spouse -> B
+                    if(!adj[p.id].some(x => x.target === match.id)) {
+                        adj[p.id].push({ target: match.id, type: 'spouse' });
+                    }
+                    // B -> Spouse -> A (Reciprocal)
+                    if (adj[match.id]) {
+                        if (!adj[match.id].some(x => x.target === p.id)) {
+                            adj[match.id].push({ target: p.id, type: 'spouse' });
+                        }
+                    }
+                });
+            }
+        });
+        return adj;
+    }
+
+    function findShortestPath(graph, start, end) {
+        // BFS (Breadth-First Search) menjamin jalur terpendek ditemukan pertama kali
+        let queue = [{ id: start, path: [] }];
+        let visited = new Set();
+        visited.add(start);
+
+        while (queue.length > 0) {
+            // Limit pencarian agar browser tidak hang (max 10.000 node queue)
+            if (queue.length > 10000) break; 
+
+            let { id, path } = queue.shift();
+
+            if (id === end) return path;
+
+            if (graph[id]) {
+                for (let neighbor of graph[id]) {
+                    if (!visited.has(neighbor.target)) {
+                        visited.add(neighbor.target);
+                        let newPath = [...path, { from: id, to: neighbor.target, type: neighbor.type }];
+                        // Batasi kedalaman hubungan max 15 langkah
+                        if (newPath.length <= 15) { 
+                            queue.push({ id: neighbor.target, path: newPath });
+                        }
+                    }
+                }
+            }
+        }
+        return null; // Tidak ketemu
+    }
+
+
+
+
+
+
+function interpretPath(path) {
+        // Helper Style
+        const styleLeluhur = (n) => `<strong class="text-blue-600 dark:text-blue-400">${n}</strong>`;
+        const styleBiasa = (n) => `<span class="font-medium text-slate-700 dark:text-gray-300">${n}</span>`;
+
+        const steps = path.length;
+        const lastStep = path[steps - 1];
+        const targetPerson = allData.find(d => d.id == lastStep.to);
+        const targetName = targetPerson ? targetPerson.name : "Dia";
+
+        // 1. CEK PASANGAN (Suami/Istri) - Satu-satunya hubungan non-darah di prioritas utama
+        if (steps === 1 && lastStep.type === 'spouse') {
+            return { title: "Pasangan", desc: `${styleBiasa(targetName)} adalah Suami/Istri Anda.` };
+        }
+
+        // 2. ANALISIS JALUR DARAH (Blood Path)
+        // Cek apakah semua langkah adalah 'parent' atau 'child' (tanpa 'spouse' di tengah jalan)
+        const isBloodPath = path.every(s => s.type === 'parent' || s.type === 'child');
+        
+        if (isBloodPath) {
+            const upSteps = path.filter(s => s.type === 'parent').length;   // Langkah naik (ke leluhur)
+            const downSteps = path.filter(s => s.type === 'child').length; // Langkah turun (ke keturunan)
+
+            // Cari Leluhur Bersama (LCA - Titik Puncak)
+            let lcaName = "Leluhur";
+            for (let i = 0; i < path.length - 1; i++) {
+                if (path[i].type === 'parent' && path[i+1].type === 'child') {
+                    const lcaObj = allData.find(d => d.id == path[i].to);
+                    if(lcaObj) lcaName = lcaObj.name;
+                    break;
+                }
+            }
+
+            // --- KATEGORI A: LELUHUR LANGSUNG (Naik Terus, Tidak Turun) ---
+            if (downSteps === 0) {
+                if (upSteps === 1) return { title: "Orang Tua", desc: `${styleBiasa(targetName)} adalah Ayah/Ibu Anda.` };
+                if (upSteps === 2) return { title: "Kakek / Nenek", desc: `${styleBiasa(targetName)} adalah Orang Tua dari Ayah/Ibu Anda.` };
+                if (upSteps === 3) return { title: "Buyut", desc: `${styleBiasa(targetName)} adalah Orang Tua dari Kakek/Nenek Anda.` };
+                if (upSteps === 4) return { title: "Canggah", desc: `${styleBiasa(targetName)} adalah Orang Tua dari Buyut Anda.` };
+                if (upSteps === 5) return { title: "Wareng", desc: `${styleBiasa(targetName)} adalah Orang Tua dari Canggah Anda.` };
+                if (upSteps === 6) return { title: "Udheg-udheg", desc: `${styleBiasa(targetName)} adalah Orang Tua dari Wareng Anda.` };
+                if (upSteps === 7) return { title: "Gantung Siwur", desc: `${styleBiasa(targetName)} adalah Orang Tua dari Udheg-udheg Anda.` };
+                if (upSteps > 7) return { title: `Leluhur (${upSteps} Generasi)`, desc: `${styleBiasa(targetName)} adalah leluhur langsung tingkat ke-${upSteps} di atas Anda.` };
+            }
+
+            // --- KATEGORI B: KETURUNAN LANGSUNG (Turun Terus, Tidak Naik) ---
+            if (upSteps === 0) {
+                if (downSteps === 1) return { title: "Anak", desc: `${styleBiasa(targetName)} adalah Anak Anda.` };
+                if (downSteps === 2) return { title: "Cucu", desc: `${styleBiasa(targetName)} adalah Anak dari Anak Anda.` };
+                if (downSteps === 3) return { title: "Cicit", desc: `${styleBiasa(targetName)} adalah Cucu dari Anak Anda.` };
+                if (downSteps === 4) return { title: "Canggah (Keturunan)", desc: `${styleBiasa(targetName)} adalah keturunan ke-4 Anda.` };
+                if (downSteps > 4) return { title: `Keturunan (Generasi ke-${downSteps})`, desc: `${styleBiasa(targetName)} adalah keturunan langsung Anda.` };
+            }
+
+            // --- KATEGORI C: SAUDARA & SEPUPU (Naik = Turun) ---
+            if (upSteps === downSteps) {
+                if (upSteps === 1) return { title: "Saudara Kandung", desc: `Memiliki orang tua yang sama, yaitu ${styleLeluhur(lcaName)}.` };
+                if (upSteps === 2) return { title: "Sepupu 1 Kali", desc: `Berbagi Kakek/Nenek yang sama (${styleLeluhur(lcaName)}).` };
+                if (upSteps === 3) return { title: "Sepupu 2 Kali", desc: `Berbagi Buyut yang sama (${styleLeluhur(lcaName)}).` };
+                if (upSteps === 4) return { title: "Sepupu 3 Kali", desc: `Berbagi Canggah yang sama (${styleLeluhur(lcaName)}).` };
+                if (upSteps >= 5) return { title: `Sepupu ${upSteps-1} Kali`, desc: `Berbagi Leluhur yang sama (${styleLeluhur(lcaName)}).` };
+            }
+            
+            // --- KATEGORI D: PAMAN/BIBI & LEBIH TUA (Naik > Turun) ---
+            if (upSteps > downSteps) {
+                const diff = upSteps - downSteps;
+                
+                // Paman/Bibi Kandung (Naik 2, Turun 1)
+                if (upSteps === 2 && downSteps === 1) {
+                    return { title: "Paman / Bibi", desc: `Saudara Kandung dari Orang Tua Anda.` };
+                }
+
+                // Paman/Bibi Jauh (Granduncle, Great-Granduncle, dll)
+                // Contoh: Saudara Kakek (Naik 3, Turun 1)
+                if (downSteps === 1) {
+                    if (upSteps === 3) return { title: "Kakek/Nenek Saudara (Granduncle/aunt)", desc: `Saudara Kandung dari Kakek/Nenek Anda.` };
+                    if (upSteps === 4) return { title: "Buyut Saudara", desc: `Saudara Kandung dari Buyut Anda.` };
+                }
+
+                // PAMAN/BIBI SEPUPU (Logic Baru)
+                // Selisih 1 Generasi (diff === 1)
+                if (diff === 1) {
+                    if (upSteps === 3) return { title: "Paman/Bibi Sepupu 1 Kali", desc: `Sepupu dari Orang Tua Anda. (Leluhur Bersama: ${styleLeluhur(lcaName)})` };
+                    if (upSteps === 4) return { title: "Paman/Bibi Sepupu 2 Kali", desc: `Sepupu 2 Kali dari Orang Tua Anda. (Leluhur Bersama: ${styleLeluhur(lcaName)})` };
+                    if (upSteps === 5) return { title: "Paman/Bibi Sepupu 3 Kali", desc: `Sepupu 3 Kali dari Orang Tua Anda. (Leluhur Bersama: ${styleLeluhur(lcaName)})` };
+                    if (upSteps >= 6) return { title: `Paman/Bibi Sepupu ${upSteps-2} Kali`, desc: `Sepupu Jauh dari Orang Tua Anda.` };
+                }
+            }
+
+            // --- KATEGORI E: KEPONAKAN & LEBIH MUDA (Turun > Naik) ---
+            if (downSteps > upSteps) {
+                const diff = downSteps - upSteps;
+
+                if (upSteps === 1 && downSteps === 2) return { title: "Keponakan", desc: `Anak dari Saudara Kandung Anda.` };
+                if (upSteps === 1 && downSteps === 3) return { title: "Cucu Keponakan", desc: `Cucu dari Saudara Kandung Anda.` };
+                
+                // Keponakan Sepupu (Anak dari Sepupu kita)
+                if (diff === 1) {
+                    if (upSteps === 2) return { title: "Keponakan Sepupu 1 Kali", desc: `Anak dari Sepupu 1 Kali Anda.` };
+                    if (upSteps === 3) return { title: "Keponakan Sepupu 2 Kali", desc: `Anak dari Sepupu 2 Kali Anda.` };
+                }
+            }
+        }
+
+        // 3. ANALISIS PERKAWINAN SILANG (MERTUA/IPAR)
+        if (steps === 2 && path[0].type === 'spouse' && path[1].type === 'parent') {
+            const spouseObj = allData.find(d => d.id == path[0].to);
+            return { title: "Mertua", desc: `Orang tua dari pasangan Anda (${styleBiasa(spouseObj.name)}).` };
+        }
+        if (steps === 3 && path[0].type === 'parent' && path[1].type === 'child' && path[2].type === 'spouse') {
+             const siblingObj = allData.find(d => d.id == path[1].to); 
+             return { title: "Ipar", desc: `Pasangan dari saudara kandung Anda (${styleBiasa(siblingObj.name)}).` };
+        }
+        // Ipar (Pasangan -> Saudara)
+        if (steps === 3 && path[0].type === 'spouse' && path[1].type === 'parent' && path[2].type === 'child') {
+             const spouseObj = allData.find(d => d.id == path[0].to); 
+             return { title: "Ipar", desc: `Saudara kandung dari pasangan Anda (${styleBiasa(spouseObj.name)}).` };
+        }
+
+        // 4. HUBUNGAN JAUH / GENERIK (Fallback)
+        let lcaId = null;
+        for (let i = 0; i < path.length - 1; i++) {
+            if (path[i].type === 'parent' && path[i+1].type === 'child') {
+                lcaId = path[i].to;
+                break;
+            }
+        }
+        if (!lcaId) {
+             const allUp = path.every(s => s.type === 'parent');
+             if (allUp && path.length > 0) lcaId = path[path.length-1].to;
+        }
+
+        let descStr = "Jalur Hubungan: <br><ul class='text-left text-xs mt-2 list-disc pl-4 space-y-1'>";
+        path.forEach((step, i) => {
+            const pTo = allData.find(d => d.id == step.to);
+            const toName = pTo ? pTo.name : "???";
+            let relationText = "";
+            if (step.type === 'parent') relationText = "Ayah/Ibu-nya";
+            else if (step.type === 'child') relationText = "Anak-nya";
+            else if (step.type === 'spouse') relationText = "Pasangan-nya";
+            
+            const isLeluhur = (step.to == lcaId);
+            const finalName = isLeluhur ? styleLeluhur(toName + " (Leluhur Bersama)") : styleBiasa(toName);
+            descStr += `<li>${finalName} adalah ${relationText}</li>`;
+        });
+        descStr += "</ul>";
+
+        return { title: "Kerabat Jauh", desc: descStr };
+    }
+	
+	
+	
+	
+
+
+
+    function showResult(title, desc) { document.getElementById('calc-result').classList.remove('hidden'); document.getElementById('res-title').innerText = title; document.getElementById('res-desc').innerHTML = desc; }
 
 
 
