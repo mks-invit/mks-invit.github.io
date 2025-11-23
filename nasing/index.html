@@ -356,7 +356,18 @@
         else { icon.classList.replace('fa-sun', 'fa-moon'); }
     });
 
-    window.onload = function() { updateLoginUI(); updateSyncUI(); fetchData(); };
+  
+
+window.onload = function() { 
+        updateLoginUI(); 
+        updateSyncUI(); 
+        fetchData(); 
+        
+        // --- TAMBAHKAN INI ---
+        setupOutsideClickCloser(); 
+    };
+
+
 
     async function fetchData() {
         showLoader(true);
@@ -1129,6 +1140,39 @@ function createNode(p, lvl) {
         story += `</div>`; // Tutup div utama
         return story;
     }
+	
+	
+	
+	
+	// === FITUR TUTUP POPUP SAAT KLIK DI LUAR (OVERLAY) ===
+    function setupOutsideClickCloser() {
+        // Daftar ID Modal dan fungsi penutupnya
+        const modalActions = {
+            'login-modal': closeLoginModal,
+            'modal': closeModal, // Form Edit/Add
+            'detail-modal': () => document.getElementById('detail-modal').classList.add('hidden'),
+            'calc-modal': () => document.getElementById('calc-modal').classList.add('hidden'),
+            'narrative-modal': () => document.getElementById('narrative-modal').classList.add('hidden')
+        };
+
+        // Loop setiap modal dan pasang pendeteksi klik
+        for (const [modalId, closeFunction] of Object.entries(modalActions)) {
+            const modalEl = document.getElementById(modalId);
+            if (modalEl) {
+                modalEl.addEventListener('click', function(event) {
+                    // Cek: Apakah elemen yang diklik ADALAH elemen background itu sendiri?
+                    // (Bukan elemen anaknya/kartu putih di dalamnya)
+                    if (event.target === this) {
+                        closeFunction();
+                    }
+                });
+            }
+        }
+    }
+	
+	
+	
+	
 </script>
 </body>
 </html>
