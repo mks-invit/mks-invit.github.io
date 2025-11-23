@@ -194,17 +194,41 @@
 
 
 
+
+
+
+
 <div class="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3">
-    <button id="btn-download-data" onclick="downloadData()" class="hidden w-14 h-14 rounded-full bg-emerald-600 text-white shadow-xl items-center justify-center hover:bg-emerald-700 hover:scale-110 transition-all duration-200 group relative" title="Download Database">
-        <i class="fas fa-file-csv text-xl"></i>
-        <span class="absolute right-full mr-3 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Backup Data (CSV)</span>
-    </button>
+    
+    <div id="admin-menu-container" class="hidden relative items-center justify-end">
+        
+        <div id="admin-menu-options" class="absolute right-16 flex gap-3 transition-all duration-300 opacity-0 translate-x-10 pointer-events-none scale-90 origin-right">
+            
+            <button onclick="exportGedcom()" class="w-12 h-12 rounded-full bg-blue-600 text-white shadow-lg flex items-center justify-center hover:bg-blue-700 hover:scale-110 transition-all duration-200 group/item" title="Export GEDCOM">
+                <i class="fas fa-project-diagram"></i>
+                <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">GEDCOM</span>
+            </button>
+
+            <button onclick="downloadData()" class="w-12 h-12 rounded-full bg-emerald-600 text-white shadow-lg flex items-center justify-center hover:bg-emerald-700 hover:scale-110 transition-all duration-200 group/item" title="Download CSV">
+                <i class="fas fa-file-csv"></i>
+                <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Excel/CSV</span>
+            </button>
+        </div>
+
+        <button id="btn-admin-menu" onclick="toggleAdminMenu()" class="w-14 h-14 rounded-full bg-slate-700 text-white shadow-xl flex items-center justify-center hover:bg-slate-800 transition-all duration-200 z-50 relative">
+            <i class="fas fa-ellipsis-v text-xl transition-transform duration-300" id="icon-admin-menu"></i>
+        </button>
+    </div>
 
     <button onclick="openNarrativeMode()" class="w-14 h-14 rounded-full bg-indigo-600 text-white shadow-xl flex items-center justify-center hover:bg-indigo-700 hover:scale-110 transition-all duration-200 group relative" title="Mode Cerita (Buku Silsilah)">
         <i class="fas fa-book-open text-xl group-hover:animate-pulse"></i>
         <span class="absolute right-full mr-3 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Baca Kisah Keluarga</span>
     </button>
 </div>
+
+
+
+
 
 
 
@@ -933,23 +957,26 @@ function createNode(p, lvl) {
     function doLogout() { isLoggedIn = false; localStorage.removeItem('isLoggedIn'); localStorage.removeItem('userRootId'); updateLoginUI(); renderTree(); }
     
     
-    
-    function updateLoginUI() { 
-        // UI Header
+   
+   
+       function updateLoginUI() { 
+        // Header
         document.getElementById('btn-login-trigger').classList.toggle('hidden', isLoggedIn); 
         document.getElementById('btn-logout-trigger').classList.toggle('hidden', !isLoggedIn);
         
-        // UI Floating Button (Download)
-        // Menggunakan classList.toggle dengan 'flex' agar display-nya benar saat muncul
-        const btnDownload = document.getElementById('btn-download-data');
+        // Floating Admin Menu (Download Group)
+        const adminGroup = document.getElementById('admin-menu-container');
         if (isLoggedIn) {
-            btnDownload.classList.remove('hidden');
-            btnDownload.classList.add('flex');
+            adminGroup.classList.remove('hidden');
+            adminGroup.classList.add('flex');
         } else {
-            btnDownload.classList.add('hidden');
-            btnDownload.classList.remove('flex');
+            adminGroup.classList.add('hidden');
+            adminGroup.classList.remove('flex');
+            // Pastikan menu tertutup saat logout
+            if(isAdminMenuOpen) toggleAdminMenu();
         }
     }
+
 
 
 
@@ -1460,6 +1487,144 @@ function createNode(p, lvl) {
 
 
 
+
+
+
+
+
+
+
+    // === LOGIKA UI: ADMIN MENU TOGGLE ===
+    let isAdminMenuOpen = false;
+
+    function toggleAdminMenu() {
+        const opts = document.getElementById('admin-menu-options');
+        const icon = document.getElementById('icon-admin-menu');
+        
+        isAdminMenuOpen = !isAdminMenuOpen;
+
+        if (isAdminMenuOpen) {
+            // Buka Menu (Muncul dari kanan ke kiri)
+            opts.classList.remove('opacity-0', 'translate-x-10', 'pointer-events-none', 'scale-90');
+            opts.classList.add('opacity-100', 'translate-x-0', 'scale-100');
+            // Icon berputar jadi X
+            icon.classList.replace('fa-ellipsis-v', 'fa-times');
+            icon.classList.add('rotate-90');
+        } else {
+            // Tutup Menu
+            opts.classList.add('opacity-0', 'translate-x-10', 'pointer-events-none', 'scale-90');
+            opts.classList.remove('opacity-100', 'translate-x-0', 'scale-100');
+            // Icon kembali jadi titik tiga
+            icon.classList.replace('fa-times', 'fa-ellipsis-v');
+            icon.classList.remove('rotate-90');
+        }
+    }
+
+
+
+
+
+
+
+    // === FITUR EXPORT GEDCOM ===
+    function exportGedcom() {
+        if (!allData || allData.length === 0) { alert("Data kosong."); return; }
+        
+        let ged = "";
+        
+        // 1. HEADER GEDCOM
+        ged += "0 HEAD\n";
+        ged += "1 SOUR KeluargaApp\n";
+        ged += "1 GEDC\n";
+        ged += "2 VERS 5.5.1\n";
+        ged += "2 FORM LINEAGE-LINKED\n";
+        ged += "1 CHAR UTF-8\n";
+
+        // 2. INDIVIDUAL RECORDS (INDI)
+        allData.forEach(p => {
+            // ID harus dibungkus @...@. Kita pakai ID asli.
+            ged += `0 @I${p.id}@ INDI\n`;
+            
+            // Nama (Format: Nama Depan /Nama Belakang/)
+            // Kita pakai nama lengkap di antara slash agar aman
+            ged += `1 NAME ${p.name} //\n`; 
+            
+            // Gender (M=Male, F=Female)
+            const sex = (p.gender === 'P') ? 'F' : 'M';
+            ged += `1 SEX ${sex}\n`;
+            
+            // Status Kematian
+            if (p.isDead == 1) {
+                ged += `1 DEAT Y\n`;
+            }
+
+            // Link ke Keluarga Orang Tua (Sebagai Anak)
+            // Jika dia punya parentId, berarti dia adalah anak di keluarga 'F_parentId'
+            if (p.parentId && p.parentId !== 'root') {
+                ged += `1 FAMC @F${p.parentId}@\n`;
+            }
+
+            // Link ke Keluarga Sendiri (Sebagai Pasangan/Kepala Keluarga)
+            // Kita asumsikan setiap orang yang punya pasangan/anak membuat Family Record sendiri
+            // Logic sederhana: ID dia jadi ID Family
+            const hasChildren = allData.some(c => c.parentId == p.id);
+            if (hasChildren || p.spouse) {
+                ged += `1 FAMS @F${p.id}@\n`;
+            }
+        });
+
+        // 3. FAMILY RECORDS (FAM)
+        // Kita buat Record Keluarga berdasarkan ID Kepala Keluarga (Ayah/Ibu utama)
+        allData.forEach(p => {
+            const children = allData.filter(c => c.parentId == p.id);
+            
+            // Syarat Family Record: Punya Anak ATAU Punya Pasangan
+            if (children.length > 0 || p.spouse) {
+                ged += `0 @F${p.id}@ FAM\n`;
+                
+                // Tentukan Suami/Istri berdasarkan Gender Kepala Keluarga
+                if (p.gender === 'P') {
+                    ged += `1 WIFE @I${p.id}@\n`; // Kepala Keluarga Perempuan
+                } else {
+                    ged += `1 HUSB @I${p.id}@\n`; // Kepala Keluarga Laki-laki (Default)
+                }
+
+                // Anak-anak
+                children.forEach(child => {
+                    ged += `1 CHIL @I${child.id}@\n`;
+                });
+                
+                // Catatan Pasangan (Karena spouse kita string, kita masukkan sbg NOTE atau Event nikah teks)
+                // GEDCOM standar butuh ID pasangan (Cross reference), tapi data kita spouse = string.
+                // Jadi kita simpan sebagai Catatan Pernikahan.
+                if (p.spouse) {
+                    ged += `1 MARR\n`;
+                    ged += `2 NOTE Pasangan: ${p.spouse}\n`;
+                }
+            }
+        });
+
+        // 4. TRAILER
+        ged += "0 TRLR\n";
+
+        // 5. DOWNLOAD FILE
+        const blob = new Blob([ged], { type: 'text/plain;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        const dateStr = new Date().toISOString().slice(0,10);
+        
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Silsilah_${dateStr}.ged`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+
+
+
+
+
     // === NARRATIVE MODE LOGIC ===
     // === NARRATIVE MODE LOGIC (UPDATED) ===
     function openNarrativeMode() {
@@ -1628,6 +1793,14 @@ function createNode(p, lvl) {
                 });
             }
         }
+            // Tambahkan ini di dalam fungsi setupOutsideClickCloser, di bagian paling bawah fungsi tersebut
+    document.addEventListener('click', function(e) {
+        // Jika menu terbuka DAN yang diklik BUKAN bagian dari menu admin
+        if (isAdminMenuOpen && !e.target.closest('#admin-menu-container')) {
+            toggleAdminMenu();
+        }
+    });
+
     }
 	
 	
