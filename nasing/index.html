@@ -222,10 +222,6 @@
 </div>
 
         
-        
-        
-        
-        
 
         <button id="btn-admin-menu" onclick="toggleAdminMenu()" class="w-14 h-14 rounded-full bg-slate-700 text-white shadow-xl flex items-center justify-center hover:bg-slate-800 transition-all duration-200 z-50 relative">
             <i class="fas fa-ellipsis-v text-xl transition-transform duration-300" id="icon-admin-menu"></i>
@@ -300,11 +296,13 @@
 </div>
 
 <div id="narrative-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[80] hidden justify-center items-center p-4">
-    <div class="bg-white dark:bg-card-dark w-full max-w-2xl h-[85vh] rounded-xl shadow-2xl flex flex-col animate-slide-down relative border border-gray-200 dark:border-gray-700">
-        
+ 
+ <div class="bg-white dark:bg-card-dark w-11/12 max-w-7xl h-[90vh] rounded-xl shadow-2xl flex flex-col animate-slide-down relative border border-gray-200 dark:border-gray-700">
+
+ 
         <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800 rounded-t-xl">
             <div>
-                <h3 class="text-xl font-bold font-serif text-slate-800 dark:text-gray-100"><i class="fas fa-scroll text-indigo-500 mr-2"></i>Keluarga Besar Puang Guru Nasing</h3>
+                <h3 class="text-xl font-bold font-serif text-slate-800 dark:text-gray-100"><i class="fas fa-scroll text-indigo-500 mr-2"></i>Kisah Puang Guru Nasing</h3>
                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Silsilah dalam format cerita narasi</p>
             </div>
             <button onclick="document.getElementById('narrative-modal').classList.add('hidden')" class="w-8 h-8 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center text-gray-500 transition-colors">
@@ -318,14 +316,21 @@
             </div>
         </div>
 
-        <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-white dark:bg-card-dark rounded-b-xl">
-            <button onclick="copyNarrative()" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-sm transition-colors flex items-center gap-2">
-                <i class="fas fa-copy"></i> Salin Teks
-            </button>
-            <button onclick="document.getElementById('narrative-modal').classList.add('hidden')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm transition-colors">
-                Tutup
-            </button>
-        </div>
+
+
+<div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-white dark:bg-card-dark rounded-b-xl flex-wrap">
+    
+    <button onclick="copyNarrative()" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-sm transition-colors flex items-center gap-2">
+        <i class="fas fa-copy"></i> Salin Cerita
+    </button>
+
+    <button onclick="downloadHierarchyText()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm transition-colors flex items-center gap-2 shadow-sm">
+        <i class="fas fa-sitemap"></i> Download Pohon
+    </button>
+
+
+</div>
+
     </div>
 </div>
 
@@ -1644,88 +1649,87 @@ function handleRestoreFile(input) {
             </div>`;
         }
     }
-
+    
+    
+    
+    
     function recursiveNarrative(person, level) {
-        if (!person) return ""; // Safety check
+        if (!person) return ""; 
 
-        // 1. Ambil Anak-anak
+        // 1. Ambil Anak-anak & Sortir
         let children = allData.filter(d => d.parentId == person.id || (d.motherName && d.motherName.trim() === person.name));
-        
-        // 2. SORTING ANAK BERDASARKAN URUTAN LAHIR (Penting!)
         children.sort((a, b) => {
             const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999;
             const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999;
             return orderA - orderB;
         });
 
-        // 3. Setup Status (Alm/Almh)
+        // 2. Setup Status (Alm/Almh)
         const isDead = person.isDead == 1;
         let statusAlm = "";
         if (isDead) { statusAlm = (person.gender === 'P') ? "(Almh) " : "(Alm) "; }
 
-        // 4. Styling Indentasi
-        const marginLeft = level * 20;
-        const borderClass = level > 0 ? "border-l-4 border-indigo-100 dark:border-indigo-900 pl-4" : "";
+        // --- PENGATURAN TAMPILAN ---
         
-        let story = `<div style="margin-left: ${marginLeft}px" class="mb-4 ${borderClass} relative">`;
-        if(level > 0) { story += `<div class="absolute -left-[21px] top-2 w-3 h-3 rounded-full bg-indigo-200 dark:bg-indigo-700"></div>`; }
+        // A. Indentasi "Smart Cap"
+        // Indentasi akan mentok di 60px (sekitar generasi ke-5).
+        // Ini menjaga agar teks tetap lebar dan tidak menyempit ke kanan.
+        const marginLeft = Math.min(level * 12, 60); 
+        
+        // B. Garis Penanda
+        const borderClass = level > 0 ? "border-l-2 border-indigo-200 dark:border-indigo-800 pl-3" : "";
+        
+        // C. Wrapper Utama
+        let story = `<div style="margin-left: ${marginLeft}px" class="mb-3 ${borderClass} relative w-auto">`;
+        
+        // Penanda titik bulat kecil (hanya jika level > 0)
+        if(level > 0) { 
+            story += `<div class="absolute -left-[19px] top-2.5 w-2 h-2 rounded-full bg-indigo-300 dark:bg-indigo-600"></div>`; 
+        }
 
-        // 5. Konten Cerita
-        story += `<div class="text-lg leading-relaxed text-slate-700 dark:text-gray-300 font-serif">`;
+        // 3. KONTEN CERITA (RATA KIRI)
+        // Perubahan: 'text-justify' diganti menjadi 'text-left'
+        story += `<div class="text-base leading-relaxed text-left text-slate-700 dark:text-gray-300 font-serif w-full pr-1 md:pr-4">`;
         
-		
-		
-		// ... (Kode sebelumnya)
+        // --- ISI CERITA ---
+        story += `<span class="font-bold text-slate-900 dark:text-white text-lg">${statusAlm}${person.name}</span>`;
         
-        // Nama Orang Tua
-        story += `<span class="font-bold text-slate-900 dark:text-white">${statusAlm}${person.name}</span>`;
-        
-        // Info Pasangan
         if (person.spouse) { 
-            // --- MODIFIKASI: GANTI KOMA DENGAN '&' DI CERITA ---
             const spouseFormatted = person.spouse.split(',').map(s => s.trim()).join(' & ');
             story += ` menikah dengan <span class="font-semibold text-indigo-600 dark:text-indigo-400">${spouseFormatted}</span>.`; 
         }
         
-        // ... (Kode selanjutnya: Info anak-anak)
-        
-        // Info Anak-anak
         if (children.length > 0) {
-            story += ` Pasangan ini dikaruniai <strong>${children.length}</strong> orang anak, yaitu: `;
-            
-            // Loop nama anak untuk kalimat "anak, anak, dan anak."
-            const childNames = children.map((c, index) => {
+            story += ` Dikaruniai <strong>${children.length}</strong> anak: `;
+            const childNames = children.map((c) => {
                 let childStatus = (c.isDead == 1) ? ((c.gender === 'P') ? "(Almh) " : "(Alm) ") : "";
-                
-                // Tambahkan info urutan jika ada (Opsional, agar lebih deskriptif)
-                // const orderInfo = c.birthOrder ? `(anak ke-${c.birthOrder})` : ""; 
-                // return `${childStatus}${c.name} ${orderInfo}`;
-                
                 return `${childStatus}${c.name}`;
             });
 
-            // Menggabungkan nama dengan koma dan "dan"
             if (childNames.length === 1) {
                 story += `<span class="italic text-slate-600 dark:text-gray-400">${childNames[0]}</span>.`;
             } else {
                 const lastChild = childNames.pop();
                 story += `<span class="italic text-slate-600 dark:text-gray-400">${childNames.join(', ')}, dan ${lastChild}</span>.`;
             }
-
+            
             story += `</div>`; // Tutup div text
             
-            // REKURSIF (Panggil fungsi ini lagi untuk anak-anaknya)
+            // REKURSIF
             children.forEach(child => { 
                 story += recursiveNarrative(child, level + 1); 
             });
 
         } else { 
-            story += `</div>`; // Tutup div text jika tidak punya anak
+            story += `</div>`; // Tutup div text
         }
         
         story += `</div>`; // Tutup div utama
         return story;
     }
+
+
+    
 	
 	
 	
@@ -1765,6 +1769,176 @@ function handleRestoreFile(input) {
     }
 	
 	
+	
+	
+	
+	
+	
+
+// === FUNGSI DOWNLOAD HIERARKI BERWARNA (FORMAT HTML) ===
+
+function downloadHierarchyText() {
+    if (!allData || allData.length === 0) {
+        alert("Data kosong.");
+        return;
+    }
+
+    const userRootId = localStorage.getItem('userRootId');
+    let roots = [];
+    if (isLoggedIn && userRootId && userRootId !== 'all') {
+        roots = allData.filter(d => d.id == userRootId);
+    } else {
+        roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root');
+    }
+
+    roots.sort((a, b) => {
+        const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999;
+        const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999;
+        return orderA - orderB;
+    });
+
+    if (roots.length === 0) {
+        alert("Data leluhur utama tidak ditemukan.");
+        return;
+    }
+
+    // --- SETUP WARNA GENERASI ---
+    // Gen 0 (Root) s/d Gen 9. Setelah itu akan kembali ke warna awal.
+    const colors = [
+        "#FFD700", // Gen 0: Emas (Root)
+        "#00BFFF", // Gen 1: Deep Sky Blue
+        "#32CD32", // Gen 2: Lime Green
+        "#FF69B4", // Gen 3: Hot Pink
+        "#FFA500", // Gen 4: Orange
+        "#9370DB", // Gen 5: Medium Purple
+        "#00FA9A", // Gen 6: Medium Spring Green
+        "#FF6347", // Gen 7: Tomato Red
+        "#87CEEB", // Gen 8: Sky Blue
+        "#DDA0DD"  // Gen 9: Plum
+    ];
+
+    // --- HEADER HTML & CSS ---
+    // Kita buat tampilan latar hitam (Dark Mode) agar warna-warni terlihat kontras dan cantik
+    const dateStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    
+    let htmlContent = `
+    <!DOCTYPE html>
+    <html lang="id">
+    <head>
+        <meta charset="UTF-8">
+        <title>Silsilah Keluarga Puang Guru Nasing</title>
+        <style>
+            body { 
+                background-color: #1e1e1e; 
+                color: #cccccc; 
+                font-family: 'Consolas', 'Monaco', 'Courier New', monospace; 
+                white-space: pre; /* Penting agar spasi pohon terjaga */
+                padding: 20px;
+                font-size: 14px;
+                line-height: 1.5;
+            }
+            .header { color: #ffffff; font-weight: bold; margin-bottom: 20px; border-bottom: 1px dashed #555; padding-bottom: 10px;}
+            .tree-line { color: #555555; } /* Warna garis penghubung abu gelap */
+            .spouse { color: #888888; font-style: italic; font-size: 0.9em; }
+        </style>
+    </head>
+    <body>
+    <div class="header">
+=== STRUKTUR KELUARGA BESAR PUANG GURU NASING ===
+Diunduh pada: ${dateStr}
+Keterangan: (Alm)=Pria Wafat, (Almh)=Wanita Wafat
+Warna teks menunjukkan perbedaan generasi.
+=================================================
+    </div>
+    `;
+
+    // --- GENERATE POHON ---
+    roots.forEach(root => {
+        // Parameter: (Node, Prefix, isLast, isRoot, Level)
+        htmlContent += generateColoredTree(root, "", true, true, 0, colors);
+        htmlContent += "\n\n<div class='tree-line'>-------------------------------------------------</div>\n\n";
+    });
+
+    htmlContent += `</body></html>`;
+
+    // --- DOWNLOAD FILE ---
+    // Perhatikan type: "text/html" dan ekstensi file ".html"
+    const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    
+    const fileNameDate = new Date().toISOString().slice(0,10);
+    link.download = `Pohon_Keluarga_Warna_PGN_${fileNameDate}.html`;
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+// === FUNGSI REKURSIF HTML GENERATOR ===
+function generateColoredTree(person, prefix, isLast, isRoot, level, colors) {
+    let result = "";
+    
+    // 1. Tentukan Garis (Kita bungkus span biar warnanya abu-abu saja)
+    let lineSymbol = "";
+    if (!isRoot) {
+        lineSymbol = isLast ? "\\-- " : "+-- ";
+    }
+    // Bungkus simbol garis dengan class tree-line
+    let lineHTML = `<span class="tree-line">${prefix}${lineSymbol}</span>`;
+
+    // 2. Format Nama & Warna
+    let nameStr = person.name;
+    if (person.isDead == 1) {
+        const suffix = (person.gender === 'P') ? " (Almh)" : " (Alm)";
+        nameStr += suffix;
+    }
+
+    // Ambil warna berdasarkan level (modulo 10 agar looping jika generasi > 10)
+    const colorCode = colors[level % colors.length];
+    
+    // Bungkus Nama dengan Warna
+    let nameHTML = `<span style="color: ${colorCode}; font-weight: bold;">${nameStr}</span>`;
+
+    // 3. Format Pasangan
+    let spouseHTML = "";
+    if (person.spouse) {
+        const cleanSpouse = person.spouse.split(',').map(s => s.trim()).join(' & ');
+        spouseHTML = `<span class="spouse"> [Ps: ${cleanSpouse}]</span>`;
+    }
+
+    // Gabungkan Baris Ini
+    // Note: prefix di sini tidak dimasukkan langsung ke result string HTML,
+    // karena prefix sudah ada di dalam lineHTML di atas.
+    result += `${lineHTML}${nameHTML}${spouseHTML}\n`;
+
+    // 4. Siapkan Prefix untuk Anak
+    let childPrefix = prefix;
+    if (!isRoot) {
+        childPrefix += isLast ? "    " : "|   ";
+    }
+
+    // 5. Proses Anak
+    let children = allData.filter(d => d.parentId == person.id || (d.motherName && d.motherName.trim() === person.name));
+    children.sort((a, b) => {
+        const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999;
+        const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999;
+        return orderA - orderB;
+    });
+
+    for (let i = 0; i < children.length; i++) {
+        const isLastChild = (i === children.length - 1);
+        // Level bertambah +1
+        result += generateColoredTree(children[i], childPrefix, isLastChild, false, level + 1, colors);
+    }
+
+    return result;
+}
+
+
+
 	
 	
 </script>
