@@ -816,14 +816,68 @@ function createNode(p, lvl) {
     }
     function doUndo() { if (pendingQueue.length === 0) return; pendingQueue.pop(); localStorage.setItem('pendingChanges', JSON.stringify(pendingQueue)); updateSyncUI(); }
     function enqueueAction(payload) { pendingQueue.push(payload); localStorage.setItem('pendingChanges', JSON.stringify(pendingQueue)); updateSyncUI(); closeModal(); }
-    async function doSync() {
+	
+	
+	
+	async function doSync() {
+        // Cek jika antrean kosong
         if (pendingQueue.length === 0) return;
-        showLoader(true); const btn = document.getElementById('btn-sync'); btn.disabled = true; document.getElementById('btn-undo').classList.add('hidden'); 
+
+        // Kunci UI
+        showLoader(true); 
+        const btn = document.getElementById('btn-sync'); 
+        const btnUndo = document.getElementById('btn-undo');
+        
+        btn.disabled = true; 
+        btnUndo.classList.add('hidden'); // Sembunyikan tombol Undo saat proses berjalan
+        
         try {
-            for (let i = 0; i < pendingQueue.length; i++) { await fetch(API_URL, { method: "POST", body: JSON.stringify(pendingQueue[i]) }); }
-            pendingQueue = []; localStorage.removeItem('pendingChanges'); updateSyncUI(); const r = await fetch(API_URL); allData = await r.json(); prepareSearchableNames(); renderTree(); updateStats();
-        } catch (e) { alert("Error Sync: " + e); } finally { showLoader(false); btn.disabled = false; updateSyncUI(); }
+            // LAKUKAN LOOP SELAMA MASIH ADA ANTREAN
+            while (pendingQueue.length > 0) {
+                
+                // 1. Ambil item paling depan (index 0)
+                const itemToSend = pendingQueue[0];
+
+                // 2. Kirim ke Server
+                await fetch(API_URL, { 
+                    method: "POST", 
+                    body: JSON.stringify(itemToSend) 
+                });
+
+                // 3. JIKA SUKSES (Code sampai sini berarti tidak error):
+                // Hapus item yang berhasil dari antrean lokal
+                pendingQueue.shift(); 
+                
+                // Simpan sisa antrean ke LocalStorage (Agar aman jika browser refresh tiba-tiba)
+                localStorage.setItem('pendingChanges', JSON.stringify(pendingQueue));
+                
+                // UPDATE ANGKA BADGE SECARA LANGSUNG
+                updateSyncUI(); 
+            }
+
+            // Jika Loop selesai, artinya semua data terkirim.
+            // Ambil data terbaru dari server untuk refresh tampilan pohon
+            const r = await fetch(API_URL); 
+            allData = await r.json(); 
+            prepareSearchableNames(); 
+            renderTree(); 
+            updateStats();
+
+        } catch (e) { 
+            // Jika terjadi error di tengah jalan (misal internet putus di item ke-3)
+            // Loop akan berhenti, sisa item tetap ada di pendingQueue untuk dicoba nanti
+            alert("Proses Sync terhenti (Cek koneksi internet): " + e); 
+            console.error(e);
+            
+        } finally { 
+            showLoader(false); 
+            btn.disabled = false; 
+            updateSyncUI(); // Pastikan UI status akhir benar
+        }
     }
+    
+	
+	
     function openLoginModal() { document.getElementById('login-modal').classList.replace('hidden', 'flex'); document.getElementById('login-user').value=''; document.getElementById('login-pass').value=''; document.getElementById('login-error').classList.add('hidden'); }
     function closeLoginModal() { document.getElementById('login-modal').classList.replace('flex', 'hidden'); }
     async function doLogin() {
@@ -962,6 +1016,7 @@ function createNode(p, lvl) {
 
 
     // === DETAIL POPUP LOGIC ===
+ // === DETAIL POPUP LOGIC ===
     function openDetailPopup(id, event) {
         if(event) event.stopPropagation();
         const p = allData.find(d => d.id == id);
@@ -971,7 +1026,16 @@ function createNode(p, lvl) {
         
         // Isi Data Dasar
         document.getElementById('det-name').textContent = p.name;
-        document.getElementById('det-spouse').textContent = p.spouse ? "Pasangan: " + p.spouse : "Belum ada pasangan terdata";
+        
+        // --- MODIFIKASI: TAMPILAN PASANGAN DENGAN '&' ---
+        const spouseDisplay = p.spouse 
+            ? p.spouse.split(',').map(s => s.trim()).join(' & ') 
+            : "Belum ada pasangan terdata";
+        
+        document.getElementById('det-spouse').textContent = "Pasangan: " + spouseDisplay;
+        
+        // ... (kode sisanya sama seperti sebelumnya: icon, gender, status, dll)
+
         
         // Icon & Gender
         const isMale = (p.gender !== 'P');
@@ -1095,13 +1159,21 @@ function createNode(p, lvl) {
         // 5. Konten Cerita
         story += `<div class="text-lg leading-relaxed text-slate-700 dark:text-gray-300 font-serif">`;
         
+		
+		
+		// ... (Kode sebelumnya)
+        
         // Nama Orang Tua
         story += `<span class="font-bold text-slate-900 dark:text-white">${statusAlm}${person.name}</span>`;
         
         // Info Pasangan
         if (person.spouse) { 
-            story += ` menikah dengan <span class="font-semibold text-indigo-600 dark:text-indigo-400">${person.spouse}</span>.`; 
+            // --- MODIFIKASI: GANTI KOMA DENGAN '&' DI CERITA ---
+            const spouseFormatted = person.spouse.split(',').map(s => s.trim()).join(' & ');
+            story += ` menikah dengan <span class="font-semibold text-indigo-600 dark:text-indigo-400">${spouseFormatted}</span>.`; 
         }
+        
+        // ... (Kode selanjutnya: Info anak-anak)
         
         // Info Anak-anak
         if (children.length > 0) {
