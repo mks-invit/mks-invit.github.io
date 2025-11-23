@@ -1053,7 +1053,7 @@ function createNode(p, lvl) {
 
         // 3. Terjemahkan Jalur
         if (!path) {
-            showResult("Tidak Ada Hubungan Dekat", "Tidak ditemukan jalur hubungan (darah maupun pernikahan) dalam database ini, atau jalurnya terlalu jauh (>15 langkah).");
+            showResult("Jalurnya hubungan terlalu jauh !!!");
         } else {
             const explanation = interpretPath(path);
             showResult(explanation.title, explanation.desc);
@@ -1150,7 +1150,7 @@ function createNode(p, lvl) {
 
 
 
-function interpretPath(path) {
+    function interpretPath(path) {
         // Helper Style
         const styleLeluhur = (n) => `<strong class="text-blue-600 dark:text-blue-400">${n}</strong>`;
         const styleBiasa = (n) => `<span class="font-medium text-slate-700 dark:text-gray-300">${n}</span>`;
@@ -1160,20 +1160,19 @@ function interpretPath(path) {
         const targetPerson = allData.find(d => d.id == lastStep.to);
         const targetName = targetPerson ? targetPerson.name : "Dia";
 
-        // 1. CEK PASANGAN (Suami/Istri) - Satu-satunya hubungan non-darah di prioritas utama
+        // 1. CEK PASANGAN (Suami/Istri)
         if (steps === 1 && lastStep.type === 'spouse') {
             return { title: "Pasangan", desc: `${styleBiasa(targetName)} adalah Suami/Istri Anda.` };
         }
 
         // 2. ANALISIS JALUR DARAH (Blood Path)
-        // Cek apakah semua langkah adalah 'parent' atau 'child' (tanpa 'spouse' di tengah jalan)
         const isBloodPath = path.every(s => s.type === 'parent' || s.type === 'child');
         
         if (isBloodPath) {
-            const upSteps = path.filter(s => s.type === 'parent').length;   // Langkah naik (ke leluhur)
-            const downSteps = path.filter(s => s.type === 'child').length; // Langkah turun (ke keturunan)
+            const upSteps = path.filter(s => s.type === 'parent').length;   // Langkah naik
+            const downSteps = path.filter(s => s.type === 'child').length; // Langkah turun
 
-            // Cari Leluhur Bersama (LCA - Titik Puncak)
+            // Cari Leluhur Bersama (LCA)
             let lcaName = "Leluhur";
             for (let i = 0; i < path.length - 1; i++) {
                 if (path[i].type === 'parent' && path[i+1].type === 'child') {
@@ -1183,7 +1182,7 @@ function interpretPath(path) {
                 }
             }
 
-            // --- KATEGORI A: LELUHUR LANGSUNG (Naik Terus, Tidak Turun) ---
+            // --- KATEGORI A: LELUHUR LANGSUNG (Naik Terus) ---
             if (downSteps === 0) {
                 if (upSteps === 1) return { title: "Orang Tua", desc: `${styleBiasa(targetName)} adalah Ayah/Ibu Anda.` };
                 if (upSteps === 2) return { title: "Kakek / Nenek", desc: `${styleBiasa(targetName)} adalah Orang Tua dari Ayah/Ibu Anda.` };
@@ -1195,7 +1194,7 @@ function interpretPath(path) {
                 if (upSteps > 7) return { title: `Leluhur (${upSteps} Generasi)`, desc: `${styleBiasa(targetName)} adalah leluhur langsung tingkat ke-${upSteps} di atas Anda.` };
             }
 
-            // --- KATEGORI B: KETURUNAN LANGSUNG (Turun Terus, Tidak Naik) ---
+            // --- KATEGORI B: KETURUNAN LANGSUNG (Turun Terus) ---
             if (upSteps === 0) {
                 if (downSteps === 1) return { title: "Anak", desc: `${styleBiasa(targetName)} adalah Anak Anda.` };
                 if (downSteps === 2) return { title: "Cucu", desc: `${styleBiasa(targetName)} adalah Anak dari Anak Anda.` };
@@ -1222,15 +1221,13 @@ function interpretPath(path) {
                     return { title: "Paman / Bibi", desc: `Saudara Kandung dari Orang Tua Anda.` };
                 }
 
-                // Paman/Bibi Jauh (Granduncle, Great-Granduncle, dll)
-                // Contoh: Saudara Kakek (Naik 3, Turun 1)
+                // Paman/Bibi Jauh
                 if (downSteps === 1) {
-                    if (upSteps === 3) return { title: "Kakek/Nenek Saudara (Granduncle/aunt)", desc: `Saudara Kandung dari Kakek/Nenek Anda.` };
+                    if (upSteps === 3) return { title: "Kakek/Nenek Saudara", desc: `Saudara Kandung dari Kakek/Nenek Anda.` };
                     if (upSteps === 4) return { title: "Buyut Saudara", desc: `Saudara Kandung dari Buyut Anda.` };
                 }
 
                 // PAMAN/BIBI SEPUPU (Logic Baru)
-                // Selisih 1 Generasi (diff === 1)
                 if (diff === 1) {
                     if (upSteps === 3) return { title: "Paman/Bibi Sepupu 1 Kali", desc: `Sepupu dari Orang Tua Anda. (Leluhur Bersama: ${styleLeluhur(lcaName)})` };
                     if (upSteps === 4) return { title: "Paman/Bibi Sepupu 2 Kali", desc: `Sepupu 2 Kali dari Orang Tua Anda. (Leluhur Bersama: ${styleLeluhur(lcaName)})` };
@@ -1246,7 +1243,7 @@ function interpretPath(path) {
                 if (upSteps === 1 && downSteps === 2) return { title: "Keponakan", desc: `Anak dari Saudara Kandung Anda.` };
                 if (upSteps === 1 && downSteps === 3) return { title: "Cucu Keponakan", desc: `Cucu dari Saudara Kandung Anda.` };
                 
-                // Keponakan Sepupu (Anak dari Sepupu kita)
+                // Keponakan Sepupu
                 if (diff === 1) {
                     if (upSteps === 2) return { title: "Keponakan Sepupu 1 Kali", desc: `Anak dari Sepupu 1 Kali Anda.` };
                     if (upSteps === 3) return { title: "Keponakan Sepupu 2 Kali", desc: `Anak dari Sepupu 2 Kali Anda.` };
@@ -1263,7 +1260,6 @@ function interpretPath(path) {
              const siblingObj = allData.find(d => d.id == path[1].to); 
              return { title: "Ipar", desc: `Pasangan dari saudara kandung Anda (${styleBiasa(siblingObj.name)}).` };
         }
-        // Ipar (Pasangan -> Saudara)
         if (steps === 3 && path[0].type === 'spouse' && path[1].type === 'parent' && path[2].type === 'child') {
              const spouseObj = allData.find(d => d.id == path[0].to); 
              return { title: "Ipar", desc: `Saudara kandung dari pasangan Anda (${styleBiasa(spouseObj.name)}).` };
@@ -1299,7 +1295,15 @@ function interpretPath(path) {
 
         return { title: "Kerabat Jauh", desc: descStr };
     }
-	
+
+
+
+
+
+
+
+
+
 	
 	
 	
