@@ -90,13 +90,40 @@
 </div>
 
 <div class="max-w-4xl mx-auto pb-6">
-    <header class="text-center mb-6 mt-2">
-        <div class="flex justify-center items-center gap-3 mb-4 flex-wrap">
-            <button onclick="fetchData()" class="w-8 h-8 rounded-full border border-gray-400 text-gray-500 dark:text-gray-300 dark:border-gray-500 hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
-            <h4 class="text-xl font-bold text-slate-800 dark:text-gray-100 m-0 px-2">Keluarga Besar Puang Guru Nasing</h4>
-            <button id="theme-btn" class="w-8 h-8 rounded-full border border-gray-400 text-gray-500 dark:text-gray-300 dark:border-gray-500 hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200"><i class="fas fa-moon"></i></button>
-            <button id="btn-login-trigger" onclick="openLoginModal()" class="w-8 h-8 rounded-full border border-gray-400 text-gray-500 dark:text-gray-300 dark:border-gray-500 hover:bg-green-600 hover:text-white hover:border-green-600 flex items-center justify-center transition-all duration-200"><i class="fas fa-lock"></i></button>
-            <button id="btn-logout-trigger" onclick="doLogout()" class="hidden w-8 h-8 rounded-full border border-red-400 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all duration-200"><i class="fas fa-sign-out-alt"></i></button>
+    
+    
+    
+    
+        <header class="text-center mb-6 mt-4">
+        
+        <div class="mb-4 px-4">
+             <h4 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-gray-100 m-0 font-serif tracking-wide leading-tight">
+                Keluarga Besar Puang Guru Nasing
+            </h4>
+        </div>
+
+        <div class="flex justify-center items-center gap-4 mb-6">
+            
+            <button onclick="fetchData()" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300" title="Refresh Data">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+
+            <button id="theme-btn" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-slate-700 hover:text-white hover:border-slate-700 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300" title="Ganti Tema">
+                <i class="fas fa-moon"></i>
+            </button>
+
+            <button id="btn-login-trigger" onclick="openLoginModal()" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-green-600 hover:bg-green-600 hover:text-white hover:border-green-600 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-green-400" title="Login Admin">
+                <i class="fas fa-lock"></i>
+            </button>
+            
+            <button id="btn-logout-trigger" onclick="doLogout()" class="hidden w-10 h-10 rounded-full border border-red-300 bg-white text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600" title="Keluar">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+
+            <button id="btn-install-app" onclick="installPWA()" class="hidden w-10 h-10 rounded-full border border-teal-400 text-teal-600 hover:bg-teal-600 hover:text-white flex items-center justify-center transition-all duration-200 shadow-sm" title="Install Aplikasi">
+                <i class="fas fa-download"></i>
+            </button>
+
         </div>
 
         <div id="stats-container" class="hidden animate-slide-down mb-6">
@@ -118,7 +145,6 @@
                     <div class="text-xl font-bold text-slate-700 dark:text-white" id="stat-living">0</div>
                 </div>
             </div>
-			
         </div>
         
         <div class="relative w-full max-w-xs mx-auto mt-2 group z-30">
@@ -129,11 +155,12 @@
             <ul id="custom-search-results" class="absolute w-full bg-white dark:bg-card-dark mt-2 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden border border-gray-200 dark:border-gray-600 z-50 text-sm text-left custom-scroll"></ul>
         </div>
         
-        
-        
-        
-        
     </header>
+
+    
+    
+    
+    
 
     <div id="loader" class="flex flex-col items-center mt-16" style="display:none;">
         <div class="w-10 h-10 border-4 border-gray-200 border-t-primary rounded-full animate-spin mb-3"></div>
