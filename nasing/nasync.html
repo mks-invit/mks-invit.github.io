@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Keluarga Besar Puang Guru Nasing</title>
+    <link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#3498db">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -122,6 +128,11 @@
             </div>
             <ul id="custom-search-results" class="absolute w-full bg-white dark:bg-card-dark mt-2 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden border border-gray-200 dark:border-gray-600 z-50 text-sm text-left custom-scroll"></ul>
         </div>
+        
+        
+        
+        
+        
     </header>
 
     <div id="loader" class="flex flex-col items-center mt-16" style="display:none;">
@@ -405,7 +416,7 @@
 
 <script>
     // â ï¸ PENTING: Pastikan URL Web App Anda sudah diupdate di sini!
-    const API_URL = "https://script.google.com/macros/s/AKfycbwDe8mzrmYJQDv_RJK3VyicAwNSNYs2E-ZDU-4YAt_7avEDk2Z3QmbgKQwhKc1M0VlJ/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbw9A4Eh65JBNLVIxoa-XIbKPUaiulcLTZyTYZpyRQtQmY93iBeVzIrlCV39pRUkUIce8A/exec"; 
     
     let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; 
     let allData = [], searchableNamesList = []; 
@@ -498,114 +509,157 @@ window.onload = function() {
     
     
     
-function createNode(p, lvl) {
-        const li = document.createElement('li'); li.className = 'my-3';
-        li.setAttribute('data-id', p.id); 
-        li.classList.add('node-card'); 
+    
+    
+    
+    
+    function createNode(p, lvl) {
+    const li = document.createElement('li'); 
+    li.className = 'my-3';
+    li.setAttribute('data-id', p.id); 
+    li.classList.add('node-card'); 
 
-        // Ambil anak-anaknya
-        let children = allData.filter(d => d.parentId == p.id || (d.motherName && d.motherName.trim() === p.name));
-        
-        // --- MODIFIKASI: SORTING URUTAN LAHIR ---
-        // Anak dengan urutan 1 di atas, urutan besar di bawah. 
-        // Data tanpa urutan ditaruh paling bawah (dianggap 9999).
-        children.sort((a, b) => {
-            const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999;
-            const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999;
-            return orderA - orderB;
-        });
-        // ----------------------------------------
+    // --- 1. AMBIL & SORTIR ANAK (Logic Lama) ---
+    let children = allData.filter(d => d.parentId == p.id || (d.motherName && d.motherName.trim() === p.name));
+    
+    // Sorting: Anak urutan 1 di atas, angka besar/kosong di bawah
+    children.sort((a, b) => {
+        const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999;
+        const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999;
+        return orderA - orderB;
+    });
 
-        // 1. SETUP WARNA (Gender Border)
-        let genderClass = 'border-l-4 border-l-gray-300';
-        if (p.gender === 'L') { 
-            genderClass = 'border-l-4 border-l-blue-400'; 
-        } else if (p.gender === 'P') { 
-            genderClass = 'border-l-4 border-l-pink-400'; 
-        }
-
-        // 2. SIAPKAN TOMBOL JEJAK (FOOT)
-        const traceBtn = `<button class="w-7 h-7 rounded-full bg-white/80 text-orange-500 hover:bg-orange-500 hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-orange-400 dark:hover:bg-orange-500 border border-orange-200 dark:border-orange-900 shadow-sm" onclick="traceLineage('${p.id}', event)" title="Telusuri Jalur"><i class="fas fa-shoe-prints text-[10px]"></i></button>`;
-
-        // 3. SIAPKAN IKON NISAN
-        const isDeceased = p.isDead == 1;
-        const nisanHtml = isDeceased ? 
-            `<div class="mt-1 text-gray-500 dark:text-gray-400 text-center" title="Almarhum/ah"><i class="fas fa-monument text-xs"></i></div>` 
-            : '';
-
-        // 4. CONTAINER STATUS (GABUNGAN FOOT & NISAN)
-        const statusContainer = `
-            <div class="flex flex-col items-center justify-center px-2 mx-1 border-l border-dashed border-gray-300 dark:border-gray-600 gap-0.5">
-                ${traceBtn}
-                ${nisanHtml}
-            </div>
-        `;
-
-        // 5. LABEL ATAS ("Anak dari...")
-        let pLabel = '';
-        if (p.parentId && p.parentId !== 'root') {
-            const f = allData.find(d => d.id === p.parentId); 
-            let partnerName = "???";
-            if (p.motherName && p.motherName.trim() !== '' && p.motherName.trim() !== '-') {
-                partnerName = p.motherName;
-            } else if (f && f.spouse) {
-                partnerName = f.spouse;
-            }
-            pLabel = `<span class="block text-[0.7rem] uppercase text-gray-500 dark:text-gray-400 mb-0.5">Anak dari: <strong class="text-slate-700 dark:text-gray-200">${f ? f.name : '???'}</strong> & <strong class="text-slate-700 dark:text-gray-200">${partnerName}</strong></span>`;
-        } else {
-            pLabel = `<span class="block text-[0.7rem] uppercase text-primary mb-0.5">? Leluhur</span>`;
-        }
-
-        // 6. LIST PASANGAN
-        let spHtml = ''; 
-        if (p.spouse) p.spouse.split(',').forEach(s => { 
-            if(s.trim()) spHtml += `<span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-white/60 text-pink-600 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800 cursor-default mr-1 mt-1"><i class="fas fa-heart mr-1 text-[0.6rem]"></i> ${s.trim()}</span>`; 
-        });
-        
-        // 7. WARNA CARD
-        const clr = ['bg-slate-100 border-slate-400 dark:bg-slate-800 dark:border-slate-500', 'bg-blue-50 border-blue-400 dark:bg-blue-900/20 dark:border-blue-500', 'bg-emerald-50 border-emerald-400 dark:bg-emerald-900/20 dark:border-emerald-500', 'bg-amber-50 border-amber-400 dark:bg-amber-900/20 dark:border-amber-500', 'bg-purple-50 border-purple-400 dark:bg-purple-900/20 dark:border-purple-500', 'bg-rose-50 border-rose-400 dark:bg-rose-900/20 dark:border-rose-500'];
-        const cardColor = clr[lvl % clr.length];
-        
-        // 8. GRUP TOMBOL ADMIN
-        const adminBtns = isLoggedIn ? `<div class="flex items-center gap-1 ml-1 border-l border-gray-300/50 pl-2"><button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('edit','${p.id}')"><i class="fas fa-pen text-xs"></i></button><button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('add','${p.id}')"><i class="fas fa-plus text-xs"></i></button>${lvl>0?`<button class="w-8 h-8 rounded-full bg-red-100 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors dark:bg-red-900/40 dark:hover:bg-red-600" onclick="deleteItem('${p.id}')"><i class="fas fa-trash text-xs"></i></button>`:''}</div>` : '';
-        
-        // --- STRUKTUR FINAL KARTU ---
-        const div = document.createElement('div'); div.id = 'card-' + p.id; 
-        div.className = `relative flex items-stretch p-3 rounded-lg shadow-sm hover:shadow-md border-[3px] transition-all duration-200 group ${cardColor} ${genderClass} ${lvl===0?'shadow-md':''}`;
-        
-        // A. KOLOM KIRI (Panah & Info)
-        const toggleIcon = children.length > 0 ? '<i class="fas fa-chevron-right"></i>' : '<i class="fas fa-circle text-[6px] opacity-30"></i>';
-        const cursorClass = children.length > 0 ? 'cursor-pointer' : 'cursor-default';
-        
-        const leftColumn = `
-            <div class="flex flex-col items-center justify-start gap-2 mr-3 pt-1 border-r border-gray-300/50 dark:border-gray-600/50 pr-2">
-                <button class="toggle-btn w-6 h-6 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-transform duration-200 ${cursorClass} flex items-center justify-center" onclick="toggleChild(this)">
-                    ${toggleIcon}
-                </button>
-                <button onclick="openDetailPopup('${p.id}', event)" class="text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 dark:hover:text-white transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-800" title="Lihat Detail">
-                    <i class="fas fa-info-circle text-lg"></i>
-                </button>
-            </div>
-        `;
-
-        // B. STRUKTUR UTAMA
-        div.innerHTML = `
-            ${leftColumn}
-            <div class="flex-grow cursor-pointer py-1" onclick="toggleChild(this.parentElement.querySelector('.toggle-btn'))">
-                ${pLabel}
-                <div class="flex flex-wrap items-center gap-1">
-                    <span class="text-lg font-bold text-slate-800 dark:text-gray-100 flex items-center">${p.name}</span>
-                    ${spHtml}
-                </div>
-            </div>
-            ${statusContainer}
-            ${adminBtns}
-        `;
-        
-        li.appendChild(div);
-        if (children.length>0) { const cUl = document.createElement('ul'); cUl.className = 'children-container hidden pl-[22px] tree-line list-none'; if (lvl===0) { cUl.classList.replace('hidden','block'); div.querySelector('.toggle-btn').innerHTML='<i class="fas fa-chevron-down"></i>'; } children.forEach(ch => cUl.appendChild(createNode(ch, lvl+1))); li.appendChild(cUl); }
-        return li;
+    // --- 2. SETUP WARNA GENDER (Border Kiri) ---
+    let genderClass = 'border-l-4 border-l-gray-300';
+    if (p.gender === 'L') { 
+        genderClass = 'border-l-4 border-l-blue-400'; 
+    } else if (p.gender === 'P') { 
+        genderClass = 'border-l-4 border-l-pink-400'; 
     }
+
+    // --- 3. STATUS ALMARHUM & JEJAK ---
+    const traceBtn = `<button class="w-7 h-7 rounded-full bg-white/80 text-orange-500 hover:bg-orange-500 hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-orange-400 dark:hover:bg-orange-500 border border-orange-200 dark:border-orange-900 shadow-sm" onclick="traceLineage('${p.id}', event)" title="Telusuri Jalur"><i class="fas fa-shoe-prints text-[10px]"></i></button>`;
+
+    const isDeceased = p.isDead == 1;
+    const nisanHtml = isDeceased ? 
+        `<div class="mt-1 text-gray-500 dark:text-gray-400 text-center" title="Almarhum/ah"><i class="fas fa-monument text-xs"></i></div>` 
+        : '';
+
+    const statusContainer = `
+        <div class="flex flex-col items-center justify-center px-2 mx-1 border-l border-dashed border-gray-300 dark:border-gray-600 gap-0.5">
+            ${traceBtn}
+            ${nisanHtml}
+        </div>
+    `;
+
+    // --- 4. LABEL PARENT ("Anak dari...") ---
+    let pLabel = '';
+    if (p.parentId && p.parentId !== 'root') {
+        const f = allData.find(d => d.id === p.parentId); 
+        let partnerName = "???";
+        // Coba cari nama Ibu/Pasangan
+        if (p.motherName && p.motherName.trim() !== '' && p.motherName.trim() !== '-') {
+            partnerName = p.motherName;
+        } else if (f && f.spouse) {
+            // Ambil pasangan pertama jika tidak spesifik
+            partnerName = f.spouse.split(',')[0]; 
+        }
+        pLabel = `<span class="block text-[0.7rem] uppercase text-gray-500 dark:text-gray-400 mb-0.5">Anak dari: <strong class="text-slate-700 dark:text-gray-200">${f ? f.name : '???'}</strong> & <strong class="text-slate-700 dark:text-gray-200">${partnerName}</strong></span>`;
+    } else {
+        pLabel = `<span class="block text-[0.7rem] uppercase text-primary mb-0.5">? Leluhur Utama</span>`;
+    }
+
+    // --- 5. LIST PASANGAN (Badge Pink) ---
+    let spHtml = ''; 
+    if (p.spouse) p.spouse.split(',').forEach(s => { 
+        if(s.trim()) spHtml += `<span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-white/60 text-pink-600 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800 cursor-default mr-1 mt-1"><i class="fas fa-heart mr-1 text-[0.6rem]"></i> ${s.trim()}</span>`; 
+    });
+    
+    // --- 6. WARNA KARTU (Siklus Warna) ---
+    const clr = ['bg-slate-100 border-slate-400 dark:bg-slate-800 dark:border-slate-500', 'bg-blue-50 border-blue-400 dark:bg-blue-900/20 dark:border-blue-500', 'bg-emerald-50 border-emerald-400 dark:bg-emerald-900/20 dark:border-emerald-500', 'bg-amber-50 border-amber-400 dark:bg-amber-900/20 dark:border-amber-500', 'bg-purple-50 border-purple-400 dark:bg-purple-900/20 dark:border-purple-500', 'bg-rose-50 border-rose-400 dark:bg-rose-900/20 dark:border-rose-500'];
+    const cardColor = clr[lvl % clr.length];
+    
+    // --- 7. LOGIKA TOMBOL ADMIN (SISTEM 3 TINGKATAN) ---
+    let adminBtns = '';
+    if (isLoggedIn) {
+        const role = localStorage.getItem('userRole'); // Ambil role yang disimpan saat login
+
+        // Definisi Tombol (Template Dasar)
+        const btnEdit = `<button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('edit','${p.id}')" title="Edit Data"><i class="fas fa-pen text-xs"></i></button>`;
+        
+        const btnAdd = `<button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('add','${p.id}')" title="Tambah Keturunan"><i class="fas fa-plus text-xs"></i></button>`;
+        
+        // Tombol hapus hanya muncul jika level > 0 (Root tidak bisa dihapus sembarangan)
+        const btnDel = (lvl > 0) ? `<button class="w-8 h-8 rounded-full bg-red-100 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors dark:bg-red-900/40 dark:hover:bg-red-600" onclick="deleteItem('${p.id}')" title="Hapus Data"><i class="fas fa-trash text-xs"></i></button>` : '';
+
+        // Seleksi Tombol Berdasarkan Role
+        let buttonsToShow = '';
+
+        if (role === 'super' || role === 'master') {
+            // Super & Master: Bisa Edit, Tambah, Hapus
+            buttonsToShow = `${btnEdit}${btnAdd}${btnDel}`;
+        } else if (role === 'editor') {
+            // Editor: HANYA bisa Edit
+            buttonsToShow = `${btnEdit}`;
+        }
+
+        // Bungkus tombol
+        adminBtns = `<div class="flex items-center gap-1 ml-1 border-l border-gray-300/50 pl-2">${buttonsToShow}</div>`;
+    }
+    
+    // --- 8. RAKIT KARTU (HTML Structure) ---
+    const div = document.createElement('div'); 
+    div.id = 'card-' + p.id; 
+    div.className = `relative flex items-stretch p-3 rounded-lg shadow-sm hover:shadow-md border-[3px] transition-all duration-200 group ${cardColor} ${genderClass} ${lvl===0?'shadow-md':''}`;
+    
+    // Kolom Kiri (Toggle Panah & Tombol Info Detail)
+    const toggleIcon = children.length > 0 ? '<i class="fas fa-chevron-right"></i>' : '<i class="fas fa-circle text-[6px] opacity-30"></i>';
+    const cursorClass = children.length > 0 ? 'cursor-pointer' : 'cursor-default';
+    
+    const leftColumn = `
+        <div class="flex flex-col items-center justify-start gap-2 mr-3 pt-1 border-r border-gray-300/50 dark:border-gray-600/50 pr-2">
+            <button class="toggle-btn w-6 h-6 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-transform duration-200 ${cursorClass} flex items-center justify-center" onclick="toggleChild(this)">
+                ${toggleIcon}
+            </button>
+            <button onclick="openDetailPopup('${p.id}', event)" class="text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 dark:hover:text-white transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-800" title="Lihat Detail Lengkap">
+                <i class="fas fa-info-circle text-lg"></i>
+            </button>
+        </div>
+    `;
+
+    // Isi HTML Kartu Utama
+    div.innerHTML = `
+        ${leftColumn}
+        <div class="flex-grow cursor-pointer py-1" onclick="toggleChild(this.parentElement.querySelector('.toggle-btn'))">
+            ${pLabel}
+            <div class="flex flex-wrap items-center gap-1">
+                <span class="text-lg font-bold text-slate-800 dark:text-gray-100 flex items-center">${p.name}</span>
+                ${spHtml}
+            </div>
+        </div>
+        ${statusContainer}
+        ${adminBtns}
+    `;
+    
+    li.appendChild(div);
+
+    // --- 9. RENDER ANAK SECARA REKURSIF ---
+    if (children.length > 0) { 
+        const cUl = document.createElement('ul'); 
+        cUl.className = 'children-container hidden pl-[22px] tree-line list-none'; 
+        
+        // Otomatis buka root (level 0)
+        if (lvl === 0) { 
+            cUl.classList.replace('hidden','block'); 
+            div.querySelector('.toggle-btn').innerHTML='<i class="fas fa-chevron-down"></i>'; 
+        } 
+        
+        children.forEach(ch => cUl.appendChild(createNode(ch, lvl+1))); 
+        li.appendChild(cUl); 
+    }
+
+    return li;
+}
 
 
 
@@ -968,7 +1022,7 @@ function createNode(p, lvl) {
         const originalText = btn.innerText; btn.innerText = "Checking..."; btn.disabled = true; err.classList.add('hidden');
         try {
             const response = await fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "login", u: u, p: p }) }); const result = await response.json();
-            if (result.status === "success") { isLoggedIn = true; localStorage.setItem('isLoggedIn', 'true'); localStorage.setItem('userRootId', result.rootId || 'all'); closeLoginModal(); updateLoginUI(); renderTree(); } else { err.classList.remove('hidden'); }
+            if (result.status === "success") { isLoggedIn = true; localStorage.setItem('isLoggedIn', 'true'); localStorage.setItem('userRootId', result.rootId || 'all'); localStorage.setItem('userRole', result.role); closeLoginModal(); updateLoginUI(); renderTree(); } else { err.classList.remove('hidden'); }
         } catch (e) { alert("Gagal Login: " + e); } finally { btn.innerText = originalText; btn.disabled = false; }
     }
     function doLogout() { isLoggedIn = false; localStorage.removeItem('isLoggedIn'); localStorage.removeItem('userRootId'); updateLoginUI(); renderTree(); }
@@ -976,23 +1030,31 @@ function createNode(p, lvl) {
     
    
    
-       function updateLoginUI() { 
-        // Header
-        document.getElementById('btn-login-trigger').classList.toggle('hidden', isLoggedIn); 
-        document.getElementById('btn-logout-trigger').classList.toggle('hidden', !isLoggedIn);
-        
-        // Floating Admin Menu (Download Group)
-        const adminGroup = document.getElementById('admin-menu-container');
-        if (isLoggedIn) {
+function updateLoginUI() { 
+    // ... (kode header login/logout yang lama) ...
+    document.getElementById('btn-login-trigger').classList.toggle('hidden', isLoggedIn); 
+    document.getElementById('btn-logout-trigger').classList.toggle('hidden', !isLoggedIn);
+
+    // Floating Admin Menu (Tombol Titik Tiga / Backup Restore)
+    const adminGroup = document.getElementById('admin-menu-container');
+    const userRole = localStorage.getItem('userRole');
+
+    if (isLoggedIn) {
+        // LOGIKA BARU: Hanya SUPER ADMIN yang bisa lihat menu Backup/Restore
+        if (userRole === 'super') {
             adminGroup.classList.remove('hidden');
             adminGroup.classList.add('flex');
         } else {
+            // Master & Editor tidak butuh menu ini
             adminGroup.classList.add('hidden');
             adminGroup.classList.remove('flex');
-            // Pastikan menu tertutup saat logout
-            if(isAdminMenuOpen) toggleAdminMenu();
         }
+    } else {
+        adminGroup.classList.add('hidden');
+        adminGroup.classList.remove('flex');
+        if(isAdminMenuOpen) toggleAdminMenu();
     }
+}
 
 
 
@@ -1939,8 +2001,53 @@ function generateColoredTree(person, prefix, isLast, isRoot, level, colors) {
 
 
 
-	
-	
+
+
+
+
+    // --- PWA REGISTRATION ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then((reg) => {
+                    console.log('Service Worker terdaftar:', reg.scope);
+                })
+                .catch((err) => {
+                    console.log('Service Worker gagal:', err);
+                });
+        });
+    }
+
+    // --- TOMBOL INSTALL (Opsional) ---
+    // Tambahkan variabel global ini di script utama Anda
+    let deferredPrompt;
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Mencegah Chrome 67 ke bawah menampilkan prompt otomatis
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Tampilkan tombol install di UI (Misalnya kita buat tombol di header muncul)
+        // Anda bisa membuat tombol ID 'btn-install' di HTML Anda dan set hidden defaultnya
+        const installBtn = document.getElementById('btn-install-app');
+        if(installBtn) {
+            installBtn.classList.remove('hidden');
+            installBtn.classList.add('flex');
+        }
+    });
+
+    async function installPWA() {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            deferredPrompt = null;
+            document.getElementById('btn-install-app').classList.add('hidden');
+        }
+    }
 </script>
+
+
+
 </body>
 </html>
