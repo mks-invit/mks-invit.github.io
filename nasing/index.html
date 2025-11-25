@@ -2153,7 +2153,7 @@ function backupJSON() {
 
 
 
-	// === FITUR EXPORT GEDCOM (Metode Langsung seperti CSV) ===
+// === FITUR EXPORT GEDCOM (Fixed untuk Data Besar) ===
 function exportGEDCOM() {
     if (!allData || allData.length === 0) { alert("Data kosong."); return; }
     
@@ -2162,7 +2162,7 @@ function exportGEDCOM() {
     
     // 2. LOOP DATA INDIVIDU (INDI)
     allData.forEach(p => {
-        const safeId = p.id.replace(/\s/g, '_'); 
+        const safeId = p.id.toString().replace(/\s/g, '_'); // Pastikan ID string
         
         ged += `0 @I${safeId}@ INDI\n`;
         ged += `1 NAME ${p.name}\n`;
@@ -2173,7 +2173,7 @@ function exportGEDCOM() {
         }
 
         if (p.parentId && p.parentId !== 'root') {
-            const safeParentId = p.parentId.replace(/\s/g, '_');
+            const safeParentId = p.parentId.toString().replace(/\s/g, '_');
             ged += `1 FAMC @F${safeParentId}@\n`;
         }
 
@@ -2188,12 +2188,12 @@ function exportGEDCOM() {
         const children = allData.filter(d => d.parentId == p.id);
         
         if (children.length > 0) {
-            const safeFid = p.id.replace(/\s/g, '_'); 
+            const safeFid = p.id.toString().replace(/\s/g, '_'); 
             ged += `0 @F${safeFid}@ FAM\n`;
             ged += `1 HUSB @I${safeFid}@\n`;
             
             children.forEach(ch => {
-                const safeChId = ch.id.replace(/\s/g, '_');
+                const safeChId = ch.id.toString().replace(/\s/g, '_');
                 ged += `1 CHIL @I${safeChId}@\n`;
             });
         }
@@ -2201,19 +2201,32 @@ function exportGEDCOM() {
 
     ged += "0 TRLR";
 
-    // 4. DOWNLOAD LANGSUNG (Logic sama persis dengan CSV)
-    // Menggunakan encodeURIComponent agar karakter khusus aman
-    const uriContent = "data:text/plain;charset=utf-8," + encodeURIComponent(ged);
-    
-    const link = document.createElement("a");
-    link.setAttribute("href", uriContent);
-    
-    const dateStr = new Date().toISOString().slice(0,10);
-    link.setAttribute("download", `Silsilah_PGN_${dateStr}.ged`);
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // 4. DOWNLOAD MENGGUNAKAN BLOB (Wajib untuk file besar)
+    try {
+        const blob = new Blob([ged], { type: "text/plain;charset=utf-8" });
+        
+        // Trik agar support di berbagai browser mobile
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.style.display = "none"; // Sembunyikan link
+        link.href = url;
+        
+        const dateStr = new Date().toISOString().slice(0,10);
+        link.setAttribute("download", `Silsilah_PGN_${dateStr}.ged`);
+        
+        document.body.appendChild(link); // Penting: Append ke body dulu
+        link.click(); // Klik otomatis
+        
+        // Bersihkan memori
+        setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        }, 100);
+
+    } catch (e) {
+        console.error("Gagal download GEDCOM:", e);
+        alert("Gagal membuat file GEDCOM: " + e.message);
+    }
 }
 
 
