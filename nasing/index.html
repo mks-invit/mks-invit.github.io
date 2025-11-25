@@ -2125,7 +2125,7 @@ function generateColoredTree(person, prefix, isLast, isRoot, level, colors) {
 	
 
 	
-// === FITUR BACKUP JSON (Metode Langsung seperti CSV) ===
+// === FITUR BACKUP JSON (Versi Stabil dengan Blob) ===
 function backupJSON() {
     // 1. Cek ketersediaan data
     if (!allData || allData.length === 0) { 
@@ -2133,22 +2133,35 @@ function backupJSON() {
         return; 
     }
 
-    // 2. Konversi Data ke String JSON
-    const jsonContent = JSON.stringify(allData, null, 2);
+    try {
+        // 2. Konversi Data ke String JSON
+        const jsonContent = JSON.stringify(allData, null, 2);
 
-    // 3. DOWNLOAD LANGSUNG (Menggunakan encodeURIComponent)
-    // Ini teknik yang sama dengan exportCSV agar lebih stabil di HP
-    const uriContent = "data:text/json;charset=utf-8," + encodeURIComponent(jsonContent);
+        // 3. Buat File Blob (Lebih aman untuk file besar & ekstensi)
+        const blob = new Blob([jsonContent], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        
+        const link = document.createElement("a");
+        link.style.display = "none";
+        link.href = url;
+        
+        // 4. Set Nama File dengan Ekstensi .json
+        const dateStr = new Date().toISOString().slice(0,10); 
+        link.setAttribute("download", `Backup_Silsilah_Full_${dateStr}.json`);
+        
+        document.body.appendChild(link);
+        link.click();
+        
+        // 5. Bersihkan Memori
+        setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        }, 100);
 
-    const link = document.createElement("a");
-    link.setAttribute("href", uriContent);
-    
-    const dateStr = new Date().toISOString().slice(0,10); 
-    link.setAttribute("download", `Backup_Silsilah_Full_${dateStr}.json`);
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    } catch (e) {
+        console.error(e);
+        alert("Gagal membuat backup: " + e.message);
+    }
 }
 
 
