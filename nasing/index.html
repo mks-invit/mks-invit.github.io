@@ -1647,52 +1647,6 @@ function updateLoginUI() {
 
 
 
-// === FITUR BACKUP JSON (PENGGANTI CSV) ===
-function backupJSON() {
-    // 1. Cek ketersediaan data
-    if (!allData || allData.length === 0) { 
-        alert("Tidak ada data untuk dibackup."); 
-        return; 
-    }
-
-    // 2. Konfirmasi User
-    if (!confirm("Unduh file Backup Database (JSON)?\nFile ini berguna untuk memulihkan data jika terjadi kerusakan.")) return;
-
-    try {
-        // 3. Konversi Data Object ke String JSON yang rapi (pretty print)
-        const jsonContent = JSON.stringify(allData, null, 2);
-
-        // 4. Buat File Blob
-        const blob = new Blob([jsonContent], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        
-        // 5. Buat Link Download Palsu & Klik Otomatis
-        const link = document.createElement("a");
-        const dateStr = new Date().toISOString().slice(0,10); // Format YYYY-MM-DD
-        
-        link.href = url;
-        link.download = `Backup_Silsilah_Full_${dateStr}.json`; // Nama file
-        
-        document.body.appendChild(link);
-        link.click();
-        
-        // 6. Bersihkan
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-
-    } catch (e) {
-        console.error(e);
-        alert("Gagal membuat backup: " + e.message);
-    }
-}
-
-
-
-
-
-
-
-
 
 
     // === LOGIKA UI: ADMIN MENU TOGGLE ===
@@ -2167,84 +2121,104 @@ function generateColoredTree(person, prefix, isLast, isRoot, level, colors) {
         document.body.removeChild(link);
     }
 
-    // === FITUR EXPORT GEDCOM (KOMPATIBILITAS GLOBAL) ===
-    function exportGEDCOM() {
-        if (!allData || allData.length === 0) { alert("Data kosong."); return; }
-        if (!confirm("Export ke format GEDCOM 5.5.1?\nFile ini bisa diimpor ke MyHeritage, FamilySearch, atau Gramps.")) return;
 
-        let ged = "0 HEAD\n1 SOUR KeluargaBesarPGNApp\n1 GEDC\n2 VERS 5.5.1\n2 FORM LINEAGE-LINKED\n1 CHAR UTF-8\n";
-        
-        // 1. Buat Record INDI (Individu)
-        allData.forEach(p => {
-            // Bersihkan ID agar aman (ganti titik jadi underscore jika perlu, tapi GEDCOM modern support string)
-            // Kita gunakan ID asli tapi dibungkus @I...@
-            const safeId = p.id.replace(/\s/g, '_'); 
-            
-            ged += `0 @I${safeId}@ INDI\n`;
-            ged += `1 NAME ${p.name}\n`;
-            ged += `1 SEX ${p.gender === 'P' ? 'F' : 'M'}\n`;
-            
-            // Status Meninggal
-            if (p.isDead == 1) {
-                ged += `1 DEAT Y\n`;
-            }
+	
 
-            // Link ke Keluarga Orang Tua (FAMC) -> Sebagai Anak
-            if (p.parentId && p.parentId !== 'root') {
-                const safeParentId = p.parentId.replace(/\s/g, '_');
-                ged += `1 FAMC @F${safeParentId}@\n`;
-            }
+	
+// === FITUR BACKUP JSON (Tanpa Konfirmasi) ===
+function backupJSON() {
+    // 1. Cek ketersediaan data
+    if (!allData || allData.length === 0) { 
+        alert("Tidak ada data untuk dibackup."); 
+        return; 
+    }
 
-            // Link ke Keluarga Sendiri (FAMS) -> Sebagai Pasangan/Orang Tua
-            // Kita asumsikan ID Pria menjadi ID Keluarga
-            // Jika dia punya anak (ada data yang parentId-nya == p.id), maka dia punya record Family
-            const hasChildren = allData.some(d => d.parentId == p.id);
-            if (hasChildren) {
-                ged += `1 FAMS @F${safeId}@\n`;
-            }
-        });
+    // [Dihapus] Baris konfirmasi confirm() sudah dihilangkan
 
-        // 2. Buat Record FAM (Keluarga)
-        // Logika Sederhana: Setiap Pria yang punya anak adalah "Kepala Keluarga" (Husband)
-        // ID Keluarga = @F + ID Ayah
-        allData.forEach(p => {
-            const children = allData.filter(d => d.parentId == p.id);
-            
-            if (children.length > 0) {
-                const safeFid = p.id.replace(/\s/g, '_'); // ID Keluarga pakai ID Ayah
-                ged += `0 @F${safeFid}@ FAM\n`;
-                
-                // Assign Husband (Ayah)
-                ged += `1 HUSB @I${safeFid}@\n`;
-                
-                // Assign Wife (Ibu - Opsional/String)
-                // Karena data ibu kita string, GEDCOM butuh ID.
-                // Disini kita skip link WIFE @I...@ kecuali kita punya ID ibu di database.
-                // Tapi kita bisa masukkan nama ibu sebagai note atau jika ada ID-nya.
-                // Untuk saat ini kita fokus ke garis keturunan Ayah (Patrilineal) agar valid.
-
-                // Assign Children
-                children.forEach(ch => {
-                    const safeChId = ch.id.replace(/\s/g, '_');
-                    ged += `1 CHIL @I${safeChId}@\n`;
-                });
-            }
-        });
-
-        ged += "0 TRLR";
-
-        // Download File
-        const blob = new Blob([ged], { type: "text/plain;charset=utf-8" });
+    try {
+        const jsonContent = JSON.stringify(allData, null, 2);
+        const blob = new Blob([jsonContent], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
+        
         const link = document.createElement("a");
+        const dateStr = new Date().toISOString().slice(0,10); 
+        
         link.href = url;
-        const dateStr = new Date().toISOString().slice(0,10);
-        link.download = `Silsilah_PGN_${dateStr}.ged`;
+        link.download = `Backup_Silsilah_Full_${dateStr}.json`; 
+        
         document.body.appendChild(link);
         link.click();
+        
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+
+    } catch (e) {
+        console.error(e);
+        alert("Gagal membuat backup: " + e.message);
     }
+}
+
+// === FITUR EXPORT GEDCOM (Tanpa Konfirmasi) ===
+function exportGEDCOM() {
+    if (!allData || allData.length === 0) { alert("Data kosong."); return; }
+    
+    // [Dihapus] Baris konfirmasi confirm() sudah dihilangkan
+
+    let ged = "0 HEAD\n1 SOUR KeluargaBesarPGNApp\n1 GEDC\n2 VERS 5.5.1\n2 FORM LINEAGE-LINKED\n1 CHAR UTF-8\n";
+    
+    // 1. Buat Record INDI (Individu)
+    allData.forEach(p => {
+        const safeId = p.id.replace(/\s/g, '_'); 
+        
+        ged += `0 @I${safeId}@ INDI\n`;
+        ged += `1 NAME ${p.name}\n`;
+        ged += `1 SEX ${p.gender === 'P' ? 'F' : 'M'}\n`;
+        
+        if (p.isDead == 1) {
+            ged += `1 DEAT Y\n`;
+        }
+
+        if (p.parentId && p.parentId !== 'root') {
+            const safeParentId = p.parentId.replace(/\s/g, '_');
+            ged += `1 FAMC @F${safeParentId}@\n`;
+        }
+
+        const hasChildren = allData.some(d => d.parentId == p.id);
+        if (hasChildren) {
+            ged += `1 FAMS @F${safeId}@\n`;
+        }
+    });
+
+    // 2. Buat Record FAM (Keluarga)
+    allData.forEach(p => {
+        const children = allData.filter(d => d.parentId == p.id);
+        
+        if (children.length > 0) {
+            const safeFid = p.id.replace(/\s/g, '_'); 
+            ged += `0 @F${safeFid}@ FAM\n`;
+            ged += `1 HUSB @I${safeFid}@\n`;
+            
+            children.forEach(ch => {
+                const safeChId = ch.id.replace(/\s/g, '_');
+                ged += `1 CHIL @I${safeChId}@\n`;
+            });
+        }
+    });
+
+    ged += "0 TRLR";
+
+    // Download File Langsung
+    const blob = new Blob([ged], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const dateStr = new Date().toISOString().slice(0,10);
+    link.download = `Silsilah_PGN_${dateStr}.ged`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
 
 
 
