@@ -334,22 +334,33 @@
         
         
         
+
+		    <div id="admin-menu-options" class="absolute right-16 flex gap-3 transition-all duration-300 opacity-0 translate-x-10 pointer-events-none scale-90 origin-right items-center">
         
-     <div id="admin-menu-options" class="absolute right-16 flex gap-3 transition-all duration-300 opacity-0 translate-x-10 pointer-events-none scale-90 origin-right">
-    
-    <button onclick="triggerRestore()" class="w-12 h-12 rounded-full bg-purple-600 text-white shadow-lg flex items-center justify-center hover:bg-purple-700 hover:scale-110 transition-all duration-200 group/item" title="Restore Data">
-        <i class="fas fa-upload"></i>
-        <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Restore JSON</span>
-    </button>
-    
-    <input type="file" id="restore-file-input" class="hidden" accept=".json" onchange="handleRestoreFile(this)">
+        <button onclick="exportGEDCOM()" class="w-12 h-12 rounded-full bg-sky-500 text-white shadow-lg flex items-center justify-center hover:bg-sky-600 hover:scale-110 transition-all duration-200 group/item" title="Export GEDCOM (MyHeritage/FamilySearch)">
+            <i class="fas fa-project-diagram"></i>
+            <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Export GEDCOM</span>
+        </button>
 
-    <button onclick="backupJSON()" class="w-12 h-12 rounded-full bg-slate-600 text-white shadow-lg flex items-center justify-center hover:bg-slate-700 hover:scale-110 transition-all duration-200 group/item" title="Backup Data JSON">
-        <i class="fas fa-file-code"></i>
-        <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Backup JSON</span>
-    </button>
+        <button onclick="exportCSV()" class="w-12 h-12 rounded-full bg-emerald-500 text-white shadow-lg flex items-center justify-center hover:bg-emerald-600 hover:scale-110 transition-all duration-200 group/item" title="Export ke Excel (CSV)">
+            <i class="fas fa-file-csv"></i>
+            <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Export CSV</span>
+        </button>
 
-</div>
+        <button onclick="triggerRestore()" class="w-12 h-12 rounded-full bg-purple-600 text-white shadow-lg flex items-center justify-center hover:bg-purple-700 hover:scale-110 transition-all duration-200 group/item" title="Restore Data">
+            <i class="fas fa-upload"></i>
+            <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Restore JSON</span>
+        </button>
+        
+        <input type="file" id="restore-file-input" class="hidden" accept=".json" onchange="handleRestoreFile(this)">
+
+        <button onclick="backupJSON()" class="w-12 h-12 rounded-full bg-slate-600 text-white shadow-lg flex items-center justify-center hover:bg-slate-700 hover:scale-110 transition-all duration-200 group/item" title="Backup Data JSON">
+            <i class="fas fa-file-code"></i>
+            <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Backup JSON</span>
+        </button>
+
+    </div>
+
 
         
 
