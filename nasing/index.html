@@ -2158,15 +2158,17 @@ function backupJSON() {
     }
 }
 
-// === FITUR EXPORT GEDCOM (Tanpa Konfirmasi) ===
+
+
+
+	// === FITUR EXPORT GEDCOM (Metode Langsung seperti CSV) ===
 function exportGEDCOM() {
     if (!allData || allData.length === 0) { alert("Data kosong."); return; }
     
-    // [Dihapus] Baris konfirmasi confirm() sudah dihilangkan
-
+    // 1. HEADER GEDCOM
     let ged = "0 HEAD\n1 SOUR KeluargaBesarPGNApp\n1 GEDC\n2 VERS 5.5.1\n2 FORM LINEAGE-LINKED\n1 CHAR UTF-8\n";
     
-    // 1. Buat Record INDI (Individu)
+    // 2. LOOP DATA INDIVIDU (INDI)
     allData.forEach(p => {
         const safeId = p.id.replace(/\s/g, '_'); 
         
@@ -2189,7 +2191,7 @@ function exportGEDCOM() {
         }
     });
 
-    // 2. Buat Record FAM (Keluarga)
+    // 3. LOOP DATA KELUARGA (FAM)
     allData.forEach(p => {
         const children = allData.filter(d => d.parentId == p.id);
         
@@ -2207,17 +2209,19 @@ function exportGEDCOM() {
 
     ged += "0 TRLR";
 
-    // Download File Langsung
-    const blob = new Blob([ged], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
+    // 4. DOWNLOAD LANGSUNG (Logic sama persis dengan CSV)
+    // Menggunakan encodeURIComponent agar karakter khusus aman
+    const uriContent = "data:text/plain;charset=utf-8," + encodeURIComponent(ged);
+    
     const link = document.createElement("a");
-    link.href = url;
+    link.setAttribute("href", uriContent);
+    
     const dateStr = new Date().toISOString().slice(0,10);
-    link.download = `Silsilah_PGN_${dateStr}.ged`;
+    link.setAttribute("download", `Silsilah_PGN_${dateStr}.ged`);
+    
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
 }
 
 
