@@ -2133,6 +2133,121 @@ function generateColoredTree(person, prefix, isLast, isRoot, level, colors) {
 
 
 
+			    // === FITUR EXPORT CSV (EXCEL) ===
+    function exportCSV() {
+        if (!allData || allData.length === 0) { alert("Data kosong."); return; }
+        
+        // Header CSV
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "ID,Nama,Jenis Kelamin,Parent ID,Pasangan,Ibu,Urutan Lahir,Status Pernikahan,Status Hidup\n";
+
+        allData.forEach(row => {
+            // Kita bungkus setiap field dengan tanda kutip untuk menangani koma dalam nama
+            const cols = [
+                `"${row.id || ''}"`,
+                `"${row.name || ''}"`,
+                `"${row.gender || 'L'}"`,
+                `"${row.parentId || ''}"`,
+                `"${row.spouse || ''}"`,
+                `"${row.motherName || ''}"`,
+                `"${row.birthOrder || ''}"`,
+                `"${row.maritalStatus || ''}"`,
+                `"${row.isDead == 1 ? 'Meninggal' : 'Hidup'}"`
+            ];
+            csvContent += cols.join(",") + "\r\n";
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        const dateStr = new Date().toISOString().slice(0,10);
+        link.setAttribute("download", `Data_Keluarga_PGN_${dateStr}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // === FITUR EXPORT GEDCOM (KOMPATIBILITAS GLOBAL) ===
+    function exportGEDCOM() {
+        if (!allData || allData.length === 0) { alert("Data kosong."); return; }
+        if (!confirm("Export ke format GEDCOM 5.5.1?\nFile ini bisa diimpor ke MyHeritage, FamilySearch, atau Gramps.")) return;
+
+        let ged = "0 HEAD\n1 SOUR KeluargaBesarPGNApp\n1 GEDC\n2 VERS 5.5.1\n2 FORM LINEAGE-LINKED\n1 CHAR UTF-8\n";
+        
+        // 1. Buat Record INDI (Individu)
+        allData.forEach(p => {
+            // Bersihkan ID agar aman (ganti titik jadi underscore jika perlu, tapi GEDCOM modern support string)
+            // Kita gunakan ID asli tapi dibungkus @I...@
+            const safeId = p.id.replace(/\s/g, '_'); 
+            
+            ged += `0 @I${safeId}@ INDI\n`;
+            ged += `1 NAME ${p.name}\n`;
+            ged += `1 SEX ${p.gender === 'P' ? 'F' : 'M'}\n`;
+            
+            // Status Meninggal
+            if (p.isDead == 1) {
+                ged += `1 DEAT Y\n`;
+            }
+
+            // Link ke Keluarga Orang Tua (FAMC) -> Sebagai Anak
+            if (p.parentId && p.parentId !== 'root') {
+                const safeParentId = p.parentId.replace(/\s/g, '_');
+                ged += `1 FAMC @F${safeParentId}@\n`;
+            }
+
+            // Link ke Keluarga Sendiri (FAMS) -> Sebagai Pasangan/Orang Tua
+            // Kita asumsikan ID Pria menjadi ID Keluarga
+            // Jika dia punya anak (ada data yang parentId-nya == p.id), maka dia punya record Family
+            const hasChildren = allData.some(d => d.parentId == p.id);
+            if (hasChildren) {
+                ged += `1 FAMS @F${safeId}@\n`;
+            }
+        });
+
+        // 2. Buat Record FAM (Keluarga)
+        // Logika Sederhana: Setiap Pria yang punya anak adalah "Kepala Keluarga" (Husband)
+        // ID Keluarga = @F + ID Ayah
+        allData.forEach(p => {
+            const children = allData.filter(d => d.parentId == p.id);
+            
+            if (children.length > 0) {
+                const safeFid = p.id.replace(/\s/g, '_'); // ID Keluarga pakai ID Ayah
+                ged += `0 @F${safeFid}@ FAM\n`;
+                
+                // Assign Husband (Ayah)
+                ged += `1 HUSB @I${safeFid}@\n`;
+                
+                // Assign Wife (Ibu - Opsional/String)
+                // Karena data ibu kita string, GEDCOM butuh ID.
+                // Disini kita skip link WIFE @I...@ kecuali kita punya ID ibu di database.
+                // Tapi kita bisa masukkan nama ibu sebagai note atau jika ada ID-nya.
+                // Untuk saat ini kita fokus ke garis keturunan Ayah (Patrilineal) agar valid.
+
+                // Assign Children
+                children.forEach(ch => {
+                    const safeChId = ch.id.replace(/\s/g, '_');
+                    ged += `1 CHIL @I${safeChId}@\n`;
+                });
+            }
+        });
+
+        ged += "0 TRLR";
+
+        // Download File
+        const blob = new Blob([ged], { type: "text/plain;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        const dateStr = new Date().toISOString().slice(0,10);
+        link.download = `Silsilah_PGN_${dateStr}.ged`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+
+
 
 
     // --- PWA REGISTRATION ---
