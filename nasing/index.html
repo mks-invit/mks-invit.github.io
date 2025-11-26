@@ -120,13 +120,20 @@
 <div class="max-w-4xl mx-auto pb-6">
     <header class="text-center mb-6 mt-4">
         <div class="mb-4 px-4"><h4 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-gray-100 m-0 font-serif tracking-wide leading-tight">Keluarga Besar Puang Guru Nasing</h4></div>
+        
         <div class="flex justify-center items-center gap-4 mb-6">
             <button onclick="fetchData()" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
+            
+            <button id="btn-expand-toggle" onclick="toggleExpandAll()" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-purple-500 hover:text-white hover:border-purple-500 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300" title="Buka Semua">
+                <i id="icon-expand" class="fas fa-expand"></i>
+            </button>
+
             <button id="theme-btn" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-slate-700 hover:text-white hover:border-slate-700 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300" title="Ganti Tema"><i class="fas fa-moon"></i></button>
             <button id="btn-login-trigger" onclick="openLoginModal()" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-green-600 hover:bg-green-600 hover:text-white hover:border-green-600 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-green-400" title="Login Admin"><i class="fas fa-lock"></i></button>
             <button id="btn-logout-trigger" onclick="doLogout()" class="hidden w-10 h-10 rounded-full border border-red-300 bg-white text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600" title="Keluar"><i class="fas fa-sign-out-alt"></i></button>
             <button id="btn-install-app" onclick="installPWA()" class="hidden w-10 h-10 rounded-full border border-teal-400 text-teal-600 hover:bg-teal-600 hover:text-white flex items-center justify-center transition-all duration-200 shadow-sm" title="Install Aplikasi"><i class="fas fa-download"></i></button>
         </div>
+
         <div id="stats-container" class="hidden animate-slide-down mb-6">
             <div class="grid grid-cols-4 gap-2 max-w-2xl mx-auto">
                 <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow border-b-4 border-primary text-center"><div class="text-[10px] text-gray-500 uppercase">Total</div><div class="text-xl font-bold text-slate-700 dark:text-white" id="stat-total">0</div></div>
@@ -247,9 +254,10 @@
     <div class="relative">
         <input type="text" id="inp-mother" class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-400 text-sm" placeholder="Ketik min. 3 huruf..." autocomplete="off" oninput="handleSpouseInputWrapper(this)">
         
-        <div id="mother-spouse-warning" class="hidden mt-1 p-2 bg-yellow-50 dark:bg-yellow-900/30 border-l-2 border-yellow-500 text-[10px] text-yellow-700 dark:text-yellow-300 font-bold animate-pulse">
-            <i class="fas fa-exclamation-triangle mr-1"></i> Hati-hati Nama pasangan ada dalam keluarga. Pastikan!!!
-        </div>
+        <div id="mother-spouse-warning" class="hidden mt-1.5 w-full p-2 bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-500 text-xs text-yellow-700 dark:text-yellow-300 font-bold rounded-r flex items-center shadow-sm animate-pulse">
+    <i class="fas fa-exclamation-triangle mr-2 text-lg"></i>
+    <span>Hati-hati! Nama ini atau Nama Ibunya sudah tercatat di silsilah.</span>
+</div>
     </div>
     <p class="text-[10px] text-gray-400 mt-1">*Pilih dari daftar untuk menautkan data secara otomatis</p>
 </div>
@@ -387,6 +395,12 @@ function renderTree() {
     
     fragment.appendChild(ul); // Masukkan UL ke Fragment
     c.appendChild(fragment);  // Tempel ke Layar SEKALI saja (Jauh lebih cepat)
+    
+    // === TAMBAHKAN BAGIAN RESET INI DI AKHIR FUNGSI ===
+    isExpandedGlobal = false; // Reset state
+    const iconExpand = document.getElementById('icon-expand');
+    if(iconExpand) iconExpand.classList.replace('fa-compress', 'fa-expand');
+    // ==================================================
 }
 
     
@@ -449,6 +463,52 @@ function renderTree() {
             const h = ul.classList.contains('hidden'); ul.classList.toggle('hidden'); ul.classList.toggle('block'); ul.classList.toggle('animate-slide-down', h); 
             b.innerHTML = h ? '<i class="fas fa-chevron-down"></i>' : '<i class="fas fa-chevron-right"></i>'; 
         } 
+    }
+    
+    // --- FITUR EXPAND/COLLAPSE ALL ---
+    let isExpandedGlobal = false;
+
+    function toggleExpandAll() {
+        const btnIcon = document.getElementById('icon-expand');
+        const btn = document.getElementById('btn-expand-toggle');
+        
+        // Toggle State
+        isExpandedGlobal = !isExpandedGlobal;
+
+        if (isExpandedGlobal) {
+            // --- AKSI: BUKA SEMUA (EXPAND) ---
+            
+            // 1. Ambil semua container anak yang tersembunyi
+            const allUls = document.querySelectorAll('.children-container');
+            allUls.forEach(ul => {
+                ul.classList.remove('hidden');
+                ul.classList.add('block', 'animate-slide-down');
+            });
+
+            // 2. Ubah semua panah menjadi ke bawah
+            const allBtns = document.querySelectorAll('.toggle-btn');
+            allBtns.forEach(b => {
+                // Hanya ubah jika tombol tersebut memiliki icon chevron (bukan dot/titik)
+                if(b.querySelector('.fa-chevron-right')) {
+                    b.innerHTML = '<i class="fas fa-chevron-down"></i>';
+                }
+            });
+
+            // 3. Update Icon Tombol Utama
+            btnIcon.classList.replace('fa-expand', 'fa-compress');
+            btn.title = "Tutup Semua (Collapse)";
+            
+        } else {
+            // --- AKSI: TUTUP SEMUA (COLLAPSE) ---
+            // Cara paling aman dan bersih adalah merender ulang pohon ke kondisi awal
+            renderTree();
+            
+            // Reset Icon Tombol Utama (renderTree akan me-reset konten, tapi kita perlu reset icon tombol ini manual)
+            // (Code reset icon sebenarnya sudah dihandle di dalam update renderTree di bawah, 
+            // tapi untuk keamanan kita set juga disini)
+            btnIcon.classList.replace('fa-compress', 'fa-expand');
+            btn.title = "Buka Semua (Expand)";
+        }
     }
 
     function traceLineage(id, event) {
@@ -565,7 +625,7 @@ function checkSpouseWarning(input) {
     // B. LOGIKA UNTUK INPUT DINAMIS (ANAK)
     else {
         // Cari elemen pembungkus terdekat bernama 'spouse-entry'
-        const entry = input.closest('.spouse-entry');
+        const entry = input.closest('.spouse-row');
         if (entry) {
             // Cari warning di dalam pembungkus tersebut
             warningEl = entry.querySelector('.spouse-warning');
@@ -576,6 +636,7 @@ function checkSpouseWarning(input) {
 
     if (val.length < 2) {
         warningEl.classList.add('hidden');
+        warningEl.classList.remove('flex');
         return;
     }
 
@@ -593,6 +654,7 @@ function checkSpouseWarning(input) {
         warningEl.classList.remove('flex');
     }
 }
+
 
 
 
@@ -678,7 +740,10 @@ function addChildInputRow(n="", spousesStr="", isDead=0, gender="L", order="", m
             <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Nama Lengkap</label>
             <div class="relative">
                 <input type="text" class="inp-child-name w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white shadow-sm" placeholder="Nama anak..." value="${n}" autocomplete="off" oninput="handleChildNameInput(this)">
-                <div class="duplicate-warning hidden mt-1 text-[10px] text-red-600 dark:text-red-400 font-bold flex items-center animate-pulse"></div>
+                
+                <div class="duplicate-warning hidden mt-1 text-[10px] text-red-600 dark:text-red-400 font-bold flex items-center animate-pulse">
+                    <i class="fas fa-times-circle mr-1"></i> Error: Nama ini sudah terdaftar!
+                </div>
             </div>
         </div>
 
@@ -705,8 +770,7 @@ function addChildInputRow(n="", spousesStr="", isDead=0, gender="L", order="", m
                     <i class="fas fa-plus mr-1"></i>Tambah
                 </button>
             </div>
-            <div class="spouses-container space-y-2 empty:text-center empty:py-2">
-                </div>
+            <div class="spouses-container space-y-2 empty:text-center empty:py-2"></div>
             <div class="empty-msg hidden text-[10px] text-gray-400 text-center italic">Belum ada pasangan</div>
         </div>
     `;
@@ -746,10 +810,9 @@ function addChildInputRow(n="", spousesStr="", isDead=0, gender="L", order="", m
 function addSpouseRow(container, name = "", status = "Menikah") {
     if (!container) return;
 
-    // KITA BUAT WRAPPER UTAMA (spouse-entry)
+    // Wrapper Utama (Kita namakan class 'spouse-row' agar fungsi simpan data tetap jalan)
     const wrapper = document.createElement('div');
-    // Class 'spouse-entry' penting untuk referensi saat menghapus/mencari warning
-    wrapper.className = "spouse-entry mb-3 animate-slide-down border-b border-gray-100 dark:border-gray-700 pb-2 last:border-0"; 
+    wrapper.className = "spouse-row mb-3 animate-slide-down border-b border-gray-100 dark:border-gray-700 pb-2 last:border-0"; 
     
     const opts = ['Menikah', 'Cerai Hidup', 'Cerai Mati', 'Belum Menikah'];
     const optionsHtml = opts.map(o => `<option value="${o}" ${status === o ? 'selected' : ''}>${o}</option>`).join('');
@@ -768,14 +831,14 @@ function addSpouseRow(container, name = "", status = "Menikah") {
                 </select>
             </div>
 
-            <button type="button" class="w-9 h-9 flex-shrink-0 bg-red-100 text-red-500 rounded hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center border border-red-200" onclick="this.closest('.spouse-entry').remove()">
+            <button type="button" class="w-9 h-9 flex-shrink-0 bg-red-100 text-red-500 rounded hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center border border-red-200" onclick="this.closest('.spouse-row').remove()">
                 <i class="fas fa-trash-alt text-xs"></i>
             </button>
         </div>
 
         <div class="spouse-warning hidden mt-1.5 w-full p-2 bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-500 text-xs text-yellow-700 dark:text-yellow-300 font-bold rounded-r flex items-center shadow-sm">
             <i class="fas fa-exclamation-triangle mr-2 text-lg"></i>
-            <span>Hati-hati! Nama ini sudah tercatat di silsilah.</span>
+            <span>Hati-hati! Nama ini atau Nama Ibunya sudah tercatat di silsilah.</span>
         </div>
     `;
 
@@ -813,17 +876,6 @@ function addSpouseRow(container, name = "", status = "Menikah") {
             const femaleKeywords = [ "hj.", "hajjah", "ustadzah", "ibu", "bunda", "mama", "tante", "mbak", "neng", "teteh", "nyai", "ratu", "besse", "tenri", "we", "indo", "tara", "kebo", "te'ne", "baji", "kanang", "caya", "puji", "sangi", "bunga", "intan", "ratna", "somsung", "bannang", "bau", "opuu", "daeng te'ne", "dg. te'ne", "daeng baji", "dg. baji", "daeng caya", "dg. caya", "daeng kanang", "dg. kanang", "siti", "st.", "st ", "nur", "nurul", "fatimah", "aisyah", "khadijah", "zahra", "annisa", "nisa", "rahma", "syifa", "laila", "salma", "hana", "hani", "sholeha", "marwah", "safira", "zakia", "wardah", "aminah", "amirah", "aqila", "azzahra", "bilqis", "dzakiyah", "farida", "fauziah", "hafizah", "halimah", "humaira", "iffah", "jamilah", "kalila", "karimah", "latifah", "maimunah", "mardhiah", "nabilah", "nadia", "najwa", "qonita", "raihana", "ruqayyah", "sakinah", "shofia", "tsabita", "ummi", "yasmin", "zulaikha", "zulfa", "putri", "ayu", "wati", "yanti", "susi", "rini", "rina", "dewi", "sari", "indah", "mawar", "melati", "lestari", "puspita", "anggun", "ningsih", "sulastri", "ratna", "diana", "rara", "rere", "kiki", "vivi", "nova", "maya", "tari", "gina", "feni", "lia", "nia", "tia", "sifa", "zaskia", "shireen", "luna", "sandra", "olga", "cinta", "kasih", "bunga", "intan", "mutiara", "berlian", "tiara", "amel", "amelia", "anita", "desi", "fitri", "fani", "gita", "ika", "jessica", "kartika", "linda", "mega", "nadia", "olive", "puput", "qori", "riska", "siska", "tina", "ulan", "viona", "winda", "yulia", "zara", "angel", "bella", "citra", "dina", "elsi", "friska", "grace", "helen", "ivana", "jelita", "karin", "lidya", "mona", "novi", "ola"];
             if (maleKeywords.some(key => nameVal.includes(key))) predicted = "L";
             if (femaleKeywords.some(key => nameVal.includes(key))) predicted = "P";
-        }
-
-        // TAHAP 3: AI HEURISTIK (POLA AKHIRAN)
-        if (predicted === "" && nameVal.length > 3) {
-            const lastChar = nameVal.slice(-1); const lastTwo = nameVal.slice(-2);        
-            const maleExceptions = ["indra", "surya", "wira", "bima", "arjuna", "dewa", "prama", "jaka", "reza", "aditya", "budi", "ferdi", "jefri", "rifki", "diki", "aldi", "ari", "hari", "herri", "andre", "ade", "gede", "made", "yuda", "yoga", "angga", "rangga", "satria", "mahendra"];
-            if (maleExceptions.some(ex => nameVal.includes(ex))) { predicted = "L"; } else {
-                const isConsonant = /[bcdfghjklmnpqrstvwxyz]/.test(lastChar);
-                if (lastChar === 'o' || lastChar === 'u') { predicted = "L"; } else if (isConsonant && lastTwo !== 'ah') { predicted = "L"; }
-                if (lastChar === 'a' || lastChar === 'e') { predicted = "P"; } else if (lastTwo === 'ah' || lastTwo === 'ti' || lastTwo === 'ni' || lastTwo === 'na' || lastTwo === 'wi' || lastTwo === 'li') { predicted = "P"; } else if (lastChar === 'i') { predicted = "P"; }
-            }
         }
 
         // EKSEKUSI UI
@@ -950,15 +1002,14 @@ function submitData() {
     const rows = document.querySelectorAll('.child-input-row'); 
     const childrenData = [];
 
-    // Loop setiap kartu anak
     rows.forEach(r => { 
         const nInput = r.querySelector('.inp-child-name');
         const n = nInput ? nInput.value.trim() : "";
         
-        // --- AMBIL DATA PASANGAN ---
+        // --- LOGIKA BARU: KUMPULKAN SEMUA STATUS DULU ---
         const spouseRows = r.querySelectorAll('.spouse-row');
         let spouseList = [];
-        let globalMaritalStatus = "Lajang"; // Default
+        let collectedStatuses = []; // Array untuk menampung semua status pasangan
 
         spouseRows.forEach(sr => {
             const sNameInp = sr.querySelector('.inp-spouse-name');
@@ -968,19 +1019,31 @@ function submitData() {
             const sStatus = sStatusInp ? sStatusInp.value : "Menikah";
             
             if (sName) {
-                // Simpan format string: "Nama (Status)"
+                // Simpan format: "Nama (Status)"
                 spouseList.push(`${sName} (${sStatus})`);
-                
-                // Update status global
-                if (sStatus === 'Menikah') globalMaritalStatus = "Menikah";
-                else if (globalMaritalStatus !== 'Menikah' && (sStatus.includes('Cerai'))) {
-                    globalMaritalStatus = sStatus;
-                }
+                // Masukkan ke koleksi status
+                collectedStatuses.push(sStatus);
             }
         });
         
         const sFinal = spouseList.join(', ');
-        // ---------------------------
+
+        // --- HITUNG STATUS GLOBAL (PRIORITAS) ---
+        let globalMaritalStatus = "Lajang";
+        
+        if (collectedStatuses.length > 0) {
+            if (collectedStatuses.includes("Menikah")) {
+                // Jika ada setidaknya satu yang "Menikah", status utama = Menikah
+                globalMaritalStatus = "Menikah";
+            } else if (collectedStatuses.some(s => s.includes("Cerai"))) {
+                // Jika tidak ada yang Menikah, tapi ada "Cerai...", ambil status Cerai yang pertama ditemukan
+                globalMaritalStatus = collectedStatuses.find(s => s.includes("Cerai"));
+            } else if (collectedStatuses.includes("Belum Menikah")) {
+                 // Fallback jarang terjadi
+                 globalMaritalStatus = "Belum Menikah";
+            }
+        }
+        // ----------------------------------------
 
         const deadCheck = r.querySelector('.inp-child-dead');
         const isDead = deadCheck ? deadCheck.checked : false;
@@ -998,7 +1061,7 @@ function submitData() {
                 isDead: isDead, 
                 gender: genderVal, 
                 birthOrder: order, 
-                maritalStatus: globalMaritalStatus 
+                maritalStatus: globalMaritalStatus // Status hasil perhitungan prioritas
             }); 
         }
     });
@@ -1014,7 +1077,6 @@ function submitData() {
         pl.parentId = document.getElementById('inp-parent').value; 
         pl.children = childrenData; 
     } else { 
-        // Mode Edit: Hanya ambil anak pertama (karena edit per ID)
         pl.id = document.getElementById('inp-id').value; 
         pl.name = childrenData[0].name; 
         pl.spouse = childrenData[0].spouse; 
@@ -1164,21 +1226,51 @@ function submitData() {
 
     function showResult(title, desc) { document.getElementById('calc-result').classList.remove('hidden'); document.getElementById('res-title').innerText = title; document.getElementById('res-desc').innerHTML = desc; }
 
-    function openDetailPopup(id, event) {
-        if(event) event.stopPropagation();
-        const p = allData.find(d => d.id == id); if(!p) return;
-        const modal = document.getElementById('detail-modal'); modal.classList.remove('hidden'); modal.classList.add('flex');
-        document.getElementById('det-name').textContent = p.name;
-        const spouseDisplay = p.spouse ? p.spouse.split(',').map(s => s.trim()).join(' & ') : "Belum ada pasangan terdata";
-        document.getElementById('det-spouse').textContent = "Pasangan: " + spouseDisplay;
-        const isMale = (p.gender !== 'P'); const iconClass = isMale ? "fa-user-tie text-blue-500" : "fa-user-nurse text-pink-500";
-        document.getElementById('det-avatar').innerHTML = `<i class="fas ${iconClass}"></i>`;
-        document.getElementById('det-gender').textContent = isMale ? "Laki-laki" : "Perempuan";
-        document.getElementById('det-order').textContent = p.birthOrder ? "Anak ke-" + p.birthOrder : "-";
-        const statusEl = document.getElementById('det-status'); const statusRow = statusEl.parentElement; 
-        if (p.isDead == 1) { statusRow.classList.add('hidden'); } else { statusRow.classList.remove('hidden'); let statusDisplay = p.maritalStatus || "Lajang"; if (statusDisplay === "Lajang" || statusDisplay === "Belum Menikah") { statusDisplay = isMale ? "Lajang (Perjaka)" : "Gadis"; } statusEl.textContent = statusDisplay; }
-        const condEl = document.getElementById('det-condition'); condEl.textContent = (p.isDead == 1) ? "Meninggal Dunia (Alm/Almh)" : "Masih Hidup"; condEl.className = (p.isDead == 1) ? "font-semibold text-red-500" : "font-semibold text-green-600";
+function openDetailPopup(id, event) {
+    if(event) event.stopPropagation();
+    const p = allData.find(d => d.id == id); if(!p) return;
+    
+    const modal = document.getElementById('detail-modal'); 
+    modal.classList.remove('hidden'); 
+    modal.classList.add('flex');
+    
+    document.getElementById('det-name').textContent = p.name;
+    
+    const spouseDisplay = p.spouse ? p.spouse.split(',').map(s => s.trim()).join(' & ') : "Belum ada pasangan terdata";
+    document.getElementById('det-spouse').textContent = "Pasangan: " + spouseDisplay;
+    
+    const isMale = (p.gender !== 'P'); 
+    const iconClass = isMale ? "fa-user-tie text-blue-500" : "fa-user-nurse text-pink-500";
+    document.getElementById('det-avatar').innerHTML = `<i class="fas ${iconClass}"></i>`;
+    
+    document.getElementById('det-gender').textContent = isMale ? "Laki-laki" : "Perempuan";
+    document.getElementById('det-order').textContent = p.birthOrder ? "Anak ke-" + p.birthOrder : "-";
+    
+    const statusEl = document.getElementById('det-status'); 
+    const statusRow = statusEl.parentElement; 
+    
+    if (p.isDead == 1) { 
+        statusRow.classList.add('hidden'); 
+    } else { 
+        statusRow.classList.remove('hidden'); 
+        
+        // Ambil status dari database, default Lajang jika kosong
+        let rawStatus = p.maritalStatus || "Lajang";
+        let displayStatus = rawStatus;
+
+        // Hanya ubah jadi "Gadis/Perjaka" jika status aslinya MEMANG "Lajang"
+        if (rawStatus === "Lajang" || rawStatus === "Belum Menikah") { 
+            displayStatus = isMale ? "Lajang (Perjaka)" : "Gadis"; 
+        }
+        // Jika statusnya "Cerai Hidup" atau "Cerai Mati", dia akan tampil apa adanya
+        
+        statusEl.textContent = displayStatus; 
     }
+    
+    const condEl = document.getElementById('det-condition'); 
+    condEl.textContent = (p.isDead == 1) ? "Meninggal Dunia (Alm/Almh)" : "Masih Hidup"; 
+    condEl.className = (p.isDead == 1) ? "font-semibold text-red-500" : "font-semibold text-green-600";
+}
 
     let isAdminMenuOpen = false;
     function toggleAdminMenu() {
