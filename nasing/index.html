@@ -404,57 +404,109 @@ function renderTree() {
     // ==================================================
 }
 
+function createNode(p, lvl) {
+    const li = document.createElement('li'); 
+    li.className = 'my-3'; li.setAttribute('data-id', p.id); li.classList.add('node-card'); 
     
-    function createNode(p, lvl) {
-        const li = document.createElement('li'); 
-        li.className = 'my-3'; li.setAttribute('data-id', p.id); li.classList.add('node-card'); 
-        let children = allData.filter(d => d.parentId == p.id || (d.motherName && d.motherName.trim() === p.name));
-        children.sort((a, b) => {
-            const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999;
-            const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999;
-            return orderA - orderB;
-        });
-        let genderClass = 'border-l-4 border-l-gray-300';
-        if (p.gender === 'L') { genderClass = 'border-l-4 border-l-blue-400'; } else if (p.gender === 'P') { genderClass = 'border-l-4 border-l-pink-400'; }
-        const traceBtn = `<button class="w-7 h-7 rounded-full bg-white/80 text-orange-500 hover:bg-orange-500 hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-orange-400 dark:hover:bg-orange-500 border border-orange-200 dark:border-orange-900 shadow-sm" onclick="traceLineage('${p.id}', event)" title="Telusuri Jalur"><i class="fas fa-shoe-prints text-[10px]"></i></button>`;
-        const isDeceased = p.isDead == 1;
-        const nisanHtml = isDeceased ? `<div class="mt-1 text-gray-500 dark:text-gray-400 text-center" title="Almarhum/ah"><i class="fas fa-monument text-xs"></i></div>` : '';
-        const statusContainer = `<div class="flex flex-col items-center justify-center px-2 mx-1 border-l border-dashed border-gray-300 dark:border-gray-600 gap-0.5">${traceBtn}${nisanHtml}</div>`;
-        let pLabel = '';
-        if (p.parentId && p.parentId !== 'root') {
-            const f = allData.find(d => d.id === p.parentId); 
-            let partnerName = "???";
-            if (p.motherName && p.motherName.trim() !== '' && p.motherName.trim() !== '-') { partnerName = p.motherName; } else if (f && f.spouse) { partnerName = f.spouse.split(',')[0]; }
-            pLabel = `<span class="block text-[0.7rem] uppercase text-gray-500 dark:text-gray-400 mb-0.5">Anak dari: <strong class="text-slate-700 dark:text-gray-200">${f ? f.name : '???'}</strong> & <strong class="text-slate-700 dark:text-gray-200">${partnerName}</strong></span>`;
-        } else { pLabel = `<span class="block text-[0.7rem] uppercase text-primary mb-0.5">ð Leluhur Utama</span>`; }
-        let spHtml = ''; 
-        if (p.spouse) p.spouse.split(',').forEach(s => { if(s.trim()) spHtml += `<span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-white/60 text-pink-600 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800 cursor-default mr-1 mt-1"><i class="fas fa-heart mr-1 text-[0.6rem]"></i> ${s.trim()}</span>`; });
-        const clr = ['bg-slate-100 border-slate-400 dark:bg-slate-800 dark:border-slate-500', 'bg-blue-50 border-blue-400 dark:bg-blue-900/20 dark:border-blue-500', 'bg-emerald-50 border-emerald-400 dark:bg-emerald-900/20 dark:border-emerald-500', 'bg-amber-50 border-amber-400 dark:bg-amber-900/20 dark:border-amber-500', 'bg-purple-50 border-purple-400 dark:bg-purple-900/20 dark:border-purple-500', 'bg-rose-50 border-rose-400 dark:bg-rose-900/20 dark:border-rose-500'];
-        const cardColor = clr[lvl % clr.length];
-        let adminBtns = '';
-        if (isLoggedIn) {
-            const role = localStorage.getItem('userRole');
-            const btnEdit = `<button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('edit','${p.id}')" title="Edit Data"><i class="fas fa-pen text-xs"></i></button>`;
-            const btnAdd = `<button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('add','${p.id}')" title="Tambah Keturunan"><i class="fas fa-plus text-xs"></i></button>`;
-            const btnDel = (lvl > 0) ? `<button class="w-8 h-8 rounded-full bg-red-100 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors dark:bg-red-900/40 dark:hover:bg-red-600" onclick="deleteItem('${p.id}')" title="Hapus Data"><i class="fas fa-trash text-xs"></i></button>` : '';
-            let buttonsToShow = '';
-            if (role === 'super' || role === 'master') { buttonsToShow = `${btnEdit}${btnAdd}${btnDel}`; } else if (role === 'editor') { buttonsToShow = `${btnEdit}`; }
-            adminBtns = `<div class="flex items-center gap-1 ml-1 border-l border-gray-300/50 pl-2">${buttonsToShow}</div>`;
+    // Sorting anak
+    let children = allData.filter(d => d.parentId == p.id || (d.motherName && d.motherName.trim() === p.name));
+    children.sort((a, b) => {
+        const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999;
+        const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999;
+        return orderA - orderB;
+    });
+
+    let genderClass = 'border-l-4 border-l-gray-300';
+    if (p.gender === 'L') { genderClass = 'border-l-4 border-l-blue-400'; } else if (p.gender === 'P') { genderClass = 'border-l-4 border-l-pink-400'; }
+    
+    const traceBtn = `<button class="w-7 h-7 rounded-full bg-white/80 text-orange-500 hover:bg-orange-500 hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-orange-400 dark:hover:bg-orange-500 border border-orange-200 dark:border-orange-900 shadow-sm" onclick="traceLineage('${p.id}', event)" title="Telusuri Jalur"><i class="fas fa-shoe-prints text-[10px]"></i></button>`;
+    const isDeceased = p.isDead == 1;
+    const nisanHtml = isDeceased ? `<div class="mt-1 text-gray-500 dark:text-gray-400 text-center" title="Almarhum/ah"><i class="fas fa-monument text-xs"></i></div>` : '';
+    const statusContainer = `<div class="flex flex-col items-center justify-center px-2 mx-1 border-l border-dashed border-gray-300 dark:border-gray-600 gap-0.5">${traceBtn}${nisanHtml}</div>`;
+    
+    // --- UPDATE BAGIAN INI (Label Anak Dari) ---
+    let pLabel = '';
+    if (p.parentId && p.parentId !== 'root') {
+        const f = allData.find(d => d.id === p.parentId); 
+        let partnerName = "???";
+
+        // Prioritas 1: Ambil dari kolom 'Nama Ibu' anak tsb
+        if (p.motherName && p.motherName.trim() !== '' && p.motherName.trim() !== '-') { 
+            // .split('(')[0] berguna untuk membuang "(Menikah)" atau "(Cerai)" jika data lama masih tersimpan begitu
+            partnerName = p.motherName.split('(')[0].trim();
+        } 
+        // Prioritas 2: Jika kosong, coba intip data Pasangan Bapaknya
+        else if (f) {
+             if (f.pasanganList && Array.isArray(f.pasanganList) && f.pasanganList.length > 0) {
+                // Ambil nama pasangan pertama bapaknya (sudah bersih karena object)
+                partnerName = f.pasanganList[0].nama; 
+             } else if (f.spouse) {
+                // Fallback data lama: Split koma, lalu Split kurung
+                partnerName = f.spouse.split(',')[0].split('(')[0].trim();
+             }
         }
-        const div = document.createElement('div'); div.id = 'card-' + p.id; 
-        div.className = `relative flex items-stretch p-3 rounded-lg shadow-sm hover:shadow-md border-[3px] transition-all duration-200 group ${cardColor} ${genderClass} ${lvl===0?'shadow-md':''}`;
-        const toggleIcon = children.length > 0 ? '<i class="fas fa-chevron-right"></i>' : '<i class="fas fa-circle text-[6px] opacity-30"></i>';
-        const cursorClass = children.length > 0 ? 'cursor-pointer' : 'cursor-default';
-        const leftColumn = `<div class="flex flex-col items-center justify-start gap-2 mr-3 pt-1 border-r border-gray-300/50 dark:border-gray-600/50 pr-2"><button class="toggle-btn w-6 h-6 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-transform duration-200 ${cursorClass} flex items-center justify-center" onclick="toggleChild(this)">${toggleIcon}</button><button onclick="openDetailPopup('${p.id}', event)" class="text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 dark:hover:text-white transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-800" title="Lihat Detail Lengkap"><i class="fas fa-info-circle text-lg"></i></button></div>`;
-        div.innerHTML = `${leftColumn}<div class="flex-grow cursor-pointer py-1" onclick="toggleChild(this.parentElement.querySelector('.toggle-btn'))">${pLabel}<div class="flex flex-wrap items-center gap-1"><span class="text-lg font-bold text-slate-800 dark:text-gray-100 flex items-center">${p.name}</span>${spHtml}</div></div>${statusContainer}${adminBtns}`;
-        li.appendChild(div);
-        if (children.length > 0) { 
-            const cUl = document.createElement('ul'); cUl.className = 'children-container hidden pl-[22px] tree-line list-none'; 
-            if (lvl === 0) { cUl.classList.replace('hidden','block'); div.querySelector('.toggle-btn').innerHTML='<i class="fas fa-chevron-down"></i>'; } 
-            children.forEach(ch => cUl.appendChild(createNode(ch, lvl+1))); li.appendChild(cUl); 
-        }
-        return li;
+        
+        pLabel = `<span class="block text-[0.7rem] uppercase text-gray-500 dark:text-gray-400 mb-0.5">Anak dari: <strong class="text-slate-700 dark:text-gray-200">${f ? f.name : '???'}</strong> & <strong class="text-slate-700 dark:text-gray-200">${partnerName}</strong></span>`;
+    } else { 
+        pLabel = `<span class="block text-[0.7rem] uppercase text-primary mb-0.5">👑 Leluhur Utama</span>`; 
     }
+    // ------------------------------------------
+    
+    // Render Badge Pasangan (Tetap seperti sebelumnya)
+    let spHtml = ''; 
+    if (p.pasanganList && Array.isArray(p.pasanganList)) {
+        p.pasanganList.forEach(s => { 
+            let badgeColor = "text-pink-600 border-pink-200 dark:text-pink-300 dark:border-pink-800";
+            let icon = "fa-heart";
+            // Cek status untuk warna badge (opsional, visual saja)
+            if(s.status && (s.status.includes("Cerai") || s.status.includes("Mati"))) {
+                badgeColor = "text-gray-500 border-gray-300 dark:text-gray-400 dark:border-gray-600";
+                icon = "fa-heart-broken";
+            }
+            spHtml += `<span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-white/60 ${badgeColor} border cursor-default mr-1 mt-1"><i class="fas ${icon} mr-1 text-[0.6rem]"></i> ${s.nama}</span>`; 
+        });
+    } else if (p.spouse) {
+        // Fallback
+        p.spouse.split(',').forEach(s => { 
+            // Bersihkan tampilan di badge juga jika perlu
+            let cleanName = s.split('(')[0].trim();
+            if(cleanName) spHtml += `<span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-white/60 text-pink-600 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800 cursor-default mr-1 mt-1"><i class="fas fa-heart mr-1 text-[0.6rem]"></i> ${cleanName}</span>`; 
+        });
+    }
+
+    const clr = ['bg-slate-100 border-slate-400 dark:bg-slate-800 dark:border-slate-500', 'bg-blue-50 border-blue-400 dark:bg-blue-900/20 dark:border-blue-500', 'bg-emerald-50 border-emerald-400 dark:bg-emerald-900/20 dark:border-emerald-500', 'bg-amber-50 border-amber-400 dark:bg-amber-900/20 dark:border-amber-500', 'bg-purple-50 border-purple-400 dark:bg-purple-900/20 dark:border-purple-500', 'bg-rose-50 border-rose-400 dark:bg-rose-900/20 dark:border-rose-500'];
+    const cardColor = clr[lvl % clr.length];
+    
+    let adminBtns = '';
+    if (isLoggedIn) {
+        const role = localStorage.getItem('userRole');
+        const btnEdit = `<button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('edit','${p.id}')" title="Edit Data"><i class="fas fa-pen text-xs"></i></button>`;
+        const btnAdd = `<button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('add','${p.id}')" title="Tambah Keturunan"><i class="fas fa-plus text-xs"></i></button>`;
+        const btnDel = (lvl > 0) ? `<button class="w-8 h-8 rounded-full bg-red-100 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors dark:bg-red-900/40 dark:hover:bg-red-600" onclick="deleteItem('${p.id}')" title="Hapus Data"><i class="fas fa-trash text-xs"></i></button>` : '';
+        let buttonsToShow = '';
+        if (role === 'super' || role === 'master') { buttonsToShow = `${btnEdit}${btnAdd}${btnDel}`; } else if (role === 'editor') { buttonsToShow = `${btnEdit}`; }
+        adminBtns = `<div class="flex items-center gap-1 ml-1 border-l border-gray-300/50 pl-2">${buttonsToShow}</div>`;
+    }
+
+    const div = document.createElement('div'); div.id = 'card-' + p.id; 
+    div.className = `relative flex items-stretch p-3 rounded-lg shadow-sm hover:shadow-md border-[3px] transition-all duration-200 group ${cardColor} ${genderClass} ${lvl===0?'shadow-md':''}`;
+    const toggleIcon = children.length > 0 ? '<i class="fas fa-chevron-right"></i>' : '<i class="fas fa-circle text-[6px] opacity-30"></i>';
+    const cursorClass = children.length > 0 ? 'cursor-pointer' : 'cursor-default';
+    
+    const leftColumn = `<div class="flex flex-col items-center justify-start gap-2 mr-3 pt-1 border-r border-gray-300/50 dark:border-gray-600/50 pr-2"><button class="toggle-btn w-6 h-6 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-transform duration-200 ${cursorClass} flex items-center justify-center" onclick="toggleChild(this)">${toggleIcon}</button><button onclick="openDetailPopup('${p.id}', event)" class="text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 dark:hover:text-white transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-800" title="Lihat Detail Lengkap"><i class="fas fa-info-circle text-lg"></i></button></div>`;
+    
+    div.innerHTML = `${leftColumn}<div class="flex-grow cursor-pointer py-1" onclick="toggleChild(this.parentElement.querySelector('.toggle-btn'))">${pLabel}<div class="flex flex-wrap items-center gap-1"><span class="text-lg font-bold text-slate-800 dark:text-gray-100 flex items-center">${p.name}</span>${spHtml}</div></div>${statusContainer}${adminBtns}`;
+    
+    li.appendChild(div);
+    if (children.length > 0) { 
+        const cUl = document.createElement('ul'); cUl.className = 'children-container hidden pl-[22px] tree-line list-none'; 
+        if (lvl === 0) { cUl.classList.replace('hidden','block'); div.querySelector('.toggle-btn').innerHTML='<i class="fas fa-chevron-down"></i>'; } 
+        children.forEach(ch => cUl.appendChild(createNode(ch, lvl+1))); li.appendChild(cUl); 
+    }
+    return li;
+}
+    
+	
 
     function toggleChild(b) { 
         if(!b) return;
@@ -721,30 +773,24 @@ function addMoreChildDynamic() {
     addChildInputRow("", "", 0, "L", nextVal); 
 }
 
-function addChildInputRow(n="", spousesStr="", isDead=0, gender="L", order="", mStatus="Lajang") {
+	// Update: Parameter spousesData bisa berupa Array atau String
+function addChildInputRow(n="", spousesData=[], isDead=0, gender="L", order="", mStatus="Lajang") {
     const c = document.getElementById('children-inputs-container'); 
     
-    // Buat Container Utama untuk 1 Anak
     const d = document.createElement('div'); 
     d.className = 'child-input-row bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 relative animate-slide-down mb-3 border-l-4 border-l-primary shadow-sm';
     
     const rndGrp = Math.random().toString(36).substring(7);
-    
-    // Tombol Hapus (Hanya muncul jika lebih dari 1 form anak)
     const delBtn = c.children.length > 0 ? 
         `<button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors" onclick="this.closest('.child-input-row').remove(); updateSaveButtonState();"><i class="fas fa-times"></i></button>` : ``; 
 
     d.innerHTML = `
         ${delBtn}
-        
         <div class="mb-3 pr-6 relative">
             <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Nama Lengkap</label>
             <div class="relative">
                 <input type="text" class="inp-child-name w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white shadow-sm" placeholder="Nama anak..." value="${n}" autocomplete="off" oninput="handleChildNameInput(this)">
-                
-                <div class="duplicate-warning hidden mt-1 text-[10px] text-red-600 dark:text-red-400 font-bold flex items-center animate-pulse">
-                    <i class="fas fa-times-circle mr-1"></i> Error: Nama ini sudah terdaftar!
-                </div>
+                <div class="duplicate-warning hidden mt-1 text-[10px] text-red-600 dark:text-red-400 font-bold flex items-center animate-pulse"><i class="fas fa-times-circle mr-1"></i> Error: Nama ini sudah terdaftar!</div>
             </div>
         </div>
 
@@ -772,37 +818,33 @@ function addChildInputRow(n="", spousesStr="", isDead=0, gender="L", order="", m
                 </button>
             </div>
             <div class="spouses-container space-y-2 empty:text-center empty:py-2"></div>
-            <div class="empty-msg hidden text-[10px] text-gray-400 text-center italic">Belum ada pasangan</div>
         </div>
     `;
-    
     c.appendChild(d);
 
-    // --- LOGIKA MENGISI DATA PASANGAN YANG SUDAH ADA ---
+    // --- LOGIKA POPULATE PASANGAN (Updated) ---
     const container = d.querySelector('.spouses-container');
     
-    if (spousesStr && spousesStr.trim() !== "") {
-        // Pisahkan nama berdasarkan koma
-        // Menangani kasus rumit seperti: "Dewi (Menikah), Siti (Cerai)"
-        const arr = spousesStr.split(','); 
-        
+    // Kasus 1: spousesData adalah Array Object (Format Baru)
+    if (Array.isArray(spousesData)) {
+        spousesData.forEach(s => {
+            if(s.nama) addSpouseRow(container, s.nama, s.status || "Menikah");
+        });
+    } 
+    // Kasus 2: spousesData adalah String (Format Lama/Fallback)
+    else if (typeof spousesData === 'string' && spousesData.trim() !== "") {
+        const arr = spousesData.split(','); 
         arr.forEach(s => {
             let fullString = s.trim();
             if(!fullString) return;
-
             let name = fullString;
-            let status = "Menikah"; // Default
-
-            // Regex untuk menangkap nama dan status dalam kurung: "Nama (Status)"
+            let status = "Menikah"; 
             const match = fullString.match(/^(.*?)\s*\(([^)]+)\)$/);
             if (match) {
                 name = match[1].trim();
                 status = match[2].trim();
-                
-                // Normalisasi status agar sesuai value di <select>
                 if(status === 'Cerai') status = 'Cerai Hidup';
             }
-            
             addSpouseRow(container, name, status);
         });
     }
@@ -964,7 +1006,7 @@ function addSpouseRow(container, name = "", status = "Menikah") {
     }
 
 
-function openModal(mode, id) {
+	function openModal(mode, id) {
     document.getElementById('modal').classList.replace('hidden', 'flex'); 
     document.getElementById('inp-mode').value = mode; 
     document.getElementById('children-inputs-container').innerHTML = ''; 
@@ -976,29 +1018,36 @@ function openModal(mode, id) {
         document.getElementById('inp-parent').value = id; 
         document.getElementById('btn-add-more-child').classList.remove('hidden'); 
         
-        // --- UPDATE: Hitung urutan otomatis dari Database ---
         const nextOrder = getNextBirthOrderFromDB(id);
-        addChildInputRow("", "", 0, "L", nextOrder); 
-        // ---------------------------------------------------
-
+        // Param ke-2 kosong (spouse) karena data baru
+        addChildInputRow("", [], 0, "L", nextOrder); 
+        
         const f = allData.find(d => d.id == id); 
-        if (f && f.spouse && f.spouse.split(',').length === 1) {
+        // Logic ambil nama ibu dari pasangan parent
+        if (f && f.pasanganList && f.pasanganList.length === 1) {
+            document.getElementById('inp-mother').value = f.pasanganList[0].nama;
+        } else if (f && f.spouse && f.spouse.split(',').length === 1) {
             document.getElementById('inp-mother').value = f.spouse.trim(); 
         }
     } else { 
-        // Mode Edit (Biarkan tetap seperti semula)
+        // Mode Edit
         document.getElementById('modal-title').innerText = "Edit Data"; 
         document.getElementById('btn-add-more-child').classList.add('hidden'); 
         const p = allData.find(d => d.id == id); 
         document.getElementById('inp-id').value = id; 
-        addChildInputRow(p.name, p.spouse, p.isDead, p.gender, p.birthOrder || "", p.maritalStatus || "Lajang"); 
+        
+        // --- UPDATE: Kirim p.pasanganList (Array) ke fungsi form ---
+        // Jika p.pasanganList kosong, fallback ke string p.spouse (untuk kompatibilitas)
+        const spouseData = (p.pasanganList && p.pasanganList.length > 0) ? p.pasanganList : p.spouse;
+        
+        addChildInputRow(p.name, spouseData, p.isDead, p.gender, p.birthOrder || "", p.maritalStatus || "Lajang"); 
         document.getElementById('inp-mother').value = p.motherName || ''; 
     }
 }
 
     function closeModal() { document.getElementById('modal').classList.replace('flex', 'hidden'); }
     
-function submitData() {
+	function submitData() {
     const mode = document.getElementById('inp-mode').value; 
     const rows = document.querySelectorAll('.child-input-row'); 
     const childrenData = [];
@@ -1007,44 +1056,41 @@ function submitData() {
         const nInput = r.querySelector('.inp-child-name');
         const n = nInput ? nInput.value.trim() : "";
         
-        // --- LOGIKA BARU: KUMPULKAN SEMUA STATUS DULU ---
+        // --- LOGIKA BARU: MAPPING KE 4 KOLOM PASANGAN ---
         const spouseRows = r.querySelectorAll('.spouse-row');
-        let spouseList = [];
-        let collectedStatuses = []; // Array untuk menampung semua status pasangan
+        
+        // Objek untuk menampung pasangan1..4 dan status1..4
+        let spousePayload = {};
+        let collectedStatuses = [];
 
-        spouseRows.forEach(sr => {
-            const sNameInp = sr.querySelector('.inp-spouse-name');
-            const sStatusInp = sr.querySelector('.inp-spouse-status');
-            
-            const sName = sNameInp ? sNameInp.value.trim() : "";
-            const sStatus = sStatusInp ? sStatusInp.value : "Menikah";
-            
-            if (sName) {
-                // Simpan format: "Nama (Status)"
-                spouseList.push(`${sName} (${sStatus})`);
-                // Masukkan ke koleksi status
-                collectedStatuses.push(sStatus);
+        spouseRows.forEach((sr, index) => {
+            // Kita batasi maks 4 pasangan agar sesuai backend
+            if (index < 4) {
+                const sNameInp = sr.querySelector('.inp-spouse-name');
+                const sStatusInp = sr.querySelector('.inp-spouse-status');
+                
+                const sName = sNameInp ? sNameInp.value.trim() : "";
+                const sStatus = sStatusInp ? sStatusInp.value : "Menikah";
+                
+                if (sName) {
+                    spousePayload[`pasangan${index+1}`] = sName;
+                    spousePayload[`status${index+1}`] = sStatus;
+                    collectedStatuses.push(sStatus);
+                }
             }
         });
-        
-        const sFinal = spouseList.join(', ');
 
-        // --- HITUNG STATUS GLOBAL (PRIORITAS) ---
+        // Hitung status pernikahan global (untuk keperluan sorting/display sederhana)
         let globalMaritalStatus = "Lajang";
-        
         if (collectedStatuses.length > 0) {
             if (collectedStatuses.includes("Menikah")) {
-                // Jika ada setidaknya satu yang "Menikah", status utama = Menikah
                 globalMaritalStatus = "Menikah";
             } else if (collectedStatuses.some(s => s.includes("Cerai"))) {
-                // Jika tidak ada yang Menikah, tapi ada "Cerai...", ambil status Cerai yang pertama ditemukan
                 globalMaritalStatus = collectedStatuses.find(s => s.includes("Cerai"));
             } else if (collectedStatuses.includes("Belum Menikah")) {
-                 // Fallback jarang terjadi
                  globalMaritalStatus = "Belum Menikah";
             }
         }
-        // ----------------------------------------
 
         const deadCheck = r.querySelector('.inp-child-dead');
         const isDead = deadCheck ? deadCheck.checked : false;
@@ -1056,13 +1102,14 @@ function submitData() {
         r.querySelectorAll('.inp-child-gender').forEach(rd => { if(rd.checked) genderVal = rd.value; });
 
         if (n) { 
+            // Gabungkan data dasar + data 4 pasangan
             childrenData.push({ 
                 name: n, 
-                spouse: sFinal, 
                 isDead: isDead, 
                 gender: genderVal, 
                 birthOrder: order, 
-                maritalStatus: globalMaritalStatus // Status hasil perhitungan prioritas
+                maritalStatus: globalMaritalStatus,
+                ...spousePayload // Spread operator untuk memasukkan pasangan1, status1, dst
             }); 
         }
     });
@@ -1072,19 +1119,35 @@ function submitData() {
         return; 
     }
     
+    // Siapkan Payload dasar
     const pl = { action: mode, motherName: document.getElementById('inp-mother').value }; 
     
     if (mode === 'add') { 
+        // Mode Add: Backend mungkin perlu penyesuaian untuk loop children,
+        // tapi kita kirim struktur lengkapnya.
         pl.parentId = document.getElementById('inp-parent').value; 
         pl.children = childrenData; 
     } else { 
+        // Mode Edit: Backend mengharapkan flat parameters (pasangan1, status1...)
         pl.id = document.getElementById('inp-id').value; 
-        pl.name = childrenData[0].name; 
-        pl.spouse = childrenData[0].spouse; 
-        pl.isDead = childrenData[0].isDead; 
-        pl.gender = childrenData[0].gender; 
-        pl.birthOrder = childrenData[0].birthOrder; 
-        pl.maritalStatus = childrenData[0].maritalStatus; 
+        
+        // Ambil data anak pertama (karena edit biasanya 1 per 1)
+        const d = childrenData[0];
+        pl.name = d.name; 
+        pl.isDead = d.isDead; 
+        pl.gender = d.gender; 
+        pl.birthOrder = d.birthOrder; 
+        pl.maritalStatus = d.maritalStatus; 
+        
+        // Masukkan data pasangan ke Payload utama agar terbaca oleh doPost(e.parameter)
+        if(d.pasangan1) pl.pasangan1 = d.pasangan1;
+        if(d.status1) pl.status1 = d.status1;
+        if(d.pasangan2) pl.pasangan2 = d.pasangan2;
+        if(d.status2) pl.status2 = d.status2;
+        if(d.pasangan3) pl.pasangan3 = d.pasangan3;
+        if(d.status3) pl.status3 = d.status3;
+        if(d.pasangan4) pl.pasangan4 = d.pasangan4;
+        if(d.status4) pl.status4 = d.status4;
     }
     
     enqueueAction(pl);
@@ -1237,8 +1300,17 @@ function openDetailPopup(id, event) {
     
     document.getElementById('det-name').textContent = p.name;
     
-    const spouseDisplay = p.spouse ? p.spouse.split(',').map(s => s.trim()).join(' & ') : "Belum ada pasangan terdata";
+    // --- UPDATE: TAMPILAN PASANGAN ---
+    let spouseDisplay = "Belum ada pasangan terdata";
+    if (p.pasanganList && Array.isArray(p.pasanganList) && p.pasanganList.length > 0) {
+        // Format: Siti (Nikah), Dewi (Cerai)
+        spouseDisplay = p.pasanganList.map(s => `${s.nama} (${s.status})`).join(', ');
+    } else if (p.spouse && p.spouse.length > 1) {
+        // Fallback string lama
+        spouseDisplay = p.spouse.split(',').map(s => s.trim()).join(' & ');
+    }
     document.getElementById('det-spouse').textContent = "Pasangan: " + spouseDisplay;
+    // ---------------------------------
     
     const isMale = (p.gender !== 'P'); 
     const iconClass = isMale ? "fa-user-tie text-blue-500" : "fa-user-nurse text-pink-500";
@@ -1254,17 +1326,11 @@ function openDetailPopup(id, event) {
         statusRow.classList.add('hidden'); 
     } else { 
         statusRow.classList.remove('hidden'); 
-        
-        // Ambil status dari database, default Lajang jika kosong
         let rawStatus = p.maritalStatus || "Lajang";
         let displayStatus = rawStatus;
-
-        // Hanya ubah jadi "Gadis/Perjaka" jika status aslinya MEMANG "Lajang"
         if (rawStatus === "Lajang" || rawStatus === "Belum Menikah") { 
             displayStatus = isMale ? "Lajang (Perjaka)" : "Gadis"; 
         }
-        // Jika statusnya "Cerai Hidup" atau "Cerai Mati", dia akan tampil apa adanya
-        
         statusEl.textContent = displayStatus; 
     }
     
