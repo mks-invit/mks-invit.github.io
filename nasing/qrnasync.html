@@ -909,23 +909,62 @@ function addSpouseRow(container, name = "", status = "Menikah") {
     
     function openLoginModal() { document.getElementById('login-modal').classList.replace('hidden', 'flex'); document.getElementById('login-user').value=''; document.getElementById('login-pass').value=''; document.getElementById('login-error').classList.add('hidden'); switchLoginTab('pass'); }
     function closeLoginModal() { document.getElementById('login-modal').classList.replace('flex', 'hidden'); stopQRScanner(); }
-    async function doLogin(qrTokenInput = null) {
-        const btn = document.getElementById('btn-confirm-login'); const err = document.getElementById('login-error'); const originalText = btn.innerText;
-        btn.innerText = "Checking..."; btn.disabled = true; err.classList.add('hidden');
+    
+	    async function doLogin(qrTokenInput = null) {
+        const btn = document.getElementById('btn-confirm-login');
+        const err = document.getElementById('login-error');
+        const originalText = btn.innerText;
+        
+        btn.innerText = "Checking..."; 
+        btn.disabled = true; 
+        err.classList.add('hidden');
+
+        // Siapkan payload
         let payload = { action: "login" };
-        if (qrTokenInput) { payload.u = qrTokenInput; payload.p = ""; payload.type = "qr"; } 
-        else { payload.u = document.getElementById('login-user').value; payload.p = document.getElementById('login-pass').value; }
+        
+        if (qrTokenInput) {
+            // Login via QR
+            payload.u = qrTokenInput; // Kirim token sebagai 'u'
+            payload.p = "";
+            payload.type = "qr";
+        } else {
+            // Login via Password
+            payload.u = document.getElementById('login-user').value;
+            payload.p = document.getElementById('login-pass').value;
+        }
+
         try { 
             const response = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) }); 
             const result = await response.json(); 
+            
             if (result.status === "success") { 
-                isLoggedIn = true; localStorage.setItem('isLoggedIn', 'true'); localStorage.setItem('userRootId', result.rootId || 'all'); localStorage.setItem('userRole', result.role); 
-                closeLoginModal(); updateLoginUI(); renderTree(); alert("Berhasil login via " + (qrTokenInput ? "QR Code" : "Password"));
+                isLoggedIn = true; 
+                localStorage.setItem('isLoggedIn', 'true'); 
+                localStorage.setItem('userRootId', result.rootId || 'all'); 
+                localStorage.setItem('userRole', result.role); 
+                
+                closeLoginModal(); 
+                updateLoginUI(); 
+                renderTree(); 
+                
+                // Baris alert dihapus agar tidak ada popup mengganggu
+                // alert("Berhasil login via " + (qrTokenInput ? "QR Code" : "Password")); 
+                
+                console.log("Login berhasil via " + (qrTokenInput ? "QR" : "Password")); // Log di console saja
             } else { 
-                err.classList.remove('hidden'); if(qrTokenInput) startQRScanner();
+                err.classList.remove('hidden'); 
+                // Jika gagal via QR, restart scanner agar bisa coba lagi
+                if(qrTokenInput) startQRScanner();
             } 
-        } catch (e) { alert("Gagal Login: " + e); } finally { btn.innerText = originalText; btn.disabled = false; }
+        } catch (e) { 
+            alert("Gagal Login: " + e); 
+        } finally { 
+            btn.innerText = originalText; 
+            btn.disabled = false; 
+        }
     }
+
+	
     function doLogout() { isLoggedIn = false; localStorage.removeItem('isLoggedIn'); localStorage.removeItem('userRootId'); updateLoginUI(); renderTree(); }
     
     function updateLoginUI() { 
