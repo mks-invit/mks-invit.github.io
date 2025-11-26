@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keluarga Besar Puang Guru Nasing</title>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#3498db">
+    <link rel="apple-touch-icon" href="./icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3498db',
+                        'primary-dark': '#2980b9',
+                        'bg-light': '#f4f7f6',
+                        'bg-dark': '#121212',
+                        'card-dark': '#1e1e1e'
+                    },
+                    fontFamily: {
+                        sans: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Animasi & Custom Styles */
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slide-down { animation: slideDown 0.3s ease-out; }
+        
+        .tree-line { border-left: 2px dashed #d1d5db; }
+        .dark .tree-line { border-left: 2px dashed #4b5563; }
+        
+        @keyframes pulse-highlight { 0%, 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7); transform: scale(1); } 50% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0); transform: scale(1.02); } }
+        .highlight-card { animation: pulse-highlight 1.5s ease-in-out 3; border-color: #facc15 !important; z-index: 10; }
+        
+        @keyframes bounce-gentle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+        .animate-bounce-gentle { animation: bounce-gentle 2s infinite; }
+
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        .dark .custom-scroll::-webkit-scrollbar-thumb { background-color: #4b5563; }
+
+        /* Auto Suggestion List */
+        .suggestion-list {
+            position: absolute; width: 100%; max-height: 150px; overflow-y: auto; z-index: 50;
+            background-color: #ffffff; border: 1px solid #d1d5db; border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-top: 4px;
+        }
+        .dark .suggestion-list { background-color: #1e1e1e; border-color: #4b5563; }
+
+        /* Lineage Tracer Highlight */
+        .trace-active {
+            border-color: #f59e0b !important;
+            background-color: #fffbeb !important;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.5) !important;
+            transform: scale(1.02);
+            z-index: 20;
+            opacity: 1 !important;
+        }
+        .dark .trace-active { background-color: #78350f !important; border-color: #fcd34d !important; }
+        .dimmed-mode .group:not(.trace-active) { opacity: 0.3; filter: grayscale(80%); transition: all 0.3s ease; }
+
+        /* Input Error State */
+        .input-error { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
+        .dark .input-error { border-color: #ef4444 !important; background-color: #450a0a !important; }
+    </style>
+</head>
+
+<body class="bg-bg-light text-slate-700 dark:bg-bg-dark dark:text-gray-200 font-sans transition-colors duration-300 px-5 pt-5 pb-0 min-h-screen">
+
+<div id="fullscreen-overlay" onclick="startApp()" class="fixed inset-0 z-[100] bg-gray-900 flex flex-col items-center justify-center text-white cursor-pointer transition-opacity duration-500 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]">
+    <div class="text-center mb-16 relative z-10 w-full px-4">
+        <p class="text-xs md:text-sm text-blue-300 mb-6 uppercase tracking-[0.3em] font-semibold">MENUJU "EMPO SIPITANGARI 2"<br>Kurang Lebih</p>
+        <div id="countdown-timer" class="flex flex-wrap justify-center items-center gap-3 md:gap-6"><div class="animate-pulse text-gray-500">Memuat Waktu...</div></div>
+        <p class="text-[10px] md:text-xs text-gray-400 mt-8 font-mono tracking-widest opacity-60"><i class="fas fa-calendar-alt mr-2"></i>AKAN DIREVISI</p>
+    </div>
+    <div class="text-center animate-bounce z-10 opacity-90 group">
+        <div class="relative inline-block">
+            <div class="absolute -inset-1 bg-primary rounded-full blur opacity-20 group-hover:opacity-40 transition duration-200"></div>
+            <i class="fas fa-fingerprint text-5xl mb-3 text-primary relative z-10 bg-gray-800 rounded-full p-3 border border-gray-700 shadow-xl"></i>
+        </div>
+        <h2 class="text-xl font-bold tracking-wide">KETUK LAYAR</h2>
+    </div>
+	<center>
+	<p class="text-xs text-gray-400 mt-1">UNTUK MELIHAT SILSILAH<br>KETURUNAN PUANG GURU NASING</p></center>
+    <script>
+        (function() {
+            const targetDate = new Date("Jan 4, 2026 00:00:00").getTime();
+            const timerEl = document.getElementById("countdown-timer");
+            const boxStyle = "flex flex-col items-center justify-center bg-gray-800/40 backdrop-blur-md border border-gray-600/50 rounded-xl p-3 w-[70px] md:w-28 shadow-lg transform transition hover:scale-105 duration-300";
+            const numStyle = "text-2xl md:text-5xl font-bold font-mono text-white tabular-nums leading-none mb-1 md:mb-2 drop-shadow-md";
+            const labelStyle = "text-[10px] md:text-xs text-gray-400 uppercase font-semibold tracking-wider";
+            const interval = setInterval(function() {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                if (distance < 0) { clearInterval(interval); timerEl.innerHTML = `<div class="text-3xl font-bold text-green-500 animate-pulse">ACARA DIMULAI</div>`; return; }
+                timerEl.innerHTML = `<div class="${boxStyle} border-b-4 border-b-blue-500"><span class="${numStyle}">${days}</span><span class="${labelStyle}">Hari</span></div><div class="${boxStyle} border-b-4 border-b-purple-500"><span class="${numStyle}">${String(hours).padStart(2, '0')}</span><span class="${labelStyle}">Jam</span></div><div class="${boxStyle} border-b-4 border-b-pink-500"><span class="${numStyle}">${String(minutes).padStart(2, '0')}</span><span class="${labelStyle}">Menit</span></div><div class="${boxStyle} border-b-4 border-b-yellow-500 bg-gray-700/30"><span class="${numStyle} text-yellow-400">${String(seconds).padStart(2, '0')}</span><span class="${labelStyle} text-yellow-100/70">Detik</span></div>`;
+            }, 1000);
+            window.countdownInterval = interval;
+        })();
+    </script>
+</div>
+
+<div class="max-w-4xl mx-auto pb-6">
+    <header class="text-center mb-6 mt-4">
+        <div class="mb-4 px-4"><h4 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 dark:text-gray-100 m-0 font-serif tracking-wide leading-tight">Keluarga Besar Puang Guru Nasing</h4></div>
+        
+        <div class="flex justify-center items-center gap-4 mb-6">
+            <button onclick="fetchData()" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
+            
+            <button id="btn-expand-toggle" onclick="toggleExpandAll()" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-purple-500 hover:text-white hover:border-purple-500 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300" title="Buka Semua">
+                <i id="icon-expand" class="fas fa-expand"></i>
+            </button>
+
+            <button id="theme-btn" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-slate-700 hover:text-white hover:border-slate-700 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300" title="Ganti Tema"><i class="fas fa-moon"></i></button>
+            <button id="btn-login-trigger" onclick="openLoginModal()" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-green-600 hover:bg-green-600 hover:text-white hover:border-green-600 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-green-400" title="Login Admin"><i class="fas fa-lock"></i></button>
+            <button id="btn-logout-trigger" onclick="doLogout()" class="hidden w-10 h-10 rounded-full border border-red-300 bg-white text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600" title="Keluar"><i class="fas fa-sign-out-alt"></i></button>
+            <button id="btn-install-app" onclick="installPWA()" class="hidden w-10 h-10 rounded-full border border-teal-400 text-teal-600 hover:bg-teal-600 hover:text-white flex items-center justify-center transition-all duration-200 shadow-sm" title="Install Aplikasi"><i class="fas fa-download"></i></button>
+        </div>
+
+        <div id="stats-container" class="hidden animate-slide-down mb-6">
+            <div class="grid grid-cols-4 gap-2 max-w-2xl mx-auto">
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow border-b-4 border-primary text-center"><div class="text-[10px] text-gray-500 uppercase">Total</div><div class="text-xl font-bold text-slate-700 dark:text-white" id="stat-total">0</div></div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow border-b-4 border-blue-500 text-center"><div class="text-[10px] text-gray-500 uppercase"><i class="fas fa-mars text-blue-500 mr-1"></i>Pria</div><div class="text-xl font-bold text-slate-700 dark:text-white" id="stat-male">0</div></div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow border-b-4 border-pink-500 text-center"><div class="text-[10px] text-gray-500 uppercase"><i class="fas fa-venus text-pink-500 mr-1"></i>Wanita</div><div class="text-xl font-bold text-slate-700 dark:text-white" id="stat-female">0</div></div>
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow border-b-4 border-green-500 text-center"><div class="text-[10px] text-gray-500 uppercase">Hidup</div><div class="text-xl font-bold text-slate-700 dark:text-white" id="stat-living">0</div></div>
+            </div>
+        </div>
+        <div class="relative w-full max-w-xs mx-auto mt-2 group z-30">
+            <div class="flex items-center bg-white dark:bg-gray-800 rounded-full px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm focus-within:shadow-md focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all">
+                <i class="fas fa-search text-gray-400 mr-3 group-focus-within:text-primary"></i>
+                <input type="text" id="search-box" class="w-full bg-transparent border-none focus:ring-0 text-sm text-gray-700 dark:text-gray-200 placeholder-gray-400 focus:outline-none" placeholder="Cari nama keluarga..." oninput="handleSearchInput(this.value)" onkeydown="if(event.key === 'Enter') handleSearchExecute(this.value)" onblur="setTimeout(() => hideSearch(), 200)" autocomplete="off">
+            </div>
+            <ul id="custom-search-results" class="absolute w-full bg-white dark:bg-card-dark mt-2 rounded-lg shadow-xl max-h-60 overflow-y-auto hidden border border-gray-200 dark:border-gray-600 z-50 text-sm text-left custom-scroll"></ul>
+        </div>
+    </header>
+
+    <div id="loader" class="flex flex-col items-center mt-16" style="display:none;">
+        <div class="w-10 h-10 border-4 border-gray-200 border-t-primary rounded-full animate-spin mb-3"></div><p class="text-sm text-gray-500 dark:text-gray-400">Mengambil Data<br>Mohon Bersabar</p>
+    </div>
+    <div id="tree-root" class="hidden"></div>
+
+    <div class="max-w-2xl mx-auto text-center mt-8 mb-2 px-4">
+        <div class="relative group cursor-pointer inline-block" onclick="openCalcModal()">
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-400 to-indigo-600 rounded-full blur opacity-20 group-hover:opacity-40 transition duration-200"></div>
+            <p class="text-[10px] text-gray-800 mt-2 uppercase tracking-widest">Bingung memanggil apa?</p>
+            <button class="relative px-5 py-2 bg-white dark:bg-card-dark rounded-full flex items-center justify-center gap-2 shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                <span class="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 dark:bg-indigo-900 dark:text-indigo-300"><i class="fas fa-calculator text-xs"></i></span>
+                <span class="text-sm text-slate-700 dark:text-gray-200 font-medium">Cek Hubungan Keluarga</span>
+            </button>
+        </div>
+    </div>
+
+    <footer class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-6 pb-4 text-center transition-colors duration-300">
+        <p class="text-sm font-semibold text-slate-600 dark:text-gray-300 mb-1">&copy; Copyright Keluarga Besar Puang Guru Nasing</p>
+        <p class="text-xs text-gray-500 dark:text-gray-500">Original Design by <a href="https://wa.me/6282395223314" target="_blank" class="font-bold text-primary hover:text-primary-dark hover:underline">i.s Dg. Tawang</a> & <a href="#" target="_blank" class="font-bold text-primary hover:text-primary-dark hover:underline">Ratna Dg. Kebo</a><br>Berkolaborasi degan Seluruh Keturunan Puang Guru Nasing<br>Info & Pengembangan - Hubungi Admin Grup</p>
+    </footer>
+</div>
+
+<div class="fixed bottom-5 left-5 z-40 flex items-center gap-3">
+    <button id="btn-undo" onclick="doUndo()" class="hidden w-12 h-12 rounded-full bg-yellow-500 text-white shadow-lg items-center justify-center hover:bg-yellow-600 hover:scale-110 transition-all duration-200 group" title="Batalkan Perubahan"><i class="fas fa-undo group-hover:-rotate-12 transition-transform"></i></button>
+    <button id="btn-sync" onclick="doSync()" class="hidden relative w-12 h-12 rounded-full bg-orange-500 text-white shadow-lg items-center justify-center hover:bg-orange-600 hover:scale-110 transition-all duration-200 animate-bounce-gentle" title="Sync ke Server"><i class="fas fa-cloud-upload-alt"></i><span id="sync-badge" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-sm border border-white dark:border-gray-800">0</span></button>
+</div>
+
+<div class="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3">
+    <div id="admin-menu-container" class="hidden relative items-center justify-end">
+        <div id="admin-menu-options" class="absolute right-16 flex gap-3 transition-all duration-300 opacity-0 translate-x-10 pointer-events-none scale-90 origin-right items-center">
+            <button onclick="exportGEDCOM()" class="w-12 h-12 rounded-full bg-sky-500 text-white shadow-lg flex items-center justify-center hover:bg-sky-600 hover:scale-110 transition-all duration-200 group/item"><i class="fas fa-project-diagram"></i><span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Export GEDCOM</span></button>
+            <button onclick="exportCSV()" class="w-12 h-12 rounded-full bg-emerald-500 text-white shadow-lg flex items-center justify-center hover:bg-emerald-600 hover:scale-110 transition-all duration-200 group/item"><i class="fas fa-file-csv"></i><span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Export CSV</span></button>
+            <button onclick="backupJSON()" class="w-12 h-12 rounded-full bg-slate-600 text-white shadow-lg flex items-center justify-center hover:bg-slate-700 hover:scale-110 transition-all duration-200 group/item"><i class="fas fa-file-code"></i><span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Backup JSON</span></button>
+            <button onclick="triggerRestore()" class="w-12 h-12 rounded-full bg-purple-600 text-white shadow-lg flex items-center justify-center hover:bg-purple-700 hover:scale-110 transition-all duration-200 group/item"><i class="fas fa-upload"></i><span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Restore JSON</span></button>
+            <input type="file" id="restore-file-input" class="hidden" accept=".json" onchange="handleRestoreFile(this)">
+        </div>
+        <button id="btn-admin-menu" onclick="toggleAdminMenu()" class="w-14 h-14 rounded-full bg-slate-700 text-white shadow-xl flex items-center justify-center hover:bg-slate-800 transition-all duration-200 z-50 relative"><i class="fas fa-ellipsis-v text-xl transition-transform duration-300" id="icon-admin-menu"></i></button>
+    </div>
+    
+    <button onclick="openPDFModal()" class="w-14 h-14 rounded-full bg-red-600 text-white shadow-xl flex items-center justify-center hover:bg-red-700 hover:scale-110 transition-all duration-200 group relative">
+        <i class="fas fa-file-pdf text-xl group-hover:animate-bounce"></i>
+        <span class="absolute right-full mr-3 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Cetak PDF</span>
+    </button>
+    
+    <button onclick="openNarrativeMode()" class="w-14 h-14 rounded-full bg-indigo-600 text-white shadow-xl flex items-center justify-center hover:bg-indigo-700 hover:scale-110 transition-all duration-200 group relative"><i class="fas fa-book-open text-xl group-hover:animate-pulse"></i><span class="absolute right-full mr-3 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Baca Kisah Keluarga</span></button>
+</div>
+
+<div id="login-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden justify-center items-center p-4">
+    <div class="bg-white dark:bg-card-dark w-full max-w-sm rounded-xl shadow-2xl p-6 animate-slide-down overflow-hidden">
+        <h3 class="text-xl font-bold text-center mb-4 dark:text-white">Login Admin</h3>
+        
+        <div class="flex border-b border-gray-200 dark:border-gray-700 mb-4">
+            <button onclick="switchLoginTab('pass')" id="tab-pass" class="w-1/2 py-2 text-sm font-semibold text-primary border-b-2 border-primary transition-colors">Password</button>
+            <button onclick="switchLoginTab('qr')" id="tab-qr" class="w-1/2 py-2 text-sm font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors">Scan QR Code</button>
+        </div>
+
+        <div id="login-form-pass" class="space-y-4">
+            <div><label class="block text-sm font-medium mb-1 dark:text-gray-300">Username</label><input type="text" id="login-user" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"></div>
+            <div><label class="block text-sm font-medium mb-1 dark:text-gray-300">Password</label><input type="password" id="login-pass" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"></div>
+        </div>
+
+        <div id="login-form-qr" class="hidden flex-col items-center justify-center">
+            <div id="qr-reader" class="w-full h-56 bg-gray-100 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 flex items-center justify-center">
+                <span class="text-xs text-gray-400">Kamera belum aktif</span>
+            </div>
+            
+            <p class="text-[10px] text-gray-500 mt-2 text-center mb-3">Arahkan kamera ke QR Code Admin</p>
+            
+            <div class="flex items-center w-full mb-3">
+                <div class="h-px bg-gray-200 flex-1"></div>
+                <span class="px-2 text-[10px] text-gray-400 font-bold">ATAU</span>
+                <div class="h-px bg-gray-200 flex-1"></div>
+            </div>
+
+            <button onclick="triggerFileScan()" class="w-full py-2 bg-white border border-indigo-200 text-indigo-600 rounded-lg text-sm font-semibold hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2 shadow-sm">
+                <i class="fas fa-image"></i> Ambil dari Galeri
+            </button>
+            <input type="file" id="qr-file-input" class="hidden" accept="image/*" onchange="handleQrFile(this)">
+        </div>
+
+        <div id="login-error" class="text-red-500 text-xs hidden text-center mt-2">Username/Password/QR Salah!</div>
+        
+        <div class="flex gap-2 pt-4">
+            <button onclick="closeLoginModal()" class="w-1/2 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 font-medium">Batal</button>
+            <button id="btn-confirm-login" onclick="doLogin()" class="w-1/2 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark font-medium shadow-md">Masuk</button>
+        </div>
+    </div>
+</div>
+
+<div id="calc-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] hidden justify-center items-center p-4">
+    <div class="bg-white dark:bg-card-dark w-full max-w-md rounded-xl shadow-2xl p-6 animate-slide-down relative">
+        <button onclick="document.getElementById('calc-modal').classList.add('hidden')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+        <h3 class="text-lg font-bold text-center mb-4 dark:text-white">Cek Hubungan Keluarga</h3>
+        <div class="space-y-4">
+            <div class="relative"><label class="block text-xs font-medium text-gray-500 mb-1">Orang Pertama (A)</label><input type="text" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none transition" placeholder="Ketik nama..." oninput="suggestCalc(this, 'list-a', 'calc-id-a')" autocomplete="off"><input type="hidden" id="calc-id-a"><ul id="list-a" class="absolute w-full bg-white dark:bg-card-dark border dark:border-gray-600 rounded shadow-lg mt-1 max-h-48 overflow-y-auto hidden z-50"></ul></div>
+            <div class="relative mt-3"><label class="block text-xs font-medium text-gray-500 mb-1">Orang Kedua (B)</label><input type="text" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-primary outline-none transition" placeholder="Ketik nama..." oninput="suggestCalc(this, 'list-b', 'calc-id-b')" autocomplete="off"><input type="hidden" id="calc-id-b"><ul id="list-b" class="absolute w-full bg-white dark:bg-card-dark border dark:border-gray-600 rounded shadow-lg mt-1 max-h-48 overflow-y-auto hidden z-50"></ul></div>
+            <button onclick="calculateRelation()" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-semibold shadow-lg">Analisis Hubungan</button>
+        </div>
+        <div id="calc-result" class="mt-6 p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg border border-indigo-100 dark:border-indigo-800 hidden text-center"><p class="text-sm text-gray-600 dark:text-gray-300 mb-1">Hubungan:</p><h4 id="res-title" class="text-xl font-bold text-indigo-700 dark:text-indigo-300 mb-2"></h4><p id="res-desc" class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed"></p></div>
+    </div>
+</div>
+
+<div id="narrative-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[80] hidden justify-center items-center p-4">
+    <div class="bg-white dark:bg-card-dark w-11/12 max-w-7xl h-[90vh] rounded-xl shadow-2xl flex flex-col animate-slide-down relative border border-gray-200 dark:border-gray-700">
+        <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800 rounded-t-xl"><div><h3 class="text-xl font-bold font-serif text-slate-800 dark:text-gray-100"><i class="fas fa-scroll text-indigo-500 mr-2"></i>Kisah Puang Guru Nasing</h3><p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Silsilah dalam format cerita narasi</p></div><button onclick="document.getElementById('narrative-modal').classList.add('hidden')" class="w-8 h-8 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center text-gray-500 transition-colors"><i class="fas fa-times"></i></button></div>
+        <div class="flex-1 overflow-y-auto p-6 custom-scroll bg-[#fdfbf7] dark:bg-[#1a1a1a]"><div id="narrative-content" class="prose dark:prose-invert max-w-none font-serif leading-relaxed text-slate-700 dark:text-gray-300"><p class="text-center text-gray-400 italic">Memuat kisah...</p></div></div>
+        <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-white dark:bg-card-dark rounded-b-xl flex-wrap"><button onclick="copyNarrative()" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-sm transition-colors flex items-center gap-2"><i class="fas fa-copy"></i> Salin Cerita</button><button onclick="downloadHierarchyText()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm transition-colors flex items-center gap-2 shadow-sm"><i class="fas fa-sitemap"></i> Download Pohon</button></div>
+    </div>
+</div>
+
+<div id="detail-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] hidden justify-center items-center p-4">
+    <div class="bg-white dark:bg-card-dark w-full max-w-sm rounded-xl shadow-2xl p-6 animate-slide-down relative border-t-4 border-primary">
+        <button onclick="document.getElementById('detail-modal').classList.add('hidden')" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="fas fa-times"></i></button>
+        <div class="text-center mb-6"><div id="det-avatar" class="w-20 h-20 mx-auto rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-3xl mb-3 shadow-inner"></div><h3 id="det-name" class="text-xl font-bold text-slate-800 dark:text-white leading-tight"></h3><p id="det-spouse" class="text-sm text-pink-500 mt-1"></p></div>
+        <div class="space-y-3 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg text-sm">
+            <div class="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2"><span class="text-gray-500 dark:text-gray-400">Jenis Kelamin</span><span id="det-gender" class="font-semibold text-slate-700 dark:text-gray-200"></span></div>
+            <div class="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2"><span class="text-gray-500 dark:text-gray-400">Anak Ke-</span><span id="det-order" class="font-semibold text-slate-700 dark:text-gray-200"></span></div>
+            <div class="flex justify-between border-b border-gray-200 dark:border-gray-700 pb-2"><span class="text-gray-500 dark:text-gray-400">Status Pernikahan</span><span id="det-status" class="font-semibold text-slate-700 dark:text-gray-200"></span></div>
+            <div class="flex justify-between"><span class="text-gray-500 dark:text-gray-400">Keadaan</span><span id="det-condition" class="font-semibold text-slate-700 dark:text-gray-200"></span></div>
+        </div>
+        <div class="mt-5 text-center"><button onclick="document.getElementById('detail-modal').classList.add('hidden')" class="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 text-sm font-semibold transition-colors">Tutup</button></div>
+    </div>
+</div>
+
+<div id="modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden justify-center items-center p-4">
+    <div class="bg-white dark:bg-card-dark w-full max-w-lg rounded-xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto transition-colors duration-300 custom-scroll">
+        <h3 id="modal-title" class="text-xl font-bold text-primary-dark border-b border-gray-200 dark:border-gray-700 pb-3 mb-5">Form Data</h3>
+        <input type="hidden" id="inp-mode"><input type="hidden" id="inp-id"><input type="hidden" id="inp-parent">
+        <div class="mb-4">
+            <div class="flex justify-between items-end mb-2"><label class="text-sm font-semibold dark:text-gray-300">Daftar Anggota Keluarga</label></div>
+            <div id="children-inputs-container" class="space-y-3"></div>
+<button type="button" id="btn-add-more-child" class="hidden mt-3 text-sm font-medium text-primary hover:text-primary-dark flex items-center gap-1" onclick="addMoreChildDynamic()"><i class="fas fa-plus-circle"></i> Tambah anak lagi</button>
+        </div>
+        
+        <div class="mb-4 pt-2 border-t border-gray-100 dark:border-gray-700">
+    <label class="block text-sm font-semibold mb-1 dark:text-gray-300">Pasangan Orang Tua (Ibu/Ayah)</label>
+    <div class="relative">
+        <input type="text" id="inp-mother" class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-400 text-sm" placeholder="Ketik min. 3 huruf..." autocomplete="off" oninput="handleSpouseInputWrapper(this)">
+        
+        <div id="mother-spouse-warning" class="hidden mt-1.5 w-full p-2 bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-500 text-xs text-yellow-700 dark:text-yellow-300 font-bold rounded-r flex items-center shadow-sm animate-pulse">
+    <i class="fas fa-exclamation-triangle mr-2 text-lg"></i>
+    <span>Hati-hati! Nama ini atau Nama Ibunya sudah tercatat di silsilah.</span>
+</div>
+    </div>
+    <p class="text-[10px] text-gray-400 mt-1">*Pilih dari daftar untuk menautkan data secara otomatis</p>
+</div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 mt-6"><button class="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200" onclick="closeModal()">Batal</button><button id="btn-save" class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400" onclick="submitData()">Simpan</button></div>
+    </div>
+</div>
+
+<div id="pdf-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[95] hidden justify-center items-center p-4">
+    <div class="bg-white dark:bg-card-dark w-full max-w-md rounded-xl shadow-2xl p-6 animate-slide-down relative border-t-4 border-red-600">
+        <button onclick="closePDFModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="fas fa-times"></i></button>
+        
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                <i class="fas fa-print"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 dark:text-white">Cetak Dokumen Silsilah</h3>
+            <p class="text-xs text-gray-500 mt-1">Generasi dokumen PDF siap cetak</p>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-semibold mb-2 dark:text-gray-300">Format Dokumen</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="cursor-pointer border-2 border-red-100 dark:border-gray-700 rounded-lg p-3 hover:border-red-500 transition-colors has-[:checked]:border-red-500 has-[:checked]:bg-red-50 dark:has-[:checked]:bg-gray-800">
+                        <input type="radio" name="pdf-type" value="tree" class="hidden" checked>
+                        <div class="text-center">
+                            <i class="fas fa-sitemap text-2xl text-gray-400 mb-2 block"></i>
+                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Pohon Visual</span>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer border-2 border-red-100 dark:border-gray-700 rounded-lg p-3 hover:border-red-500 transition-colors has-[:checked]:border-red-500 has-[:checked]:bg-red-50 dark:has-[:checked]:bg-gray-800">
+                        <input type="radio" name="pdf-type" value="list" class="hidden">
+                        <div class="text-center">
+                            <i class="fas fa-list-ol text-2xl text-gray-400 mb-2 block"></i>
+                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Daftar Keluarga</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold mb-2 dark:text-gray-300">Ukuran Kertas</label>
+                <select id="pdf-size" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm">
+                    <option value="a4">A4 (Standar)</option>
+                    <option value="a3">A3 (Poster Besar)</option>
+                    <option value="legal">Legal</option>
+                </select>
+            </div>
+            
+            <button onclick="generatePDFAction()" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95">
+                <i class="fas fa-file-download"></i> Download PDF
+            </button>
+        </div>
+    </div>
+</div>
+
+<datalist id="existing-members"></datalist>
+
+<script>
+    // PENTING: GANTI URL DI BAWAH INI DENGAN URL WEB APP DARI DEPLOYMENT GOOGLE APPS SCRIPT ANDA
+    const API_URL = "https://script.google.com/macros/s/AKfycbyC6chLYMw1zAs6HwqExFsQ2jWSYd7G55F8b0i2zMnWC0JNP2RkEQhRT7JPsNCADCZV/exec"; 
+    
+    let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; 
+    let allData = [], searchableNamesList = []; 
+    let pendingQueue = JSON.parse(localStorage.getItem('pendingChanges') || '[]');
+    let isTraceActive = false; 
+    const htmlEl = document.documentElement;
+
+    function startApp() {
+        const elem = document.documentElement;
+        const overlay = document.getElementById('fullscreen-overlay');
+        if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => console.log(err)); } 
+        else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } 
+        overlay.style.opacity = '0'; 
+        setTimeout(() => { overlay.remove(); }, 500);
+    }
+
+    if (localStorage.getItem('theme') === 'dark') { htmlEl.classList.add('dark'); document.querySelector('#theme-btn i').classList.replace('fa-moon', 'fa-sun'); } else { htmlEl.classList.remove('dark'); }
+    document.getElementById('theme-btn').addEventListener('click', () => {
+        const isDarkNow = htmlEl.classList.toggle('dark');
+        localStorage.setItem('theme', isDarkNow ? 'dark' : 'light');
+        const icon = document.querySelector('#theme-btn i');
+        if (isDarkNow) { icon.classList.replace('fa-moon', 'fa-sun'); } else { icon.classList.replace('fa-sun', 'fa-moon'); }
+    });
+
+    window.onload = function() { updateLoginUI(); updateSyncUI(); fetchData(); setupOutsideClickCloser(); };
+
+
+    async function fetchData() {
+        const localData = localStorage.getItem('familyDataCache');
+        if (localData) {
+            try {
+                allData = JSON.parse(localData);
+                prepareSearchableNames();
+                renderTree();
+                updateStats();
+            } catch (e) { console.error("Cache rusak", e); }
+        }
+
+        showLoader(true);
+        try { 
+            const r = await fetch(API_URL); 
+            const newData = await r.json(); 
+            
+            if (JSON.stringify(newData) !== localData) {
+                console.log("Data baru ditemukan, mengupdate tampilan...");
+                allData = newData;
+                localStorage.setItem('familyDataCache', JSON.stringify(allData));
+                prepareSearchableNames(); 
+                renderTree(); 
+                updateStats();
+            }
+            showLoader(false); 
+        } 
+        catch (e) { 
+            console.error("Gagal mengambil data server: " + e);
+            if (allData.length > 0) alert("Mode Offline: Menampilkan data terakhir yang tersimpan.");
+            else alert("Gagal mengambil data dan tidak ada cache.");
+            showLoader(false); 
+        }
+    }
+
+
+    function updateStats() {
+        if(!allData) return;
+        const total = allData.length;
+        const living = allData.filter(d => d.isDead != 1).length;
+        const male = allData.filter(d => d.gender === 'L' || !d.gender).length; 
+        const female = allData.filter(d => d.gender === 'P').length;
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('stat-living').textContent = living;
+        document.getElementById('stat-male').textContent = male;
+        document.getElementById('stat-female').textContent = female;
+        document.getElementById('stats-container').classList.remove('hidden');
+    }
+    
+    function showLoader(show) { document.getElementById('loader').style.display = show ? 'flex' : 'none'; document.getElementById('tree-root').style.display = show ? 'none' : 'block'; }
+
+function renderTree() {
+    const c = document.getElementById('tree-root'); 
+    c.innerHTML = '';
+    
+    const userRootId = localStorage.getItem('userRootId');
+    let roots = [];
+    
+    if (isLoggedIn && userRootId && userRootId !== 'all') {
+        roots = allData.filter(d => d.id == userRootId);
+        if(roots.length === 0) { 
+            c.innerHTML = '<div class="text-center text-gray-500 mt-4 text-sm">Data root id "'+userRootId+'" tidak ditemukan.</div>'; 
+            return; 
+        }
+    } else { 
+        roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root'); 
+    }
+    
+    roots.sort((a, b) => {
+        const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999;
+        const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999;
+        return orderA - orderB;
+    });
+
+    const fragment = document.createDocumentFragment(); 
+    const ul = document.createElement('ul'); 
+    ul.className = 'pl-0 border-none';
+    
+    roots.forEach(r => ul.appendChild(createNode(r, 0))); 
+    
+    fragment.appendChild(ul); 
+    c.appendChild(fragment); 
+    
+    isExpandedGlobal = false;
+    const iconExpand = document.getElementById('icon-expand');
+    if(iconExpand) iconExpand.classList.replace('fa-compress', 'fa-expand');
+}
+
+    
+    function createNode(p, lvl) {
+        const li = document.createElement('li'); 
+        li.className = 'my-3'; 
+        li.setAttribute('data-id', p.id); 
+        li.classList.add('node-card'); 
+
+        let children = allData.filter(d => d.parentId == p.id || (d.motherName && d.motherName.trim() === p.name));
+        
+        children.sort((a, b) => {
+            const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999;
+            const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999;
+            return orderA - orderB;
+        });
+
+        let genderClass = 'border-l-4 border-l-gray-300';
+        if (p.gender === 'L') { genderClass = 'border-l-4 border-l-blue-400'; } 
+        else if (p.gender === 'P') { genderClass = 'border-l-4 border-l-pink-400'; }
+
+        const traceBtn = `<button class="w-7 h-7 rounded-full bg-white/80 text-orange-500 hover:bg-orange-500 hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-orange-400 dark:hover:bg-orange-500 border border-orange-200 dark:border-orange-900 shadow-sm" onclick="traceLineage('${p.id}', event)" title="Telusuri Jalur"><i class="fas fa-shoe-prints text-[10px]"></i></button>`;
+        const isDeceased = p.isDead == 1;
+        const nisanHtml = isDeceased ? `<div class="mt-1 text-gray-500 dark:text-gray-400 text-center" title="Almarhum/ah"><i class="fas fa-monument text-xs"></i></div>` : '';
+        const statusContainer = `<div class="flex flex-col items-center justify-center px-2 mx-1 border-l border-dashed border-gray-300 dark:border-gray-600 gap-0.5">${traceBtn}${nisanHtml}</div>`;
+
+        let pLabel = '';
+        if (p.parentId && p.parentId !== 'root') {
+            const f = allData.find(d => d.id === p.parentId); 
+            let partnerName = "???";
+            if (p.motherName && p.motherName.trim() !== '' && p.motherName.trim() !== '-') { 
+                partnerName = p.motherName; 
+            } else if (f && f.spouse) { 
+                partnerName = f.spouse.split(',')[0].split('(')[0].trim(); 
+            }
+            pLabel = `<span class="block text-[0.7rem] uppercase text-gray-500 dark:text-gray-400 mb-0.5">Anak dari: <strong class="text-slate-700 dark:text-gray-200">${f ? f.name : '???'}</strong> & <strong class="text-slate-700 dark:text-gray-200">${partnerName}</strong></span>`;
+        } else { 
+            pLabel = `<span class="block text-[0.7rem] uppercase text-primary mb-0.5">?? Leluhur Utama</span>`; 
+        }
+
+        let spHtml = ''; 
+        if (p.spouse) {
+            p.spouse.split(',').forEach(s => { 
+                let spouseDisplay = s.trim();
+                if(spouseDisplay) {
+                    if (p.isDead == 1) {
+                        spouseDisplay = spouseDisplay.split('(')[0].trim();
+                    }
+                    spHtml += `<span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-white/60 text-pink-600 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800 cursor-default mr-1 mt-1"><i class="fas fa-heart mr-1 text-[0.6rem]"></i> ${spouseDisplay}</span>`; 
+                }
+            }); 
+        }
+
+        const clr = ['bg-slate-100 border-slate-400 dark:bg-slate-800 dark:border-slate-500', 'bg-blue-50 border-blue-400 dark:bg-blue-900/20 dark:border-blue-500', 'bg-emerald-50 border-emerald-400 dark:bg-emerald-900/20 dark:border-emerald-500', 'bg-amber-50 border-amber-400 dark:bg-amber-900/20 dark:border-amber-500', 'bg-purple-50 border-purple-400 dark:bg-purple-900/20 dark:border-purple-500', 'bg-rose-50 border-rose-400 dark:bg-rose-900/20 dark:border-rose-500'];
+        const cardColor = clr[lvl % clr.length];
+
+        let adminBtns = '';
+        if (isLoggedIn) {
+            const role = localStorage.getItem('userRole');
+            const btnEdit = `<button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('edit','${p.id}')" title="Edit Data"><i class="fas fa-pen text-xs"></i></button>`;
+            const btnAdd = `<button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('add','${p.id}')" title="Tambah Keturunan"><i class="fas fa-plus text-xs"></i></button>`;
+            const btnDel = (lvl > 0) ? `<button class="w-8 h-8 rounded-full bg-red-100 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors dark:bg-red-900/40 dark:hover:bg-red-600" onclick="deleteItem('${p.id}')" title="Hapus Data"><i class="fas fa-trash text-xs"></i></button>` : '';
+            
+            let buttonsToShow = '';
+            if (role === 'super' || role === 'master') { buttonsToShow = `${btnEdit}${btnAdd}${btnDel}`; } 
+            else if (role === 'editor') { buttonsToShow = `${btnEdit}`; }
+            
+            adminBtns = `<div class="flex items-center gap-1 ml-1 border-l border-gray-300/50 pl-2">${buttonsToShow}</div>`;
+        }
+
+        const div = document.createElement('div'); 
+        div.id = 'card-' + p.id; 
+        div.className = `relative flex items-stretch p-3 rounded-lg shadow-sm hover:shadow-md border-[3px] transition-all duration-200 group ${cardColor} ${genderClass} ${lvl===0?'shadow-md':''}`;
+        
+        const toggleIcon = children.length > 0 ? '<i class="fas fa-chevron-right"></i>' : '<i class="fas fa-circle text-[6px] opacity-30"></i>';
+        const cursorClass = children.length > 0 ? 'cursor-pointer' : 'cursor-default';
+        
+        const leftColumn = `<div class="flex flex-col items-center justify-start gap-2 mr-3 pt-1 border-r border-gray-300/50 dark:border-gray-600/50 pr-2"><button class="toggle-btn w-6 h-6 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-transform duration-200 ${cursorClass} flex items-center justify-center" onclick="toggleChild(this)">${toggleIcon}</button><button onclick="openDetailPopup('${p.id}', event)" class="text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 dark:hover:text-white transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-800" title="Lihat Detail Lengkap"><i class="fas fa-info-circle text-lg"></i></button></div>`;
+        
+        div.innerHTML = `${leftColumn}<div class="flex-grow cursor-pointer py-1" onclick="toggleChild(this.parentElement.querySelector('.toggle-btn'))">${pLabel}<div class="flex flex-wrap items-center gap-1"><span class="text-lg font-bold text-slate-800 dark:text-gray-100 flex items-center">${p.name}</span>${spHtml}</div></div>${statusContainer}${adminBtns}`;
+        
+        li.appendChild(div);
+
+        if (children.length > 0) { 
+            const cUl = document.createElement('ul'); 
+            cUl.className = 'children-container hidden pl-[22px] tree-line list-none'; 
+            if (lvl === 0) { 
+                cUl.classList.replace('hidden','block'); 
+                div.querySelector('.toggle-btn').innerHTML='<i class="fas fa-chevron-down"></i>'; 
+            } 
+            children.forEach(ch => cUl.appendChild(createNode(ch, lvl+1))); 
+            li.appendChild(cUl); 
+        }
+        
+        return li;
+    }
+
+    function toggleChild(b) { 
+        if(!b) return;
+        const cardDiv = b.closest('[id^="card-"]'); if(!cardDiv) return;
+        const ul = cardDiv.nextElementSibling; 
+        if(ul && ul.tagName==='UL' && ul.children.length>0) { 
+            const h = ul.classList.contains('hidden'); ul.classList.toggle('hidden'); ul.classList.toggle('block'); ul.classList.toggle('animate-slide-down', h); 
+            b.innerHTML = h ? '<i class="fas fa-chevron-down"></i>' : '<i class="fas fa-chevron-right"></i>'; 
+        } 
+    }
+    
+    let isExpandedGlobal = false;
+    function toggleExpandAll() {
+        const btnIcon = document.getElementById('icon-expand');
+        const btn = document.getElementById('btn-expand-toggle');
+        isExpandedGlobal = !isExpandedGlobal;
+
+        if (isExpandedGlobal) {
+            const allUls = document.querySelectorAll('.children-container');
+            allUls.forEach(ul => { ul.classList.remove('hidden'); ul.classList.add('block', 'animate-slide-down'); });
+            const allBtns = document.querySelectorAll('.toggle-btn');
+            allBtns.forEach(b => { if(b.querySelector('.fa-chevron-right')) { b.innerHTML = '<i class="fas fa-chevron-down"></i>'; } });
+            btnIcon.classList.replace('fa-expand', 'fa-compress'); btn.title = "Tutup Semua (Collapse)";
+        } else {
+            renderTree();
+            btnIcon.classList.replace('fa-compress', 'fa-expand'); btn.title = "Buka Semua (Expand)";
+        }
+    }
+
+    function traceLineage(id, event) {
+        if (event) event.stopPropagation();
+        if (isTraceActive === id) { clearTrace(); return; } 
+        clearTrace(); isTraceActive = id;
+        document.getElementById('tree-root').classList.add('dimmed-mode');
+        let currentId = id;
+        while (currentId && currentId !== 'root') {
+            const card = document.getElementById('card-' + currentId);
+            if (card) { card.classList.add('trace-active'); card.scrollIntoView({behavior: 'smooth', block: 'center'}); }
+            const data = allData.find(d => String(d.id) == String(currentId));
+            if (data && data.parentId && data.parentId !== 'root') {
+                currentId = data.parentId;
+                const parentCard = document.getElementById('card-' + currentId);
+                if (parentCard) {
+                     const ul = parentCard.nextElementSibling;
+                     if (ul && ul.classList.contains('hidden')) {
+                         ul.classList.remove('hidden'); ul.classList.add('block');
+                         const toggleBtn = parentCard.querySelector('.toggle-btn');
+                         if(toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i>';
+                     }
+                }
+            } else { currentId = null; }
+        }
+    }
+    function clearTrace() { isTraceActive = false; document.getElementById('tree-root').classList.remove('dimmed-mode'); document.querySelectorAll('.trace-active').forEach(el => el.classList.remove('trace-active')); }
+    document.addEventListener('click', function(e) { if (!e.target.closest('.group') && isTraceActive) { clearTrace(); } });
+
+    function prepareSearchableNames() {
+        const uniqueNames = new Set(); 
+        allData.forEach(p => { 
+            if(p.name) uniqueNames.add(p.name.trim()); 
+            if(p.spouse) {
+                p.spouse.split(',').forEach(s => { 
+                    if(s.trim()) {
+                        let cleanSpouse = s.split('(')[0].trim();
+                        uniqueNames.add(cleanSpouse); 
+                    }
+                }); 
+            }
+        });
+        searchableNamesList = Array.from(uniqueNames).sort();
+    }
+    
+    function getNextBirthOrderFromDB(parentId) {
+    if (!parentId || parentId === 'root') return 1;
+    const siblings = allData.filter(d => d.parentId == parentId);
+    if (siblings.length === 0) return 1; 
+    let maxOrder = 0;
+    siblings.forEach(s => { const val = parseInt(s.birthOrder); if (!isNaN(val) && val > maxOrder) maxOrder = val; });
+    return maxOrder + 1;
+}
+
+    function handleSearchInput(v) {
+        const dd = document.getElementById('custom-search-results');
+        if (!v || v.length < 2) { dd.classList.add('hidden'); return; }
+        const f = searchableNamesList.filter(n => n.toLowerCase().includes(v.toLowerCase()));
+        dd.innerHTML = '';
+        if (f.length > 0) {
+            dd.classList.remove('hidden'); f.slice(0, 20).forEach(n => {
+                const li = document.createElement('li'); li.className = "px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-slate-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700";
+                li.textContent = n; li.onclick = () => { document.getElementById('search-box').value = n; handleSearchExecute(n); dd.classList.add('hidden'); }; dd.appendChild(li);
+            });
+        } else { dd.innerHTML = '<li class="px-4 py-2 text-gray-400 italic text-xs">Tidak ditemukan</li>'; dd.classList.remove('hidden'); }
+    }
+    function hideSearch() { document.getElementById('custom-search-results').classList.add('hidden'); }
+    
+    function handleSearchExecute(n) {
+        if (!n) return;
+        const lowerName = n.toLowerCase();
+        let targets = allData.filter(d => (d.name && d.name.toLowerCase().includes(lowerName)) || (d.spouse && d.spouse.toLowerCase().includes(lowerName)));
+        if (targets.length === 0) { alert("Nama tidak ditemukan!"); return; }
+        document.querySelectorAll('.highlight-card').forEach(el => el.classList.remove('highlight-card'));
+        targets.forEach(targetData => {
+            const targetId = targetData.id;
+            const domElements = document.querySelectorAll(`.node-card[data-id="${targetId}"]`);
+            domElements.forEach(card => {
+                let currentElement = card;
+                while (currentElement) {
+                    const parentUl = currentElement.closest('ul');
+                    if (parentUl) {
+                        if (parentUl.classList.contains('hidden')) { parentUl.classList.remove('hidden'); parentUl.classList.add('block'); parentUl.classList.add('animate-slide-down'); }
+                        const parentCard = parentUl.previousElementSibling;
+                        if (parentCard) { const toggleBtn = parentCard.querySelector('.toggle-btn'); if (toggleBtn) toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i>'; currentElement = parentCard; } else { break; }
+                    } else { break; }
+                }
+                setTimeout(() => { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.classList.add('highlight-card'); setTimeout(() => card.classList.remove('highlight-card'), 3000); }, 100);
+            });
+        });
+        hideSearch();
+    }
+    
+function handleSpouseInputWrapper(input) {
+    handleSpouseSuggest(input); 
+    checkSpouseWarning(input); 
+}
+
+function checkSpouseWarning(input) {
+    const val = input.value.trim().toLowerCase();
+    let warningEl;
+    if (input.id === 'inp-mother') { warningEl = document.getElementById('mother-spouse-warning'); } 
+    else { const entry = input.closest('.spouse-row'); if (entry) warningEl = entry.querySelector('.spouse-warning'); }
+
+    if (!warningEl) return;
+    if (val.length < 2) { warningEl.classList.add('hidden'); warningEl.classList.remove('flex'); return; }
+
+    const isExist = allData.some(d => (d.name && d.name.toLowerCase() === val) || (d.motherName && d.motherName.toLowerCase() === val));
+
+    if (isExist) { warningEl.classList.remove('hidden'); warningEl.classList.add('flex'); } 
+    else { warningEl.classList.add('hidden'); warningEl.classList.remove('flex'); }
+}
+
+    function handleSpouseSuggest(input) {
+    let oldList = input.parentNode.querySelector('.suggestion-list'); 
+    if (oldList) oldList.remove();
+    const val = input.value.trim(); 
+    if (val.length < 3) return; 
+
+    const matches = searchableNamesList.filter(n => n.toLowerCase().includes(val.toLowerCase())); 
+    if (matches.length === 0) return;
+
+    const ul = document.createElement('ul'); 
+    ul.className = 'suggestion-list animate-slide-down custom-scroll';
+    matches.slice(0, 10).forEach(name => {
+        const li = document.createElement('li'); 
+        li.className = "px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700 last:border-0"; 
+        li.textContent = name; 
+        li.onclick = function() { input.value = name; ul.remove(); checkSpouseWarning(input); }; 
+        ul.appendChild(li);
+    });
+    input.parentNode.appendChild(ul);
+}
+
+
+function addMoreChildDynamic() {
+    const inputs = document.querySelectorAll('.inp-child-order');
+    let nextVal = 1;
+    if (inputs.length > 0) {
+        const lastInput = inputs[inputs.length - 1]; const lastVal = parseInt(lastInput.value);
+        if (!isNaN(lastVal)) { nextVal = lastVal + 1; }
+    } else {
+        const parentId = document.getElementById('inp-parent').value;
+        nextVal = getNextBirthOrderFromDB(parentId);
+    }
+    addChildInputRow("", "", 0, "L", nextVal); 
+}
+
+function addChildInputRow(n="", spousesStr="", isDead=0, gender="L", order="", mStatus="Lajang") {
+    const c = document.getElementById('children-inputs-container'); 
+    const d = document.createElement('div'); 
+    d.className = 'child-input-row bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 relative animate-slide-down mb-3 border-l-4 border-l-primary shadow-sm';
+    const rndGrp = Math.random().toString(36).substring(7);
+    const delBtn = c.children.length > 0 ? `<button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors" onclick="this.closest('.child-input-row').remove(); updateSaveButtonState();"><i class="fas fa-times"></i></button>` : ``; 
+
+    d.innerHTML = `
+        ${delBtn}
+        <div class="mb-3 pr-6 relative">
+            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Nama Lengkap</label>
+            <div class="relative">
+                <input type="text" class="inp-child-name w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white shadow-sm" placeholder="Nama anak..." value="${n}" autocomplete="off" oninput="handleChildNameInput(this)">
+                <div class="duplicate-warning hidden mt-1 text-[10px] text-red-600 dark:text-red-400 font-bold flex items-center animate-pulse"><i class="fas fa-times-circle mr-1"></i> Error: Nama ini sudah terdaftar!</div>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+            <div>
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Urutan Lahir</label>
+                <input type="number" class="inp-child-order w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white shadow-sm" placeholder="Ke-?" value="${order}" min="1">
+            </div>
+             <div>
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Jenis Kelamin & Kondisi</label>
+                <div class="flex items-center gap-1 bg-white dark:bg-gray-900/30 p-1.5 rounded border border-gray-200 dark:border-gray-600 h-[38px] shadow-sm">
+                    <label class="cursor-pointer flex items-center"><input type="radio" name="gender-${rndGrp}" value="L" class="inp-child-gender text-blue-600 focus:ring-blue-500" ${gender!=='P'?'checked':''}><span class="ml-1 text-xs dark:text-gray-300 font-semibold">L</span></label>
+                    <label class="cursor-pointer ml-3 flex items-center"><input type="radio" name="gender-${rndGrp}" value="P" class="inp-child-gender text-pink-600 focus:ring-pink-500" ${gender==='P'?'checked':''}><span class="ml-1 text-xs dark:text-gray-300 font-semibold">P</span></label>
+                    <div class="w-px h-4 bg-gray-300 dark:bg-gray-500 mx-2"></div>
+                    <label class="cursor-pointer flex items-center"><input type="checkbox" class="inp-child-dead text-red-500 rounded focus:ring-red-500" ${isDead==1?"checked":""}><span class="ml-1 text-[10px] font-bold text-red-500">Alm</span></label>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white dark:bg-gray-900/20 p-2.5 rounded border border-gray-200 dark:border-gray-600">
+            <div class="flex justify-between items-center mb-2 pb-1 border-b border-gray-100 dark:border-gray-700">
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Daftar Pasangan</label>
+                <button type="button" onclick="addSpouseRow(this.closest('.bg-white').querySelector('.spouses-container'))" class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-100 border border-indigo-200 font-bold transition-colors shadow-sm dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800 dark:hover:bg-indigo-900/50"><i class="fas fa-plus mr-1"></i>Tambah</button>
+            </div>
+            <div class="spouses-container space-y-2 empty:text-center empty:py-2"></div>
+            <div class="empty-msg hidden text-[10px] text-gray-400 text-center italic">Belum ada pasangan</div>
+        </div>
+    `;
+    c.appendChild(d);
+
+    const container = d.querySelector('.spouses-container');
+    if (spousesStr && spousesStr.trim() !== "") {
+        const arr = spousesStr.split(','); 
+        arr.forEach(s => {
+            let fullString = s.trim();
+            if(!fullString) return;
+            let name = fullString;
+            let status = "Menikah"; 
+            const match = fullString.match(/^(.*?)\s*\(([^)]+)\)$/);
+            if (match) { name = match[1].trim(); status = match[2].trim(); if(status === 'Cerai') status = 'Cerai Hidup'; }
+            addSpouseRow(container, name, status);
+        });
+    }
+}
+
+function addSpouseRow(container, name = "", status = "Menikah") {
+    if (!container) return;
+    const wrapper = document.createElement('div');
+    wrapper.className = "spouse-row mb-3 animate-slide-down border-b border-gray-100 dark:border-gray-700 pb-2 last:border-0"; 
+    
+    const opts = ['Menikah', 'Cerai Hidup', 'Cerai Mati', 'Belum Menikah'];
+    const optionsHtml = opts.map(o => `<option value="${o}" ${status === o ? 'selected' : ''}>${o}</option>`).join('');
+
+    wrapper.innerHTML = `
+        <div class="flex items-start gap-2">
+            <div class="flex-grow relative">
+                <input type="text" class="inp-spouse-name w-full p-2 border border-gray-300 rounded-l text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
+                    placeholder="Nama Pasangan..." value="${name}" autocomplete="off" 
+                    oninput="handleSpouseInputWrapper(this)"> 
+            </div>
+            <div class="w-1/3 min-w-[100px]">
+                <select class="inp-spouse-status w-full p-2 border-t border-b border-r border-gray-300 rounded-r text-sm bg-gray-50 focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white">${optionsHtml}</select>
+            </div>
+            <button type="button" class="w-9 h-9 flex-shrink-0 bg-red-100 text-red-500 rounded hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center border border-red-200" onclick="this.closest('.spouse-row').remove()"><i class="fas fa-trash-alt text-xs"></i></button>
+        </div>
+        <div class="spouse-warning hidden mt-1.5 w-full p-2 bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-500 text-xs text-yellow-700 dark:text-yellow-300 font-bold rounded-r flex items-center shadow-sm"><i class="fas fa-exclamation-triangle mr-2 text-lg"></i><span>Hati-hati! Nama ini atau Nama Ibunya sudah tercatat di silsilah.</span></div>
+    `;
+    container.appendChild(wrapper);
+}
+
+    function handleChildNameInput(input) {
+        const nameVal = input.value.toLowerCase().trim();
+        let predicted = "";
+        if (nameVal.length > 2 && typeof allData !== 'undefined' && allData.length > 0) {
+            const firstWord = nameVal.split(' ')[0];
+            const dbMatches = allData.filter(d => d.name && d.name.toLowerCase().includes(firstWord));
+            if (dbMatches.length >= 1) { 
+                const countL = dbMatches.filter(d => d.gender === 'L').length;
+                const countP = dbMatches.filter(d => d.gender === 'P').length;
+                if (countL > countP) { predicted = "L"; } else if (countP > countL) { predicted = "P"; }
+            }
+        }
+        if (predicted === "") {
+            const maleKeywords = ["h.", "haji", "ust.", "bapak", "mas", "abang", "raden", "tubagus", "tengku", "datuk", "om", "paman", "puang", "baso", "aco", "amure", "lolo", "ulle", "daeng", "dg.", "petta", "karaeng", "arung", "tawang", "sila", "ngemba", "rala", "liwang", "gassing", "tompo", "jarre", "mangung", "sali", "gajang", "nyau", "nyarrang", "tunru", "sewang", "gappa", "mallombassi", "mappanyukki", "muhammad", "muh.", "muh ", "moch", "ahmad", "achmad", "abdul", "abd.", "abd ", "rahman", "rahim", "ibrahim", "ismail", "yusuf", "ali", "umar", "utsman", "abu", "bakar", "hasan", "husain", "ridwan", "rizky", "fajar", "ilham", "wahyu", "hidayat", "taufik", "akbar", "maulana", "malik", "ikhwan", "fauzi", "farhan", "faisal", "zulkifli", "syamsul", "kahar", "bahar", "amir", "udin", "saif", "saiful", "samsul", "arif", "arief", "alif", "hafidz", "lukman", "firman", "zainal", "zaenal", "zainuddin", "fatih", "hamzah", "idris", "saleh", "sholeh", "sobur", "yasin", "amin", "rais", "rasyid", "rabbani", "habib", "haikal", "hilman", "hakim", "agus", "budi", "bambang", "eko", "joko", "santos", "saputra", "putra", "wibowo", "kurniawan", "indra", "bayu", "dani", "reza", "aditya", "dimas", "gilang", "rio", "kevin", "aldo", "ferdy", "sandi", "jaka", "galih", "bagas", "satria", "bima", "arjuna", "dewa", "sultan", "raja", "prama", "yuda", "yudha", "yoga", "rendy", "randy", "tommy", "deni", "dicky", "donny", "ferry", "harry", "ivan", "jerry", "kenzi", "mario", "nando", "oscar", "pandu", "rama", "rangga", "sigit", "teguh", "untung", "victor", "william", "xavier", "yanto", "yoga", "zakaria"];
+            const femaleKeywords = ["hj.", "hajjah", "ustadzah", "ibu", "bunda", "mama", "tante", "mbak", "neng", "teteh", "nyai", "ratu", "besse", "tenri", "we", "indo", "tara", "kebo", "te'ne", "baji", "kanang", "caya", "puji", "sangi", "bunga", "intan", "ratna", "somsung", "bannang", "bau", "opuu", "daeng te'ne", "dg. te'ne", "daeng baji", "dg. baji", "daeng caya", "dg. caya", "daeng kanang", "dg. kanang", "siti", "st.", "st ", "nur", "nurul", "fatimah", "aisyah", "khadijah", "zahra", "annisa", "nisa", "rahma", "syifa", "laila", "salma", "hana", "hani", "sholeha", "marwah", "safira", "zakia", "wardah", "aminah", "amirah", "aqila", "azzahra", "bilqis", "dzakiyah", "farida", "fauziah", "hafizah", "halimah", "humaira", "iffah", "jamilah", "kalila", "karimah", "latifah", "maimunah", "mardhiah", "nabilah", "nadia", "najwa", "qonita", "raihana", "ruqayyah", "sakinah", "shofia", "tsabita", "ummi", "yasmin", "zulaikha", "zulfa", "putri", "ayu", "wati", "yanti", "susi", "rini", "rina", "dewi", "sari", "indah", "mawar", "melati", "lestari", "puspita", "anggun", "ningsih", "sulastri", "ratna", "diana", "rara", "rere", "kiki", "vivi", "nova", "maya", "tari", "gina", "feni", "lia", "nia", "tia", "sifa", "zaskia", "shireen", "luna", "sandra", "olga", "cinta", "kasih", "bunga", "intan", "mutiara", "berlian", "tiara", "amel", "amelia", "anita", "desi", "fitri", "fani", "gita", "ika", "jessica", "kartika", "linda", "mega", "nadia", "olive", "puput", "qori", "riska", "siska", "tina", "ulan", "viona", "winda", "yulia", "zara", "angel", "bella", "citra", "dina", "elsi", "friska", "grace", "helen", "ivana", "jelita", "karin", "lidya", "mona", "novi", "ola"];
+            if (maleKeywords.some(key => nameVal.includes(key))) predicted = "L";
+            if (femaleKeywords.some(key => nameVal.includes(key))) predicted = "P";
+        }
+        if (predicted !== "") {
+            const row = input.closest('.child-input-row');
+            if (row) {
+                const radios = row.querySelectorAll('.inp-child-gender');
+                radios.forEach(r => {
+                    if (r.value === predicted) {
+                        if (!r.checked) {
+                            r.checked = true;
+                            const container = r.closest('div'); 
+                            if(container) {
+                                container.classList.remove('bg-yellow-100', 'dark:bg-yellow-900'); void container.offsetWidth; 
+                                container.classList.add('bg-yellow-100', 'dark:bg-yellow-900', 'transition-colors', 'duration-500');
+                                setTimeout(() => container.classList.remove('bg-yellow-100', 'dark:bg-yellow-900'), 500);
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        let oldList = input.parentNode.querySelector('.suggestion-list'); if (oldList) oldList.remove();
+        const wrapper = input.parentNode; const warningEl = wrapper.querySelector('.duplicate-warning');
+        const isDuplicate = allData.some(d => d.name.toLowerCase() === nameVal);
+        input.classList.remove('input-error', 'border-red-500', 'focus:ring-red-500'); input.classList.add('focus:ring-primary'); warningEl.classList.add('hidden');
+        if (nameVal.length > 0 && isDuplicate) { warningEl.classList.remove('hidden'); warningEl.innerHTML = '<i class="fas fa-times-circle mr-1"></i> Error: Nama ini sudah terdaftar!'; input.classList.add('input-error', 'border-red-500', 'focus:ring-red-500'); input.classList.remove('focus:ring-primary'); }
+        updateSaveButtonState();
+        if (nameVal.length < 3) return; 
+        const matches = searchableNamesList.filter(n => n.toLowerCase().includes(nameVal)); if (matches.length === 0) return;
+        const ul = document.createElement('ul'); ul.className = 'suggestion-list animate-slide-down custom-scroll';
+        matches.slice(0, 10).forEach(name => {
+            const li = document.createElement('li'); li.className = "px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700 last:border-0 flex justify-between items-center";
+            li.innerHTML = `<span>${name}</span> <i class="fas fa-history text-xs text-gray-300"></i>`;
+            li.onclick = function() { input.value = name; ul.remove(); handleChildNameInput(input); }; 
+            ul.appendChild(li);
+        });
+        input.parentNode.appendChild(ul);
+    }
+
+    function updateSaveButtonState() {
+        const btn = document.getElementById('btn-save'); const errors = document.querySelectorAll('.input-error');
+        if (errors.length > 0) { btn.disabled = true; btn.title = "Perbaiki data merah"; } else { btn.disabled = false; btn.title = ""; }
+    }
+
+    function updateSyncUI() {
+        const btn = document.getElementById('btn-sync'); const badge = document.getElementById('sync-badge'); const btnUndo = document.getElementById('btn-undo'); 
+        const count = pendingQueue.length;
+        if (count > 0) { btn.classList.remove('hidden'); btn.classList.add('flex'); badge.textContent = count; document.title = `(${count}) Menunggu Sync`; btnUndo.classList.remove('hidden'); btnUndo.classList.add('flex'); } 
+        else { btn.classList.add('hidden'); btn.classList.remove('flex'); document.title = "Silsilah Keluarga"; btnUndo.classList.add('hidden'); btnUndo.classList.remove('flex'); }
+    }
+    function doUndo() { if (pendingQueue.length === 0) return; pendingQueue.pop(); localStorage.setItem('pendingChanges', JSON.stringify(pendingQueue)); updateSyncUI(); }
+    function enqueueAction(payload) { pendingQueue.push(payload); localStorage.setItem('pendingChanges', JSON.stringify(pendingQueue)); updateSyncUI(); closeModal(); }
+	
+	async function doSync() {
+        if (pendingQueue.length === 0) return;
+        showLoader(true); const btn = document.getElementById('btn-sync'); const btnUndo = document.getElementById('btn-undo');
+        btn.disabled = true; btnUndo.classList.add('hidden'); 
+        try {
+            while (pendingQueue.length > 0) {
+                const itemToSend = pendingQueue[0]; await fetch(API_URL, { method: "POST", body: JSON.stringify(itemToSend) });
+                pendingQueue.shift(); localStorage.setItem('pendingChanges', JSON.stringify(pendingQueue)); updateSyncUI(); 
+            }
+            const r = await fetch(API_URL); allData = await r.json(); prepareSearchableNames(); renderTree(); updateStats();
+        } catch (e) { alert("Proses Sync terhenti (Cek koneksi internet): " + e); console.error(e); } 
+        finally { showLoader(false); btn.disabled = false; updateSyncUI(); }
+    }
+    
+    function openLoginModal() { document.getElementById('login-modal').classList.replace('hidden', 'flex'); document.getElementById('login-user').value=''; document.getElementById('login-pass').value=''; document.getElementById('login-error').classList.add('hidden'); switchLoginTab('pass'); }
+    function closeLoginModal() { document.getElementById('login-modal').classList.replace('flex', 'hidden'); stopQRScanner(); }
+    async function doLogin(qrTokenInput = null) {
+        const btn = document.getElementById('btn-confirm-login'); const err = document.getElementById('login-error'); const originalText = btn.innerText;
+        btn.innerText = "Checking..."; btn.disabled = true; err.classList.add('hidden');
+        let payload = { action: "login" };
+        if (qrTokenInput) { payload.u = qrTokenInput; payload.p = ""; payload.type = "qr"; } 
+        else { payload.u = document.getElementById('login-user').value; payload.p = document.getElementById('login-pass').value; }
+        try { 
+            const response = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) }); 
+            const result = await response.json(); 
+            if (result.status === "success") { 
+                isLoggedIn = true; localStorage.setItem('isLoggedIn', 'true'); localStorage.setItem('userRootId', result.rootId || 'all'); localStorage.setItem('userRole', result.role); 
+                closeLoginModal(); updateLoginUI(); renderTree(); alert("Berhasil login via " + (qrTokenInput ? "QR Code" : "Password"));
+            } else { 
+                err.classList.remove('hidden'); if(qrTokenInput) startQRScanner();
+            } 
+        } catch (e) { alert("Gagal Login: " + e); } finally { btn.innerText = originalText; btn.disabled = false; }
+    }
+    function doLogout() { isLoggedIn = false; localStorage.removeItem('isLoggedIn'); localStorage.removeItem('userRootId'); updateLoginUI(); renderTree(); }
+    
+    function updateLoginUI() { 
+        document.getElementById('btn-login-trigger').classList.toggle('hidden', isLoggedIn); document.getElementById('btn-logout-trigger').classList.toggle('hidden', !isLoggedIn);
+        const adminGroup = document.getElementById('admin-menu-container'); const userRole = localStorage.getItem('userRole');
+        if (isLoggedIn) { if (userRole === 'super') { adminGroup.classList.remove('hidden'); adminGroup.classList.add('flex'); } else { adminGroup.classList.add('hidden'); adminGroup.classList.remove('flex'); } } 
+        else { adminGroup.classList.add('hidden'); adminGroup.classList.remove('flex'); if(isAdminMenuOpen) toggleAdminMenu(); }
+    }
+
+
+function openModal(mode, id) {
+    document.getElementById('modal').classList.replace('hidden', 'flex'); 
+    document.getElementById('inp-mode').value = mode; 
+    document.getElementById('children-inputs-container').innerHTML = ''; 
+    document.getElementById('inp-mother').value = ''; 
+    document.getElementById('inp-parent').value = '';
+
+    if (mode === 'add') { 
+        document.getElementById('modal-title').innerText = "Tambah Keturunan"; 
+        document.getElementById('inp-parent').value = id; 
+        document.getElementById('btn-add-more-child').classList.remove('hidden'); 
+        const nextOrder = getNextBirthOrderFromDB(id);
+        addChildInputRow("", "", 0, "L", nextOrder); 
+        const f = allData.find(d => d.id == id); 
+        if (f && f.spouse && f.spouse.split(',').length === 1) {
+            let cleanName = f.spouse.split('(')[0].trim();
+            document.getElementById('inp-mother').value = cleanName; 
+        }
+    } else { 
+        document.getElementById('modal-title').innerText = "Edit Data"; 
+        document.getElementById('btn-add-more-child').classList.add('hidden'); 
+        const p = allData.find(d => d.id == id); 
+        document.getElementById('inp-id').value = id; 
+        addChildInputRow(p.name, p.spouse, p.isDead, p.gender, p.birthOrder || "", p.maritalStatus || "Lajang"); 
+        document.getElementById('inp-mother').value = p.motherName || ''; 
+    }
+}
+
+    function closeModal() { document.getElementById('modal').classList.replace('flex', 'hidden'); }
+    
+function submitData() {
+    const mode = document.getElementById('inp-mode').value; 
+    const rows = document.querySelectorAll('.child-input-row'); 
+    const childrenData = [];
+
+    rows.forEach(r => { 
+        const nInput = r.querySelector('.inp-child-name');
+        const n = nInput ? nInput.value.trim() : "";
+        const spouseRows = r.querySelectorAll('.spouse-row');
+        let spouseList = [];
+        let collectedStatuses = []; 
+        spouseRows.forEach(sr => {
+            const sNameInp = sr.querySelector('.inp-spouse-name');
+            const sStatusInp = sr.querySelector('.inp-spouse-status');
+            const sName = sNameInp ? sNameInp.value.trim() : "";
+            const sStatus = sStatusInp ? sStatusInp.value : "Menikah";
+            if (sName) { spouseList.push(`${sName} (${sStatus})`); collectedStatuses.push(sStatus); }
+        });
+        
+        const sFinal = spouseList.join(', ');
+        let globalMaritalStatus = "Lajang";
+        if (collectedStatuses.length > 0) {
+            if (collectedStatuses.includes("Menikah")) { globalMaritalStatus = "Menikah"; } 
+            else if (collectedStatuses.some(s => s.includes("Cerai"))) { globalMaritalStatus = collectedStatuses.find(s => s.includes("Cerai")); } 
+            else if (collectedStatuses.includes("Belum Menikah")) { globalMaritalStatus = "Belum Menikah"; }
+        }
+        const deadCheck = r.querySelector('.inp-child-dead');
+        const isDead = deadCheck ? deadCheck.checked : false;
+        const orderInput = r.querySelector('.inp-child-order');
+        const order = orderInput ? orderInput.value : "";
+        let genderVal = 'L'; 
+        r.querySelectorAll('.inp-child-gender').forEach(rd => { if(rd.checked) genderVal = rd.value; });
+
+        if (n) { childrenData.push({ name: n, spouse: sFinal, isDead: isDead, gender: genderVal, birthOrder: order, maritalStatus: globalMaritalStatus }); }
+    });
+
+    if (childrenData.length === 0) { alert("Wajib isi minimal satu nama anak!"); return; }
+    
+    const pl = { action: mode, motherName: document.getElementById('inp-mother').value }; 
+    if (mode === 'add') { pl.parentId = document.getElementById('inp-parent').value; pl.children = childrenData; } 
+    else { 
+        pl.id = document.getElementById('inp-id').value; 
+        pl.name = childrenData[0].name; 
+        pl.spouse = childrenData[0].spouse; 
+        pl.isDead = childrenData[0].isDead; 
+        pl.gender = childrenData[0].gender; 
+        pl.birthOrder = childrenData[0].birthOrder; 
+        pl.maritalStatus = childrenData[0].maritalStatus; 
+    }
+    enqueueAction(pl);
+}
+
+    function deleteItem(id) { if(confirm("Hapus data ini beserta keturunannya? (Akan masuk antrean Sync)")) { enqueueAction({ action: 'delete', id: id }); } }
+
+    function openCalcModal() { document.getElementById('calc-modal').classList.replace('hidden','flex'); document.getElementById('calc-result').classList.add('hidden'); document.getElementById('calc-id-a').value = ''; document.getElementById('calc-id-b').value = ''; document.querySelectorAll('#calc-modal input[type="text"]').forEach(i => i.value = ''); }
+    function suggestCalc(input, listId, hiddenInputId) {
+        const val = input.value.trim().toLowerCase(); const list = document.getElementById(listId); const hiddenIdInput = document.getElementById(hiddenInputId);
+        if(hiddenIdInput) hiddenIdInput.value = ''; if(list) list.innerHTML = ''; else return;
+        if(val.length < 2) { list.classList.add('hidden'); return; }
+        if (typeof allData === 'undefined' || allData.length === 0) return;
+        const matches = allData.filter(d => (d.name && d.name.toLowerCase().includes(val)) || (d.spouse && d.spouse.toLowerCase().includes(val))).slice(0, 7);
+        if(matches.length > 0) {
+            list.classList.remove('hidden');
+            matches.forEach(m => {
+                const li = document.createElement('li'); li.className = "px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm border-b border-gray-100 dark:border-gray-600 last:border-0 flex justify-between items-center";
+                const parentInfo = getShortParentName(m.parentId);
+                const genderIcon = m.gender === 'P' ? '<i class="fas fa-venus text-pink-400 ml-2"></i>' : '<i class="fas fa-mars text-blue-400 ml-2"></i>';
+                li.innerHTML = `<div class="flex-1"><div class="font-semibold text-slate-700 dark:text-gray-200">${m.name}</div><div class="text-[10px] text-gray-400">Ortu: ${parentInfo}</div></div>${genderIcon}`;
+                li.onclick = () => { input.value = m.name; if(hiddenIdInput) hiddenIdInput.value = m.id; list.classList.add('hidden'); }; list.appendChild(li);
+            });
+        } else { const li = document.createElement('li'); li.className = "px-3 py-2 text-xs text-gray-400 italic text-center"; li.innerText = "Tidak ditemukan"; list.appendChild(li); list.classList.remove('hidden'); }
+    }
+    function getShortParentName(pid) { if(!pid || pid==='root') return 'Root'; const p = allData.find(d=>d.id == pid); return p ? p.name : 'Tidak Diketahui'; }
+    
+    document.addEventListener('click', function(e) {
+        const searchBox = document.getElementById('search-box');
+        const searchRes = document.getElementById('custom-search-results');
+        if (searchBox && searchRes && !searchBox.contains(e.target) && !searchRes.contains(e.target)) { searchRes.classList.add('hidden'); }
+        document.querySelectorAll('.suggestion-list').forEach(list => { if (list.parentNode && !list.parentNode.contains(e.target)) { list.remove(); } });
+        const calcWrapper = e.target.closest('#calc-modal .relative');
+        if (!calcWrapper) { document.querySelectorAll('ul[id^="list-"]').forEach(el => el.classList.add('hidden')); }
+    });
+
+
+    function calculateRelation() {
+        const idA = document.getElementById('calc-id-a').value; const idB = document.getElementById('calc-id-b').value;
+        if(!idA || !idB) { alert("Pilih kedua orang dari daftar saran!"); return; }
+        if(idA === idB) { showResult("Orang Sama", "Anda memilih orang yang sama."); return; }
+        const graph = buildRelationshipGraph(); const path = findShortestPath(graph, idA, idB);
+        if (!path) { showResult("Jalurnya hubungan terlalu jauh !!!"); } else { const explanation = interpretPath(path); showResult(explanation.title, explanation.desc); }
+    }
+
+    function buildRelationshipGraph() {
+        const adj = {}; allData.forEach(d => adj[d.id] = []);
+        allData.forEach(p => {
+            if (p.parentId && p.parentId !== 'root') { adj[p.id].push({ target: p.parentId, type: 'parent' }); if (adj[p.parentId]) adj[p.parentId].push({ target: p.id, type: 'child' }); }
+            if (p.motherName && p.motherName.trim().length > 1) { const motherObj = allData.find(d => d.name.toLowerCase() === p.motherName.trim().toLowerCase()); if (motherObj) { adj[p.id].push({ target: motherObj.id, type: 'parent' }); if (adj[motherObj.id]) { if(!adj[motherObj.id].some(x => x.target === p.id)) { adj[motherObj.id].push({ target: p.id, type: 'child' }); } } } }
+            if (p.spouse) { const spouseNames = p.spouse.split(',').map(s => s.trim().toLowerCase()); const spouseMatches = allData.filter(d => spouseNames.includes(d.name.toLowerCase())); spouseMatches.forEach(match => { if(!adj[p.id].some(x => x.target === match.id)) { adj[p.id].push({ target: match.id, type: 'spouse' }); } if (adj[match.id]) { if (!adj[match.id].some(x => x.target === p.id)) { adj[match.id].push({ target: p.id, type: 'spouse' }); } } }); }
+        });
+        return adj;
+    }
+
+    function findShortestPath(graph, start, end) {
+        let queue = [{ id: start, path: [] }]; let visited = new Set(); visited.add(start);
+        while (queue.length > 0) {
+            if (queue.length > 10000) break; 
+            let { id, path } = queue.shift(); if (id === end) return path;
+            if (graph[id]) {
+                for (let neighbor of graph[id]) {
+                    if (!visited.has(neighbor.target)) { visited.add(neighbor.target); let newPath = [...path, { from: id, to: neighbor.target, type: neighbor.type }]; if (newPath.length <= 15) { queue.push({ id: neighbor.target, path: newPath }); } }
+                }
+            }
+        }
+        return null; 
+    }
+
+    function interpretPath(path) {
+        const styleLeluhur = (n) => `<strong class="text-blue-600 dark:text-blue-400">${n}</strong>`;
+        const styleBiasa = (n) => `<span class="font-medium text-slate-700 dark:text-gray-300">${n}</span>`;
+        const steps = path.length; const lastStep = path[steps - 1]; const targetPerson = allData.find(d => d.id == lastStep.to); const targetName = targetPerson ? targetPerson.name : "Dia";
+        if (steps === 1 && lastStep.type === 'spouse') { return { title: "Pasangan", desc: `${styleBiasa(targetName)} adalah Suami/Istri Anda.` }; }
+        const isBloodPath = path.every(s => s.type === 'parent' || s.type === 'child');
+        if (isBloodPath) {
+            const upSteps = path.filter(s => s.type === 'parent').length; const downSteps = path.filter(s => s.type === 'child').length; 
+            let lcaName = "Leluhur"; for (let i = 0; i < path.length - 1; i++) { if (path[i].type === 'parent' && path[i+1].type === 'child') { const lcaObj = allData.find(d => d.id == path[i].to); if(lcaObj) lcaName = lcaObj.name; break; } }
+            if (downSteps === 0) {
+                if (upSteps === 1) return { title: "Orang Tua", desc: `${styleBiasa(targetName)} adalah Ayah/Ibu Anda.` };
+                if (upSteps === 2) return { title: "Kakek / Nenek", desc: `${styleBiasa(targetName)} adalah Orang Tua dari Ayah/Ibu Anda.` };
+                if (upSteps === 3) return { title: "Buyut", desc: `${styleBiasa(targetName)} adalah Orang Tua dari Kakek/Nenek Anda.` };
+                if (upSteps > 3) return { title: `Leluhur (${upSteps} Generasi)`, desc: `${styleBiasa(targetName)} adalah leluhur langsung tingkat ke-${upSteps} di atas Anda.` };
+            }
+            if (upSteps === 0) {
+                if (downSteps === 1) return { title: "Anak", desc: `${styleBiasa(targetName)} adalah Anak Anda.` };
+                if (downSteps === 2) return { title: "Cucu", desc: `${styleBiasa(targetName)} adalah Anak dari Anak Anda.` };
+                if (downSteps === 3) return { title: "Cicit", desc: `${styleBiasa(targetName)} adalah Cucu dari Anak Anda.` };
+                if (downSteps > 3) return { title: `Keturunan (Generasi ke-${downSteps})`, desc: `${styleBiasa(targetName)} adalah keturunan langsung Anda.` };
+            }
+            if (upSteps === downSteps) {
+                if (upSteps === 1) return { title: "Saudara Kandung", desc: `Memiliki orang tua yang sama, yaitu ${styleLeluhur(lcaName)}.` };
+                if (upSteps === 2) return { title: "Sepupu 1 Kali", desc: `Berbagi Kakek/Nenek yang sama (${styleLeluhur(lcaName)}).` };
+                if (upSteps >= 3) return { title: `Sepupu ${upSteps-1} Kali`, desc: `Berbagi Leluhur yang sama (${styleLeluhur(lcaName)}).` };
+            }
+            if (upSteps > downSteps) {
+                const diff = upSteps - downSteps;
+                if (upSteps === 2 && downSteps === 1) { return { title: "Paman / Bibi", desc: `Saudara Kandung dari Orang Tua Anda.` }; }
+                if (diff === 1) { return { title: `Paman/Bibi Sepupu ${upSteps-2} Kali`, desc: `Sepupu Jauh dari Orang Tua Anda.` }; }
+            }
+            if (downSteps > upSteps) {
+                const diff = downSteps - upSteps;
+                if (upSteps === 1 && downSteps === 2) return { title: "Keponakan", desc: `Anak dari Saudara Kandung Anda.` };
+                if (diff === 1) { return { title: `Keponakan Sepupu ${upSteps-1} Kali`, desc: `Anak dari Sepupu Anda.` }; }
+            }
+        }
+        let lcaId = null;
+        for (let i = 0; i < path.length - 1; i++) { if (path[i].type === 'parent' && path[i+1].type === 'child') { lcaId = path[i].to; break; } }
+        if (!lcaId) { const allUp = path.every(s => s.type === 'parent'); if (allUp && path.length > 0) lcaId = path[path.length-1].to; }
+        let descStr = "Jalur Hubungan: <br><ul class='text-left text-xs mt-2 list-disc pl-4 space-y-1'>";
+        path.forEach((step, i) => {
+            const pTo = allData.find(d => d.id == step.to); const toName = pTo ? pTo.name : "???";
+            let relationText = ""; if (step.type === 'parent') relationText = "Ayah/Ibu-nya"; else if (step.type === 'child') relationText = "Anak-nya"; else if (step.type === 'spouse') relationText = "Pasangan-nya";
+            const isLeluhur = (step.to == lcaId); const finalName = isLeluhur ? styleLeluhur(toName + " (Leluhur Bersama)") : styleBiasa(toName);
+            descStr += `<li>${finalName} adalah ${relationText}</li>`;
+        });
+        descStr += "</ul>";
+        return { title: "Kerabat Jauh", desc: descStr };
+    }
+
+    function showResult(title, desc) { document.getElementById('calc-result').classList.remove('hidden'); document.getElementById('res-title').innerText = title; document.getElementById('res-desc').innerHTML = desc; }
+
+function openDetailPopup(id, event) {
+    if(event) event.stopPropagation();
+    const p = allData.find(d => d.id == id); if(!p) return;
+    
+    const modal = document.getElementById('detail-modal'); 
+    modal.classList.remove('hidden'); 
+    modal.classList.add('flex');
+    
+    document.getElementById('det-name').textContent = p.name;
+    const spouseDisplay = p.spouse ? p.spouse.split(',').map(s => s.trim()).join(' & ') : "Belum ada pasangan terdata";
+    document.getElementById('det-spouse').textContent = "Pasangan: " + spouseDisplay;
+    const isMale = (p.gender !== 'P'); 
+    const iconClass = isMale ? "fa-user-tie text-blue-500" : "fa-user-nurse text-pink-500";
+    document.getElementById('det-avatar').innerHTML = `<i class="fas ${iconClass}"></i>`;
+    document.getElementById('det-gender').textContent = isMale ? "Laki-laki" : "Perempuan";
+    document.getElementById('det-order').textContent = p.birthOrder ? "Anak ke-" + p.birthOrder : "-";
+    const statusEl = document.getElementById('det-status'); 
+    const statusRow = statusEl.parentElement; 
+    
+    if (p.isDead == 1) { 
+        statusRow.classList.add('hidden'); 
+    } else { 
+        statusRow.classList.remove('hidden'); 
+        let rawStatus = p.maritalStatus || "Lajang";
+        let displayStatus = rawStatus;
+        if (rawStatus === "Lajang" || rawStatus === "Belum Menikah") { displayStatus = isMale ? "Lajang (Perjaka)" : "Gadis"; }
+        statusEl.textContent = displayStatus; 
+    }
+    const condEl = document.getElementById('det-condition'); 
+    condEl.textContent = (p.isDead == 1) ? "Meninggal Dunia (Alm/Almh)" : "Masih Hidup"; 
+    condEl.className = (p.isDead == 1) ? "font-semibold text-red-500" : "font-semibold text-green-600";
+}
+
+    let isAdminMenuOpen = false;
+    function toggleAdminMenu() {
+        const opts = document.getElementById('admin-menu-options'); const icon = document.getElementById('icon-admin-menu'); isAdminMenuOpen = !isAdminMenuOpen;
+        if (isAdminMenuOpen) { opts.classList.remove('opacity-0', 'translate-x-10', 'pointer-events-none', 'scale-90'); opts.classList.add('opacity-100', 'translate-x-0', 'scale-100'); icon.classList.replace('fa-ellipsis-v', 'fa-times'); icon.classList.add('rotate-90'); } 
+        else { opts.classList.add('opacity-0', 'translate-x-10', 'pointer-events-none', 'scale-90'); opts.classList.remove('opacity-100', 'translate-x-0', 'scale-100'); icon.classList.replace('fa-times', 'fa-ellipsis-v'); icon.classList.remove('rotate-90'); }
+    }
+
+    function triggerRestore() { document.getElementById('restore-file-input').click(); }
+    function handleRestoreFile(input) {
+        const file = input.files[0]; if (!file) return; const resetInput = () => { input.value = ''; }; const reader = new FileReader();
+        reader.onload = function(e) {
+            try { const importedData = JSON.parse(e.target.result); if (!Array.isArray(importedData)) { throw new Error("Format file salah! File harus berisi Array data JSON."); }
+            const confirmMsg = `Ditemukan ${importedData.length} data anggota keluarga.\n\nPERINGATAN: \nTindakan ini akan MENGHAPUS semua data lama di server dan menggantinya dengan data dari file ini.\n\nApakah Anda yakin ingin melanjutkan?`;
+            if (confirm(confirmMsg)) { enqueueAction({ action: 'restore_all', data: importedData }); alert("Permintaan Restore telah masuk antrean Sync (Tombol Oranye).\nSilakan klik tombol Sync untuk memproses ke server."); } } catch (err) { console.error(err); alert("Gagal membaca file: " + err.message); } finally { resetInput(); }
+        };
+        reader.readAsText(file);
+    }
+
+    function openNarrativeMode() { document.getElementById('narrative-modal').classList.remove('hidden'); document.getElementById('narrative-modal').classList.add('flex'); setTimeout(generateStoryHTML, 100); }
+    function generateStoryHTML() {
+        const container = document.getElementById('narrative-content');
+        try {
+            if (!allData || allData.length === 0) { container.innerHTML = '<p class="text-center italic text-gray-500">Belum ada data keluarga yang dimuat.</p>'; return; }
+            const userRootId = localStorage.getItem('userRootId'); let roots = [];
+            if (isLoggedIn && userRootId && userRootId !== 'all') { roots = allData.filter(d => d.id == userRootId); } else { roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root' || d.parentId === 'root'); }
+            roots.sort((a, b) => { const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999; const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999; return orderA - orderB; });
+            let html = '';
+            roots.forEach(root => { html += `<div class="mb-10 pb-6 border-b border-gray-200 dark:border-gray-700 last:border-0">`; html += `<h2 class="text-2xl font-bold text-center text-indigo-800 dark:text-indigo-400 mb-6 font-serif">Garis Keturunan ${root.name}</h2>`; html += recursiveNarrative(root, 0); html += `</div>`; });
+            if (roots.length === 0) { container.innerHTML = '<p class="text-center italic text-gray-500">Data leluhur utama tidak ditemukan. Pastikan data memiliki ID yang benar.</p>'; } else { container.innerHTML = html; }
+        } catch (error) { console.error(error); container.innerHTML = `<div class="text-center text-red-500 p-4 border border-red-200 rounded bg-red-50"><p class="font-bold">Terjadi Kesalahan saat memuat cerita:</p><p class="text-xs mt-1">${error.message}</p></div>`; }
+    }
+    
+    function recursiveNarrative(person, level) {
+        if (!person) return ""; 
+        let children = allData.filter(d => d.parentId == person.id || (d.motherName && d.motherName.trim() === person.name));
+        children.sort((a, b) => { const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999; const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999; return orderA - orderB; });
+        const isDead = person.isDead == 1; let statusAlm = ""; if (isDead) { statusAlm = (person.gender === 'P') ? "(Almh) " : "(Alm) "; }
+        const marginLeft = Math.min(level * 12, 60); const borderClass = level > 0 ? "border-l-2 border-indigo-200 dark:border-indigo-800 pl-3" : "";
+        let story = `<div style="margin-left: ${marginLeft}px" class="mb-3 ${borderClass} relative w-auto">`;
+        if(level > 0) { story += `<div class="absolute -left-[19px] top-2.5 w-2 h-2 rounded-full bg-indigo-300 dark:bg-indigo-600"></div>`; }
+        story += `<div class="text-base leading-relaxed text-left text-slate-700 dark:text-gray-300 font-serif w-full pr-1 md:pr-4"><span class="font-bold text-slate-900 dark:text-white text-lg">${statusAlm}${person.name}</span>`;
+        if (person.spouse) { const spouseFormatted = person.spouse.split(',').map(s => s.trim()).join(' & '); story += ` menikah dengan <span class="font-semibold text-indigo-600 dark:text-indigo-400">${spouseFormatted}</span>.`; }
+        if (children.length > 0) {
+            story += ` Dikaruniai <strong>${children.length}</strong> anak: `;
+            const childNames = children.map((c) => { let childStatus = (c.isDead == 1) ? ((c.gender === 'P') ? "(Almh) " : "(Alm) ") : ""; return `${childStatus}${c.name}`; });
+            if (childNames.length === 1) { story += `<span class="italic text-slate-600 dark:text-gray-400">${childNames[0]}</span>.`; } 
+            else { const lastChild = childNames.pop(); story += `<span class="italic text-slate-600 dark:text-gray-400">${childNames.join(', ')}, dan ${lastChild}</span>.`; }
+            story += `</div>`; children.forEach(child => { story += recursiveNarrative(child, level + 1); });
+        } else { story += `</div>`; }
+        story += `</div>`; return story;
+    }
+
+    function setupOutsideClickCloser() {
+        const modalActions = { 'login-modal': closeLoginModal, 'modal': closeModal, 'detail-modal': () => document.getElementById('detail-modal').classList.add('hidden'), 'calc-modal': () => document.getElementById('calc-modal').classList.add('hidden'), 'narrative-modal': () => document.getElementById('narrative-modal').classList.add('hidden'), 'pdf-modal': () => document.getElementById('pdf-modal').classList.add('hidden') };
+        for (const [modalId, closeFunction] of Object.entries(modalActions)) { const modalEl = document.getElementById(modalId); if (modalEl) { modalEl.addEventListener('click', function(event) { if (event.target === this) { closeFunction(); } }); } }
+        document.addEventListener('click', function(e) { if (isAdminMenuOpen && !e.target.closest('#admin-menu-container')) { toggleAdminMenu(); } });
+    }
+
+    function copyNarrative() {
+        const container = document.getElementById('narrative-content');
+        if (!container || container.innerText.trim() === "") { alert("Belum ada cerita yang dimuat untuk disalin."); return; }
+        const textToCopy = container.innerText;
+        if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(textToCopy).then(() => { alert("Berhasil! Kisah keluarga telah disalin ke clipboard."); }).catch((err) => { console.error("Gagal copy via Navigator, mencoba fallback...", err); fallbackCopyText(textToCopy); }); } else { fallbackCopyText(textToCopy); }
+    }
+    function fallbackCopyText(text) {
+        const textArea = document.createElement("textarea"); textArea.value = text;
+        textArea.style.position = "fixed"; textArea.style.left = "-9999px"; textArea.style.top = "0";
+        document.body.appendChild(textArea); textArea.focus(); textArea.select();
+        try { const successful = document.execCommand('copy'); if (successful) { alert("Berhasil! Kisah keluarga telah disalin ke clipboard."); } else { alert("Maaf, gagal menyalin teks. Silakan seleksi dan salin manual."); } } catch (err) { console.error("Fallback copy error", err); alert("Browser Anda tidak mendukung fitur salin otomatis."); }
+        document.body.removeChild(textArea);
+    }
+
+    function downloadHierarchyText() {
+        if (!allData || allData.length === 0) { alert("Data kosong."); return; }
+        const userRootId = localStorage.getItem('userRootId'); let roots = [];
+        if (isLoggedIn && userRootId && userRootId !== 'all') { roots = allData.filter(d => d.id == userRootId); } else { roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root'); }
+        roots.sort((a, b) => { const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999; const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999; return orderA - orderB; });
+        if (roots.length === 0) { alert("Data leluhur utama tidak ditemukan."); return; }
+        const colors = [ "#FFD700", "#00BFFF", "#32CD32", "#FF69B4", "#FFA500", "#9370DB", "#00FA9A", "#FF6347", "#87CEEB", "#DDA0DD" ];
+        const dateStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        let htmlContent = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Silsilah Keluarga Puang Guru Nasing</title><style>body{background-color:#1e1e1e;color:#cccccc;font-family:'Consolas','Monaco','Courier New',monospace;white-space:pre;padding:20px;font-size:14px;line-height:1.5;}.header{color:#ffffff;font-weight:bold;margin-bottom:20px;border-bottom:1px dashed #555;padding-bottom:10px;}.tree-line{color:#555555;}.spouse{color:#888888;font-style:italic;font-size:0.9em;}</style></head><body><div class="header">=== STRUKTUR KELUARGA BESAR PUANG GURU NASING ===\nDiunduh pada: ${dateStr}\nKeterangan: (Alm)=Pria Wafat, (Almh)=Wanita Wafat\nWarna teks menunjukkan perbedaan generasi.\n=================================================\n</div>`;
+        roots.forEach(root => { htmlContent += generateColoredTree(root, "", true, true, 0, colors); htmlContent += "\n\n<div class='tree-line'>-------------------------------------------------</div>\n\n"; });
+        htmlContent += `</body></html>`;
+        const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; const fileNameDate = new Date().toISOString().slice(0,10); link.download = `Pohon_Keluarga_Warna_PGN_${fileNameDate}.html`; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
+    }
+
+    function generateColoredTree(person, prefix, isLast, isRoot, level, colors) {
+        let result = ""; let lineSymbol = ""; if (!isRoot) { lineSymbol = isLast ? "\\-- " : "+-- "; }
+        let lineHTML = `<span class="tree-line">${prefix}${lineSymbol}</span>`;
+        let nameStr = person.name; if (person.isDead == 1) { const suffix = (person.gender === 'P') ? " (Almh)" : " (Alm)"; nameStr += suffix; }
+        const colorCode = colors[level % colors.length]; let nameHTML = `<span style="color: ${colorCode}; font-weight: bold;">${nameStr}</span>`;
+        let spouseHTML = ""; if (person.spouse) { const cleanSpouse = person.spouse.split(',').map(s => s.trim()).join(' & '); spouseHTML = `<span class="spouse"> [Ps: ${cleanSpouse}]</span>`; }
+        result += `${lineHTML}${nameHTML}${spouseHTML}\n`;
+        let childPrefix = prefix; if (!isRoot) { childPrefix += isLast ? "    " : "|   "; }
+        let children = allData.filter(d => d.parentId == person.id || (d.motherName && d.motherName.trim() === person.name));
+        children.sort((a, b) => { const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999; const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999; return orderA - orderB; });
+        for (let i = 0; i < children.length; i++) { const isLastChild = (i === children.length - 1); result += generateColoredTree(children[i], childPrefix, isLastChild, false, level + 1, colors); }
+        return result;
+    }
+
+    function exportCSV() {
+        if (!allData || allData.length === 0) { alert("Data kosong."); return; }
+        let csvContent = "data:text/csv;charset=utf-8,ID,Nama,Jenis Kelamin,Parent ID,Pasangan,Ibu,Urutan Lahir,Status Pernikahan,Status Hidup\n";
+        allData.forEach(row => { const cols = [ `"${row.id || ''}"`, `"${row.name || ''}"`, `"${row.gender || 'L'}"`, `"${row.parentId || ''}"`, `"${row.spouse || ''}"`, `"${row.motherName || ''}"`, `"${row.birthOrder || ''}"`, `"${row.maritalStatus || ''}"`, `"${row.isDead == 1 ? 'Meninggal' : 'Hidup'}"` ]; csvContent += cols.join(",") + "\r\n"; });
+        const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); const dateStr = new Date().toISOString().slice(0,10); link.setAttribute("download", `Data_Keluarga_PGN_${dateStr}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    }
+
+    function backupJSON() {
+        if (!allData || allData.length === 0) { alert("Tidak ada data untuk dibackup."); return; }
+        try { const jsonContent = JSON.stringify(allData, null, 2); const blob = new Blob([jsonContent], { type: 'application/json' }); const url = window.URL.createObjectURL(blob); const link = document.createElement("a"); link.style.display = "none"; link.href = url; const dateStr = new Date().toISOString().slice(0,10); link.setAttribute("download", `Backup_Silsilah_Full_${dateStr}.json`); document.body.appendChild(link); link.click(); setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 100); } catch (e) { console.error(e); alert("Gagal membuat backup: " + e.message); }
+    }
+
+    function exportGEDCOM() {
+        if (!allData || allData.length === 0) { alert("Data kosong."); return; }
+        let ged = "0 HEAD\n1 SOUR KeluargaBesarPGNApp\n1 GEDC\n2 VERS 5.5.1\n2 FORM LINEAGE-LINKED\n1 CHAR UTF-8\n";
+        allData.forEach(p => {
+            const safeId = p.id.toString().replace(/\s/g, '_'); ged += `0 @I${safeId}@ INDI\n`; ged += `1 NAME ${p.name}\n`; ged += `1 SEX ${p.gender === 'P' ? 'F' : 'M'}\n`;
+            if (p.isDead == 1) { ged += `1 DEAT Y\n`; } if (p.parentId && p.parentId !== 'root') { const safeParentId = p.parentId.toString().replace(/\s/g, '_'); ged += `1 FAMC @F${safeParentId}@\n`; }
+            const hasChildren = allData.some(d => d.parentId == p.id); if (hasChildren) { ged += `1 FAMS @F${safeId}@\n`; }
+        });
+        allData.forEach(p => {
+            const children = allData.filter(d => d.parentId == p.id);
+            if (children.length > 0) { const safeFid = p.id.toString().replace(/\s/g, '_'); ged += `0 @F${safeFid}@ FAM\n`; ged += `1 HUSB @I${safeFid}@\n`; children.forEach(ch => { const safeChId = ch.id.toString().replace(/\s/g, '_'); ged += `1 CHIL @I${safeChId}@\n`; }); }
+        });
+        ged += "0 TRLR";
+        try { const blob = new Blob([ged], { type: "text/plain;charset=utf-8" }); const url = window.URL.createObjectURL(blob); const link = document.createElement("a"); link.style.display = "none"; link.href = url; const dateStr = new Date().toISOString().slice(0,10); link.setAttribute("download", `Silsilah_PGN_${dateStr}.ged`); document.body.appendChild(link); link.click(); setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 100); } catch (e) { console.error("Gagal download GEDCOM:", e); alert("Gagal membuat file GEDCOM: " + e.message); }
+    }
+
+    // --- PDF LOGIC (BARU) ---
+    function openPDFModal() { document.getElementById('pdf-modal').classList.remove('hidden'); document.getElementById('pdf-modal').classList.add('flex'); }
+    function closePDFModal() { document.getElementById('pdf-modal').classList.add('hidden'); document.getElementById('pdf-modal').classList.remove('flex'); }
+
+    async function generatePDFAction() {
+        if (!allData || allData.length === 0) { alert("Data kosong."); return; }
+        if (!window.jspdf) { alert("Library PDF sedang dimuat, coba sesaat lagi."); return; }
+
+        const { jsPDF } = window.jspdf;
+        const type = document.querySelector('input[name="pdf-type"]:checked').value;
+        const size = document.getElementById('pdf-size').value;
+        const orientation = 'p'; 
+        
+        const doc = new jsPDF({ orientation: orientation, unit: 'mm', format: size });
+        
+        // --- HEADER DOKUMEN ---
+        doc.setFont("helvetica", "bold"); 
+        doc.setFontSize(16); 
+        doc.setTextColor(40, 40, 40);
+        
+        const pageWidth = doc.internal.pageSize.getWidth(); 
+        const pageHeight = doc.internal.pageSize.getHeight();
+        
+        doc.text("KELUARGA BESAR PUANG GURU NASING", pageWidth / 2, 15, { align: 'center' });
+        
+        doc.setFontSize(10); 
+        doc.setFont("helvetica", "normal");
+        doc.text(`Diunduh pada: ${new Date().toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}`, pageWidth / 2, 22, { align: 'center' });
+        
+        doc.setLineWidth(0.5); 
+        doc.line(10, 25, pageWidth - 10, 25);
+
+        let yPos = 35;
+
+        // --- SIAPKAN DATA HIERARKI (ROOTS) ---
+        const userRootId = localStorage.getItem('userRootId'); 
+        let roots = [];
+        if (isLoggedIn && userRootId && userRootId !== 'all') { 
+            roots = allData.filter(d => d.id == userRootId); 
+        } else { 
+            roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root'); 
+        }
+        // Urutkan Root berdasarkan urutan lahir
+        roots.sort((a, b) => (a.birthOrder || 99) - (b.birthOrder || 99));
+
+        // Palet Warna RGB untuk Generasi (Gen 0 - Gen 5+)
+        const genColorsRGB = [
+            [50, 50, 50],    // Gen 0: Dark Charcoal
+            [0, 80, 200],    // Gen 1: Strong Blue
+            [0, 120, 60],    // Gen 2: Forest Green
+            [100, 0, 150],   // Gen 3: Deep Purple
+            [200, 100, 0],   // Gen 4: Burnt Orange
+            [0, 128, 128]    // Gen 5: Teal
+        ];
+
+        // ==========================================
+        // MODE 1: POHON VISUAL (TREE)
+        // ==========================================
+        if (type === 'tree') {
+            doc.setFontSize(10); 
+            doc.text("Struktur Pohon Keluarga (Indentasi Menunjukkan Generasi)", 14, yPos); 
+            yPos += 10;
+
+            function printNode(person, level, prefix) {
+                if (yPos > pageHeight - 20) { doc.addPage(); yPos = 20; } 
+                
+                let nameStr = prefix + (level > 0 ? "+-- " : "") + person.name;
+                
+                // Logic Pewarnaan (Sama dengan List Mode)
+                if(person.isDead == 1) {
+                    doc.setTextColor(220, 38, 38); // Merah (Wafat)
+                    nameStr += (person.gender === 'P' ? " (Almh)" : " (Alm)");
+                } else {
+                    // Warna berdasarkan generasi
+                    const color = genColorsRGB[level % genColorsRGB.length];
+                    doc.setTextColor(color[0], color[1], color[2]);
+                }
+
+                doc.text(nameStr, 14, yPos);
+                
+                if (person.spouse) {
+                    doc.setTextColor(150, 150, 150); // Abu-abu untuk pasangan
+                    const cleanSpouse = person.spouse.split(',').map(s => s.split('(')[0].trim()).join(' & ');
+                    doc.text(` [Ps: ${cleanSpouse}]`, 14 + (doc.getStringUnitWidth(nameStr) * 3.5), yPos); 
+                }
+                
+                yPos += 6; 
+                
+                let children = allData.filter(d => d.parentId == person.id || (d.motherName && d.motherName.trim() === person.name));
+                children.sort((a, b) => (a.birthOrder || 99) - (b.birthOrder || 99));
+                
+                const nextPrefix = prefix + (level > 0 ? "|   " : "");
+                children.forEach(c => printNode(c, level + 1, nextPrefix));
+            }
+            
+            roots.forEach(r => printNode(r, 0, ""));
+        } 
+        
+        // ==========================================
+        // MODE 2: DAFTAR KELUARGA (LIST / TABEL)
+        // ==========================================
+        else {
+            doc.setFontSize(10); 
+            
+            // Header Tabel
+            doc.setFillColor(220, 38, 38); // Header Merah
+            doc.rect(10, yPos - 5, pageWidth - 20, 8, 'F');
+            doc.setTextColor(255, 255, 255); // Teks Putih
+            doc.setFont("helvetica", "bold");
+            
+            // Kolom Header
+            doc.text("No", 12, yPos); 
+            doc.text("Nama Anggota Keluarga", 25, yPos); 
+            doc.text("Pasangan (Suami/Istri)", 100, yPos); 
+            doc.text("Nama Orang Tua", 155, yPos);
+            
+            yPos += 8;
+            let counter = 1;
+
+            // Fungsi Rekursif untuk Tabel
+            function printListRow(person, level) {
+                // 1. Cek Ganti Halaman
+                if (yPos > pageHeight - 20) { 
+                    doc.addPage(); 
+                    yPos = 20; 
+                    // Cetak Header Tabel lagi
+                    doc.setFillColor(220, 38, 38);
+                    doc.rect(10, yPos - 5, pageWidth - 20, 8, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFont("helvetica", "bold");
+                    doc.text("No", 12, yPos); 
+                    doc.text("Nama Anggota Keluarga", 25, yPos); 
+                    doc.text("Pasangan (Suami/Istri)", 100, yPos); 
+                    doc.text("Nama Orang Tua", 155, yPos);
+                    yPos += 8;
+                }
+
+                doc.setFont("helvetica", "normal"); 
+                
+                // 2. Cetak Nomor (Hitam)
+                doc.setTextColor(0, 0, 0);
+                doc.text(String(counter++), 12, yPos);
+
+                // 3. Cetak Nama (Berwarna sesuai kondisi)
+                let n = person.name;
+                if(person.isDead == 1) { 
+                    doc.setTextColor(220, 38, 38); // Merah jika wafat (Prioritas Tertinggi)
+                    n += " (Alm/h)";
+                } else {
+                    // Gunakan warna generasi jika masih hidup
+                    const color = genColorsRGB[level % genColorsRGB.length];
+                    doc.setTextColor(color[0], color[1], color[2]);
+                }
+                
+                // Tambahkan spasi visual untuk anak/cucu
+                let indent = "";
+                if(level > 0) indent = "  ".repeat(level) + "L "; 
+                doc.text(indent + n, 25, yPos);
+
+                // RESET Warna kembali ke Abu-abu tua untuk kolom lainnya
+                doc.setTextColor(80, 80, 80);
+
+                // 4. Cetak Pasangan
+                let spouseText = "-";
+                if(person.spouse) {
+                    spouseText = person.spouse.split(',').map(s => s.split('(')[0].trim()).join(' & ');
+                }
+                if(spouseText.length > 25) spouseText = spouseText.substring(0, 25) + "...";
+                doc.text(spouseText, 100, yPos);
+
+                // 5. Cetak Nama Orang Tua
+                let parentName = "-"; 
+                if(person.parentId && person.parentId !== 'root') { 
+                    const parent = allData.find(d => d.id == person.parentId); 
+                    if(parent) parentName = parent.name; 
+                }
+                doc.text(parentName, 155, yPos);
+
+                // Garis Pemisah Baris
+                yPos += 7; 
+                doc.setDrawColor(230, 230, 230); 
+                doc.line(10, yPos-4, pageWidth-10, yPos-4); 
+
+                // 6. REKURSIF: Cari Anak
+                let children = allData.filter(d => d.parentId == person.id || (d.motherName && d.motherName.trim() === person.name));
+                children.sort((a, b) => (a.birthOrder || 99) - (b.birthOrder || 99));
+                
+                children.forEach(c => printListRow(c, level + 1));
+            }
+
+            // Jalankan loop utama
+            roots.forEach(r => printListRow(r, 0));
+        }
+
+        // --- FOOTER & SAVE ---
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+            doc.setPage(i); 
+            doc.setFontSize(8); 
+            doc.setTextColor(150, 150, 150);
+            doc.text(`Halaman ${i} dari ${totalPages} - Generated by Keluarga Besar PGN App`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+        }
+
+        doc.save(`Silsilah_PGN_${type}_${new Date().getTime()}.pdf`);
+        closePDFModal();
+    }
+
+    // --- UPDATE LOGIKA LOGIN ---
+    let html5QrcodeScanner = null;
+    let currentLoginMode = 'pass'; // 'pass' atau 'qr'
+
+    function switchLoginTab(mode) {
+        currentLoginMode = mode;
+        const tabPass = document.getElementById('tab-pass');
+        const tabQr = document.getElementById('tab-qr');
+        const formPass = document.getElementById('login-form-pass');
+        const formQr = document.getElementById('login-form-qr');
+        const btnLogin = document.getElementById('btn-confirm-login');
+
+        if (mode === 'qr') {
+            // Style Tab
+            tabPass.className = "w-1/2 py-2 text-sm font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors";
+            tabQr.className = "w-1/2 py-2 text-sm font-semibold text-primary border-b-2 border-primary transition-colors";
+            
+            // Tampilan Form
+            formPass.classList.add('hidden');
+            formQr.classList.remove('hidden');
+            formQr.classList.add('flex');
+            btnLogin.classList.add('hidden'); // Sembunyikan tombol 'Masuk' manual saat scan
+
+            // Mulai Scanner
+            startQRScanner();
+        } else {
+            // Style Tab
+            tabPass.className = "w-1/2 py-2 text-sm font-semibold text-primary border-b-2 border-primary transition-colors";
+            tabQr.className = "w-1/2 py-2 text-sm font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors";
+            
+            // Tampilan Form
+            formPass.classList.remove('hidden');
+            formQr.classList.add('hidden');
+            formQr.classList.remove('flex');
+            btnLogin.classList.remove('hidden');
+
+            // Stop Scanner
+            stopQRScanner();
+        }
+    }
+
+    function startQRScanner() {
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear().catch(() => {}).finally(() => { html5QrcodeScanner = null; initCam(); });
+        } else {
+            initCam();
+        }
+
+        function initCam() {
+            const html5QrCode = new Html5Qrcode("qr-reader");
+            html5QrcodeScanner = html5QrCode;
+            const config = { fps: 10, qrbox: { width: 200, height: 200 } };
+            
+            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
+            .catch(err => {
+                console.log("Kamera error/pending", err);
+                document.getElementById('qr-reader').innerHTML = `<div class="flex flex-col items-center justify-center h-full text-gray-400 text-[10px] p-4 text-center"><i class="fas fa-camera-slash text-2xl mb-2"></i><br>Kamera tidak aktif<br>Gunakan tombol Upload</div>`;
+            });
+        }
+    }
+
+    function stopQRScanner() {
+        return new Promise((resolve) => {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.stop().then(() => {
+                    html5QrcodeScanner.clear();
+                    html5QrcodeScanner = null;
+                    resolve();
+                }).catch(err => {
+                    console.log("Stop failed", err);
+                    html5QrcodeScanner = null; 
+                    resolve();
+                });
+            } else {
+                resolve();
+            }
+        });
+    }
+
+    function onScanSuccess(decodedText) {
+        stopQRScanner(); 
+        doLogin(decodedText); 
+    }
+
+    function triggerFileScan() { document.getElementById('qr-file-input').click(); }
+
+    async function handleQrFile(input) {
+        if (!input.files || input.files.length === 0) return;
+        const imageFile = input.files[0];
+        await stopQRScanner();
+        const html5QrCode = new Html5Qrcode("qr-reader");
+        
+        try {
+            document.getElementById('qr-reader').innerHTML = '<div class="flex items-center justify-center h-full text-indigo-500 animate-pulse font-bold">Memindai Gambar...</div>';
+            const decodedText = await html5QrCode.scanFile(imageFile, true);
+            onScanSuccess(decodedText);
+        } catch (err) {
+            console.error(err);
+            alert("QR Code tidak ditemukan pada gambar tersebut. Pastikan gambar jelas.");
+            document.getElementById('qr-reader').innerHTML = '<div class="flex items-center justify-center h-full text-red-400 text-xs">Gagal Deteksi</div>';
+        }
+        input.value = ''; 
+    }
+</script>
+
+</body>
+</html>
