@@ -269,7 +269,7 @@
 <datalist id="existing-members"></datalist>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycby5LYAlYSK5gSqjlydE3L4pv87-m6Srrr7t9cFF36LGeHUQpyHPJj42LTad2f64dGnR/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbzsVL0EjM15kPIt-uY6_HtNdhHoSniVfGC6-Z9P2klNs2kTcXjf0qDXXvQjSiBS-oa2/exec"; 
     
     let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; 
     let allData = [], searchableNamesList = []; 
@@ -407,52 +407,114 @@ function renderTree() {
     
     function createNode(p, lvl) {
         const li = document.createElement('li'); 
-        li.className = 'my-3'; li.setAttribute('data-id', p.id); li.classList.add('node-card'); 
+        li.className = 'my-3'; 
+        li.setAttribute('data-id', p.id); 
+        li.classList.add('node-card'); 
+
+        // 1. Cari Anak (Logic Original)
         let children = allData.filter(d => d.parentId == p.id || (d.motherName && d.motherName.trim() === p.name));
+        
+        // 2. Urutkan Anak berdasarkan birthOrder
         children.sort((a, b) => {
             const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999;
             const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999;
             return orderA - orderB;
         });
+
+        // 3. Styling Gender
         let genderClass = 'border-l-4 border-l-gray-300';
-        if (p.gender === 'L') { genderClass = 'border-l-4 border-l-blue-400'; } else if (p.gender === 'P') { genderClass = 'border-l-4 border-l-pink-400'; }
+        if (p.gender === 'L') { genderClass = 'border-l-4 border-l-blue-400'; } 
+        else if (p.gender === 'P') { genderClass = 'border-l-4 border-l-pink-400'; }
+
+        // 4. Tombol Trace & Ikon Nisan
         const traceBtn = `<button class="w-7 h-7 rounded-full bg-white/80 text-orange-500 hover:bg-orange-500 hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-orange-400 dark:hover:bg-orange-500 border border-orange-200 dark:border-orange-900 shadow-sm" onclick="traceLineage('${p.id}', event)" title="Telusuri Jalur"><i class="fas fa-shoe-prints text-[10px]"></i></button>`;
         const isDeceased = p.isDead == 1;
         const nisanHtml = isDeceased ? `<div class="mt-1 text-gray-500 dark:text-gray-400 text-center" title="Almarhum/ah"><i class="fas fa-monument text-xs"></i></div>` : '';
         const statusContainer = `<div class="flex flex-col items-center justify-center px-2 mx-1 border-l border-dashed border-gray-300 dark:border-gray-600 gap-0.5">${traceBtn}${nisanHtml}</div>`;
+
+        // 5. Label Orang Tua (Anak dari...)
         let pLabel = '';
         if (p.parentId && p.parentId !== 'root') {
             const f = allData.find(d => d.id === p.parentId); 
             let partnerName = "???";
-            if (p.motherName && p.motherName.trim() !== '' && p.motherName.trim() !== '-') { partnerName = p.motherName; } else if (f && f.spouse) { partnerName = f.spouse.split(',')[0]; }
+            if (p.motherName && p.motherName.trim() !== '' && p.motherName.trim() !== '-') { 
+                partnerName = p.motherName; 
+            } else if (f && f.spouse) { 
+                // Ambil nama pasangan pertama tanpa status
+                partnerName = f.spouse.split(',')[0].split('(')[0].trim(); 
+            }
             pLabel = `<span class="block text-[0.7rem] uppercase text-gray-500 dark:text-gray-400 mb-0.5">Anak dari: <strong class="text-slate-700 dark:text-gray-200">${f ? f.name : '???'}</strong> & <strong class="text-slate-700 dark:text-gray-200">${partnerName}</strong></span>`;
-        } else { pLabel = `<span class="block text-[0.7rem] uppercase text-primary mb-0.5">ð Leluhur Utama</span>`; }
+        } else { 
+            pLabel = `<span class="block text-[0.7rem] uppercase text-primary mb-0.5">👑 Leluhur Utama</span>`; 
+        }
+
+        // ============================================================
+        // 6. LOGIKA PASANGAN (UPDATED: Sembunyikan Status jika Meninggal)
+        // ============================================================
         let spHtml = ''; 
-        if (p.spouse) p.spouse.split(',').forEach(s => { if(s.trim()) spHtml += `<span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-white/60 text-pink-600 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800 cursor-default mr-1 mt-1"><i class="fas fa-heart mr-1 text-[0.6rem]"></i> ${s.trim()}</span>`; });
+        if (p.spouse) {
+            p.spouse.split(',').forEach(s => { 
+                let spouseDisplay = s.trim();
+                if(spouseDisplay) {
+                    // Jika pemilik kartu meninggal (isDead == 1), buang teks dalam kurung (...)
+                    if (p.isDead == 1) {
+                        spouseDisplay = spouseDisplay.split('(')[0].trim();
+                    }
+                    
+                    spHtml += `<span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-white/60 text-pink-600 border border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800 cursor-default mr-1 mt-1"><i class="fas fa-heart mr-1 text-[0.6rem]"></i> ${spouseDisplay}</span>`; 
+                }
+            }); 
+        }
+        // ============================================================
+
+        // 7. Warna Kartu Berdasarkan Level
         const clr = ['bg-slate-100 border-slate-400 dark:bg-slate-800 dark:border-slate-500', 'bg-blue-50 border-blue-400 dark:bg-blue-900/20 dark:border-blue-500', 'bg-emerald-50 border-emerald-400 dark:bg-emerald-900/20 dark:border-emerald-500', 'bg-amber-50 border-amber-400 dark:bg-amber-900/20 dark:border-amber-500', 'bg-purple-50 border-purple-400 dark:bg-purple-900/20 dark:border-purple-500', 'bg-rose-50 border-rose-400 dark:bg-rose-900/20 dark:border-rose-500'];
         const cardColor = clr[lvl % clr.length];
+
+        // 8. Tombol Admin (Edit/Add/Delete)
         let adminBtns = '';
         if (isLoggedIn) {
             const role = localStorage.getItem('userRole');
             const btnEdit = `<button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('edit','${p.id}')" title="Edit Data"><i class="fas fa-pen text-xs"></i></button>`;
             const btnAdd = `<button class="w-8 h-8 rounded-full bg-white/80 text-gray-500 hover:bg-primary hover:text-white flex items-center justify-center transition-colors dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-primary" onclick="openModal('add','${p.id}')" title="Tambah Keturunan"><i class="fas fa-plus text-xs"></i></button>`;
             const btnDel = (lvl > 0) ? `<button class="w-8 h-8 rounded-full bg-red-100 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors dark:bg-red-900/40 dark:hover:bg-red-600" onclick="deleteItem('${p.id}')" title="Hapus Data"><i class="fas fa-trash text-xs"></i></button>` : '';
+            
             let buttonsToShow = '';
-            if (role === 'super' || role === 'master') { buttonsToShow = `${btnEdit}${btnAdd}${btnDel}`; } else if (role === 'editor') { buttonsToShow = `${btnEdit}`; }
+            if (role === 'super' || role === 'master') { buttonsToShow = `${btnEdit}${btnAdd}${btnDel}`; } 
+            else if (role === 'editor') { buttonsToShow = `${btnEdit}`; }
+            
             adminBtns = `<div class="flex items-center gap-1 ml-1 border-l border-gray-300/50 pl-2">${buttonsToShow}</div>`;
         }
-        const div = document.createElement('div'); div.id = 'card-' + p.id; 
+
+        // 9. Konstruksi Kartu Utama
+        const div = document.createElement('div'); 
+        div.id = 'card-' + p.id; 
         div.className = `relative flex items-stretch p-3 rounded-lg shadow-sm hover:shadow-md border-[3px] transition-all duration-200 group ${cardColor} ${genderClass} ${lvl===0?'shadow-md':''}`;
+        
         const toggleIcon = children.length > 0 ? '<i class="fas fa-chevron-right"></i>' : '<i class="fas fa-circle text-[6px] opacity-30"></i>';
         const cursorClass = children.length > 0 ? 'cursor-pointer' : 'cursor-default';
+        
         const leftColumn = `<div class="flex flex-col items-center justify-start gap-2 mr-3 pt-1 border-r border-gray-300/50 dark:border-gray-600/50 pr-2"><button class="toggle-btn w-6 h-6 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-transform duration-200 ${cursorClass} flex items-center justify-center" onclick="toggleChild(this)">${toggleIcon}</button><button onclick="openDetailPopup('${p.id}', event)" class="text-indigo-400 hover:text-indigo-600 dark:text-indigo-300 dark:hover:text-white transition-colors w-6 h-6 flex items-center justify-center rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-800" title="Lihat Detail Lengkap"><i class="fas fa-info-circle text-lg"></i></button></div>`;
+        
         div.innerHTML = `${leftColumn}<div class="flex-grow cursor-pointer py-1" onclick="toggleChild(this.parentElement.querySelector('.toggle-btn'))">${pLabel}<div class="flex flex-wrap items-center gap-1"><span class="text-lg font-bold text-slate-800 dark:text-gray-100 flex items-center">${p.name}</span>${spHtml}</div></div>${statusContainer}${adminBtns}`;
+        
         li.appendChild(div);
+
+        // 10. Rekursi untuk Anak-anak
         if (children.length > 0) { 
-            const cUl = document.createElement('ul'); cUl.className = 'children-container hidden pl-[22px] tree-line list-none'; 
-            if (lvl === 0) { cUl.classList.replace('hidden','block'); div.querySelector('.toggle-btn').innerHTML='<i class="fas fa-chevron-down"></i>'; } 
-            children.forEach(ch => cUl.appendChild(createNode(ch, lvl+1))); li.appendChild(cUl); 
+            const cUl = document.createElement('ul'); 
+            cUl.className = 'children-container hidden pl-[22px] tree-line list-none'; 
+            
+            // Jika Level 0 (Root), otomatis terbuka
+            if (lvl === 0) { 
+                cUl.classList.replace('hidden','block'); 
+                div.querySelector('.toggle-btn').innerHTML='<i class="fas fa-chevron-down"></i>'; 
+            } 
+            
+            children.forEach(ch => cUl.appendChild(createNode(ch, lvl+1))); 
+            li.appendChild(cUl); 
         }
+        
         return li;
     }
 
@@ -541,7 +603,21 @@ function renderTree() {
 
     function prepareSearchableNames() {
         const uniqueNames = new Set(); 
-        allData.forEach(p => { if(p.name) uniqueNames.add(p.name.trim()); if(p.spouse) p.spouse.split(',').forEach(s => { if(s.trim()) uniqueNames.add(s.trim()); }); });
+        allData.forEach(p => { 
+            // 1. Masukkan Nama Anggota Keluarga
+            if(p.name) uniqueNames.add(p.name.trim()); 
+            
+            // 2. Masukkan Nama Pasangan (Bersihkan Statusnya)
+            if(p.spouse) {
+                p.spouse.split(',').forEach(s => { 
+                    if(s.trim()) {
+                        // Ambil nama saja, buang " (Status)"
+                        let cleanSpouse = s.split('(')[0].trim();
+                        uniqueNames.add(cleanSpouse); 
+                    }
+                }); 
+            }
+        });
         searchableNamesList = Array.from(uniqueNames).sort();
     }
     
@@ -983,7 +1059,10 @@ function openModal(mode, id) {
 
         const f = allData.find(d => d.id == id); 
         if (f && f.spouse && f.spouse.split(',').length === 1) {
-            document.getElementById('inp-mother').value = f.spouse.trim(); 
+            // Ambil hanya nama depan sebelum tanda kurung '('
+            // Contoh: "Dewi (Menikah)" menjadi "Dewi"
+            let cleanName = f.spouse.split('(')[0].trim();
+            document.getElementById('inp-mother').value = cleanName; 
         }
     } else { 
         // Mode Edit (Biarkan tetap seperti semula)
