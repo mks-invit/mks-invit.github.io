@@ -441,8 +441,6 @@ body::before {
         if (isDarkNow) { icon.classList.replace('fa-moon', 'fa-sun'); } else { icon.classList.replace('fa-sun', 'fa-moon'); }
     });
 
-    window.onload = function() { updateLoginUI(); updateSyncUI(); fetchData(); setupOutsideClickCloser(); };
-
 
     async function fetchData() {
         const localData = localStorage.getItem('familyDataCache');
@@ -2005,18 +2003,25 @@ async function downloadNarrativePDF() {
         }
     }
 
-    // --- INITIAL LOAD ---
-    const oldOnLoad = window.onload;
+        // --- INITIAL LOAD (GABUNGAN SEMUA FUNGSI STARTUP) ---
     window.onload = function() {
-        if(oldOnLoad) oldOnLoad();
+        // 1. Fungsi Utama Aplikasi (Dari kode lama)
+        updateLoginUI(); 
+        updateSyncUI(); 
+        fetchData(); 
+        setupOutsideClickCloser();
+
+        // 2. Load Tema Daerah yang Tersimpan (Dari kode baru)
         const savedTheme = localStorage.getItem('regionalThemeIdx');
         if (savedTheme) {
             currentThemeIdx = parseInt(savedTheme);
             applyRegionalTheme(currentThemeIdx);
         } else {
+            // Jika belum ada, pakai tema default (0)
             applyRegionalTheme(0);
         }
     };
+
 	
 </script>
 
