@@ -1285,19 +1285,89 @@ function openDetailPopup(id, event) {
         document.body.removeChild(textArea);
     }
 
-    function downloadHierarchyText() {
-        if (!allData || allData.length === 0) { alert("Data kosong."); return; }
-        const userRootId = localStorage.getItem('userRootId'); let roots = [];
-        if (isLoggedIn && userRootId && userRootId !== 'all') { roots = allData.filter(d => d.id == userRootId); } else { roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root'); }
-        roots.sort((a, b) => { const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999; const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999; return orderA - orderB; });
-        if (roots.length === 0) { alert("Data leluhur utama tidak ditemukan."); return; }
-        const colors = [ "#FFD700", "#00BFFF", "#32CD32", "#FF69B4", "#FFA500", "#9370DB", "#00FA9A", "#FF6347", "#87CEEB", "#DDA0DD" ];
-        const dateStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        let htmlContent = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Silsilah Keluarga Puang Guru Nasing</title><style>body{background-color:#1e1e1e;color:#cccccc;font-family:'Consolas','Monaco','Courier New',monospace;white-space:pre;padding:20px;font-size:14px;line-height:1.5;}.header{color:#ffffff;font-weight:bold;margin-bottom:20px;border-bottom:1px dashed #555;padding-bottom:10px;}.tree-line{color:#555555;}.spouse{color:#888888;font-style:italic;font-size:0.9em;}</style></head><body><div class="header">=== STRUKTUR KELUARGA BESAR PUANG GURU NASING ===\nDiunduh pada: ${dateStr}\nKeterangan: (Alm)=Pria Wafat, (Almh)=Wanita Wafat\nWarna teks menunjukkan perbedaan generasi.\n=================================================\n</div>`;
-        roots.forEach(root => { htmlContent += generateColoredTree(root, "", true, true, 0, colors); htmlContent += "\n\n<div class='tree-line'>-------------------------------------------------</div>\n\n"; });
-        htmlContent += `</body></html>`;
-        const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; const fileNameDate = new Date().toISOString().slice(0,10); link.download = `Pohon_Keluarga_Warna_PGN_${fileNameDate}.html`; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url);
+    // --- FITUR DOWNLOAD POHON HTML (WARNA) ---
+function downloadHierarchyText() {
+    // 1. Cek Data
+    if (!allData || allData.length === 0) { alert("Data kosong."); return; }
+    
+    // 2. Siapkan Root
+    const userRootId = localStorage.getItem('userRootId'); 
+    let roots = [];
+    if (isLoggedIn && userRootId && userRootId !== 'all') { 
+        roots = allData.filter(d => d.id == userRootId); 
+    } else { 
+        roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root'); 
     }
+    roots.sort((a, b) => { 
+        const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999; 
+        const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999; 
+        return orderA - orderB; 
+    });
+
+    if (roots.length === 0) { alert("Data leluhur utama tidak ditemukan."); return; }
+
+    // 3. Konfigurasi Warna & Tanggal
+    const colors = [ "#FFD700", "#00BFFF", "#32CD32", "#FF69B4", "#FFA500", "#9370DB", "#00FA9A", "#FF6347", "#87CEEB", "#DDA0DD" ];
+    const dateStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    
+    // 4. Susun Konten HTML
+    let htmlContent = `<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Silsilah Keluarga Puang Guru Nasing</title>
+<style>
+    body{background-color:#1e1e1e;color:#cccccc;font-family:'Consolas','Monaco','Courier New',monospace;white-space:pre;padding:20px;font-size:14px;line-height:1.5;}
+    .header{color:#ffffff;font-weight:bold;margin-bottom:20px;border-bottom:1px dashed #555;padding-bottom:10px;}
+    .tree-line{color:#555555;}
+    .spouse{color:#888888;font-style:italic;font-size:0.9em;}
+</style>
+</head>
+<body>
+<div class="header">
+=== STRUKTUR KELUARGA BESAR PUANG GURU NASING ===
+Diunduh pada: ${dateStr}
+Keterangan: (Alm)=Pria Wafat, (Almh)=Wanita Wafat
+Warna teks menunjukkan perbedaan generasi.
+=================================================
+</div>`;
+
+    roots.forEach(root => { 
+        htmlContent += generateColoredTree(root, "", true, true, 0, colors); 
+        htmlContent += "\n\n<div class='tree-line'>-------------------------------------------------</div>\n\n"; 
+    });
+    
+    htmlContent += `</body></html>`;
+
+    // ==========================================
+    // PERBAIKAN LOGIKA DOWNLOAD (TIMEOUT FIX)
+    // ==========================================
+    try {
+        const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" }); 
+        const url = URL.createObjectURL(blob); 
+        
+        const link = document.createElement("a"); 
+        link.style.display = "none"; // Sembunyikan link agar tidak merusak layout
+        link.href = url; 
+        
+        const fileNameDate = new Date().toISOString().slice(0,10); 
+        link.download = `Pohon_Keluarga_Warna_PGN_${fileNameDate}.html`; 
+        
+        document.body.appendChild(link); 
+        link.click(); 
+        
+        // PENTING: Beri jeda 100ms sebelum menghapus link
+        // Ini memberi waktu browser mobile untuk memproses file Blob
+        setTimeout(() => {
+            document.body.removeChild(link); 
+            window.URL.revokeObjectURL(url);
+        }, 100);
+
+    } catch (e) {
+        console.error("Gagal download:", e);
+        alert("Gagal mendownload file. Browser tidak mendukung fitur Blob.");
+    }
+}
 
     function generateColoredTree(person, prefix, isLast, isRoot, level, colors) {
         let result = ""; let lineSymbol = ""; if (!isRoot) { lineSymbol = isLast ? "\\-- " : "+-- "; }
