@@ -1654,20 +1654,22 @@ function openDetailPopup(id, event) {
 	
 	// --- FITUR DOWNLOAD PDF NARASI (CERITA) ---
 async function downloadNarrativePDF() {
+    // Cek data
     if (!allData || allData.length === 0) { alert("Data kosong."); return; }
-    if (!window.jspdf) { alert("Library PDF sedang dimuat..."); return; }
+    if (!window.jspdf) { alert("Library PDF sedang dimuat, mohon tunggu..."); return; }
 
     const { jsPDF } = window.jspdf;
+    // Format A4, Portrait, satuan mm
     const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
     
-    // Konfigurasi Halaman
+    // --- KONFIGURASI HALAMAN ---
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 15;
     const maxLineWidth = pageWidth - (margin * 2);
     let yPos = 20;
 
-    // --- HEADER ---
+    // --- HEADER DOKUMEN ---
     doc.setFont("times", "bold");
     doc.setFontSize(16);
     doc.setTextColor(50, 50, 50);
@@ -1684,7 +1686,7 @@ async function downloadNarrativePDF() {
     doc.line(margin, yPos, pageWidth - margin, yPos);
     yPos += 10;
 
-    // --- DATA PREPARATION ---
+    // --- PERSIAPAN DATA ---
     const userRootId = localStorage.getItem('userRootId');
     let roots = [];
     if (isLoggedIn && userRootId && userRootId !== 'all') {
@@ -1694,42 +1696,33 @@ async function downloadNarrativePDF() {
     }
     roots.sort((a, b) => (parseInt(a.birthOrder)||99) - (parseInt(b.birthOrder)||99));
 
-    // --- FUNGSI REKURSIF PDF ---
+    // --- FUNGSI PRINT NODE (Sama seperti sebelumnya) ---
     function printStoryNode(person, level) {
-        // Cek Ganti Halaman
-        if (yPos > pageHeight - 20) {
-            doc.addPage();
-            yPos = 20;
-        }
+        if (yPos > pageHeight - 20) { doc.addPage(); yPos = 20; }
 
-        const indent = level * 8; // Indentasi per level
+        const indent = level * 8; 
         const contentWidth = maxLineWidth - indent;
         
-        // 1. Gambar Garis Visual (Hierarki)
+        // Garis Visual
         if (level > 0) {
-            // Garis vertikal biru muda (mirip border-indigo-200)
             doc.setDrawColor(199, 210, 254); 
             doc.setLineWidth(0.8);
-            doc.line(margin + indent - 4, yPos - 2, margin + indent - 4, yPos + 8); // Garis pendek penanda
-            
-            // Dot/Titik
-            doc.setFillColor(165, 180, 252); // Indigo-300
+            doc.line(margin + indent - 4, yPos - 2, margin + indent - 4, yPos + 8); 
+            doc.setFillColor(165, 180, 252); 
             doc.circle(margin + indent - 4, yPos + 1, 1, 'F');
         }
 
-        // 2. Susun Teks Cerita
+        // Susun Teks
         let statusAlm = "";
         if (person.isDead == 1) statusAlm = (person.gender === 'P') ? "(Almh) " : "(Alm) ";
 
-        // Logika Pasangan (Tanpa Status Menikah)
         let spouseText = "";
         if (person.spouse) {
-            // Hapus "(Menikah)", "(Cerai)", dll
+            // Hapus status (Menikah) agar narasi enak dibaca
             const cleanSpouse = person.spouse.split(',').map(s => s.split('(')[0].trim()).join(' & ');
             spouseText = ` menikah dengan ${cleanSpouse}.`;
         }
 
-        // Logika Anak
         let children = allData.filter(d => d.parentId == person.id || (d.motherName && d.motherName.trim() === person.name));
         children.sort((a, b) => (parseInt(a.birthOrder)||99) - (parseInt(b.birthOrder)||99));
         
@@ -1739,81 +1732,78 @@ async function downloadNarrativePDF() {
                 let cStatus = (c.isDead == 1) ? ((c.gender === 'P') ? "(Almh) " : "(Alm) ") : "";
                 return `${cStatus}${c.name}`;
             });
-            
-            if (childNames.length === 1) {
-                childrenText = ` Dikaruniai 1 anak: ${childNames[0]}.`;
-            } else {
-                const last = childNames.pop();
-                childrenText = ` Dikaruniai ${children.length} anak: ${childNames.join(', ')}, dan ${last}.`;
-            }
+            if (childNames.length === 1) { childrenText = ` Dikaruniai 1 anak: ${childNames[0]}.`; } 
+            else { const last = childNames.pop(); childrenText = ` Dikaruniai ${children.length} anak: ${childNames.join(', ')}, dan ${last}.`; }
         }
 
-        // 3. Render Teks ke PDF
-        // Karena jsPDF susah ganti font di tengah kalimat (Bold nama, normal sisanya),
-        // Kita cetak Nama dulu (Bold), lalu sisanya (Normal).
-        
+        // Render Teks (Nama Bold + Sisa Normal)
         doc.setFont("times", "bold");
         doc.setFontSize(11);
-        doc.setTextColor(0, 0, 0); // Hitam untuk Nama
+        doc.setTextColor(0, 0, 0); 
         
         const nameFull = statusAlm + person.name;
         doc.text(nameFull, margin + indent, yPos);
         
-        // Hitung lebar teks nama untuk posisi teks berikutnya
-        const nameWidth = doc.getStringUnitWidth(nameFull) * 11 / 2.83465; // Konversi pt ke mm approx
+        const nameWidth = doc.getStringUnitWidth(nameFull) * 11 / 2.83465; 
         
-        // Cetak sisa cerita (Normal)
         doc.setFont("times", "normal");
-        doc.setTextColor(60, 60, 60); // Abu tua
+        doc.setTextColor(60, 60, 60); 
         
         const fullStory = spouseText + childrenText;
-        // Split teks agar tidak lewat margin kanan (Word Wrap)
-        // Kita kurangi width yang tersedia dengan lebar nama
         const splitText = doc.splitTextToSize(fullStory, contentWidth - nameWidth - 1);
         
-        // Baris pertama (disambung langsung setelah nama)
-        if (splitText.length > 0) {
-            doc.text(splitText[0], margin + indent + nameWidth + 1, yPos);
-        }
-        
-        // Baris sisanya (turun ke bawah)
+        if (splitText.length > 0) { doc.text(splitText[0], margin + indent + nameWidth + 1, yPos); }
         if (splitText.length > 1) {
             for(let i=1; i<splitText.length; i++) {
                 yPos += 5;
                 doc.text(splitText[i], margin + indent, yPos);
             }
         }
+        yPos += 8; 
 
-        yPos += 8; // Spasi antar orang
-
-        // 4. Rekursif ke Anak
-        children.forEach(child => {
-            printStoryNode(child, level + 1);
-        });
+        children.forEach(child => printStoryNode(child, level + 1));
     }
 
-    // --- EKSEKUSI LOOP ---
+    // --- LOOP UTAMA ---
     roots.forEach(root => {
-        // Judul per Root
         if (yPos > pageHeight - 30) { doc.addPage(); yPos = 20; }
         doc.setFont("helvetica", "bold");
         doc.setFontSize(12);
-        doc.setTextColor(79, 70, 229); // Indigo
+        doc.setTextColor(79, 70, 229); 
         doc.text(`Garis Keturunan: ${root.name}`, margin, yPos);
-        
-        // Garis pemisah tipis
         doc.setDrawColor(200, 200, 200); 
         doc.setLineWidth(0.2);
         doc.line(margin, yPos+2, margin+50, yPos+2);
-        
         yPos += 10;
         printStoryNode(root, 0);
-        yPos += 10; // Jarak antar root
+        yPos += 10; 
     });
 
-    // --- SAVE ---
+    // ==========================================
+    // PERBAIKAN LOGIKA DOWNLOAD (FORCE DOWNLOAD)
+    // ==========================================
     const dateStr = new Date().toISOString().slice(0,10);
-    doc.save(`Kisah_Keluarga_PGN_${dateStr}.pdf`);
+    const fileName = `Kisah_Keluarga_PGN_${dateStr}.pdf`;
+
+    // 1. Generate Blob Object (Biner)
+    const blob = doc.output('blob');
+    
+    // 2. Buat URL Objek Sementara
+    const url = URL.createObjectURL(blob);
+
+    // 3. Buat Element Anchor (Link) Palsu
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    
+    // 4. Masukkan ke body, Klik, lalu Hapus
+    document.body.appendChild(link);
+    link.click();
+    
+    setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    }, 100);
 }
 	
 	
