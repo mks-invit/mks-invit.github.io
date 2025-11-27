@@ -1621,15 +1621,87 @@
         }
     }
 
-    function startQRScanner() {
-        if (html5QrcodeScanner) { html5QrcodeScanner.clear().catch(() => {}).finally(() => { html5QrcodeScanner = null; initCam(); }); } else { initCam(); }
-        function initCam() {
-            const html5QrCode = new Html5Qrcode("qr-reader"); html5QrcodeScanner = html5QrCode;
-            const config = { fps: 10, qrbox: { width: 200, height: 200 } };
-            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
-            .catch(err => { console.log("Kamera error/pending", err); document.getElementById('qr-reader').innerHTML = `<div class="flex flex-col items-center justify-center h-full text-gray-400 text-[10px] p-4 text-center"><i class="fas fa-camera-slash text-2xl mb-2"></i><br>Kamera tidak aktif<br>Gunakan tombol Upload</div>`; });
+        // --- UPDATE: LOGIKA KAMERA AGRESIF & ROBUST ---
+    
+    async function startQRScanner() {
+        const qrContainer = document.getElementById('qr-reader');
+        
+        // 1. Reset Scanner jika ada sisa instance
+        if (html5QrcodeScanner) {
+            try {
+                await html5QrcodeScanner.stop();
+                html5QrcodeScanner.clear();
+            } catch (e) { console.log("Clear error ignore", e); }
+            html5QrcodeScanner = null;
+        }
+
+        // 2. "MEMAKSA" Izin Kamera dengan getUserMedia
+        // Ini akan memicu popup permission browser asli sebelum library scanner jalan
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "environment" } 
+            });
+            
+            // Jika berhasil dapat izin, matikan stream pancingan agar tidak bentrok dengan library
+            stream.getTracks().forEach(track => track.stop());
+            
+            // 3. Izin didapat, baru jalankan Library Scanner
+            initCamLibrary();
+            
+        } catch (err) {
+            console.error("Camera Permission Error:", err);
+            
+            // Handle Error Spesifik
+            let title = "Kamera Gagal";
+            let msg = "Gagal mengakses kamera.";
+            
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                title = "Izin Ditolak";
+                msg = "<b>Akses Kamera Diblokir!</b><br>Mohon izinkan akses kamera melalui pengaturan browser (ikon gembok di url bar) untuk menggunakan fitur scan.";
+            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                title = "Kamera Tidak Ditemukan";
+                msg = "Perangkat Anda sepertinya tidak memiliki kamera.";
+            } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                title = "Kamera Sibuk";
+                msg = "Kamera sedang digunakan oleh aplikasi lain. Tutup aplikasi lain dan coba lagi.";
+            }
+
+            // Tampilkan UI Fallback (Tombol Upload)
+            qrContainer.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full text-red-500 p-4 text-center animate-pulse">
+                    <i class="fas fa-exclamation-circle text-3xl mb-2"></i>
+                    <p class="text-xs font-bold">${title}</p>
+                    <p class="text-[10px] mt-1 text-gray-500">${msg}</p>
+                </div>`;
+                
+            // Gunakan Alert Estetik yang sudah Anda punya
+            showCustomAlert(title, msg, "error");
         }
     }
+
+    function initCamLibrary() {
+        const html5QrCode = new Html5Qrcode("qr-reader");
+        html5QrcodeScanner = html5QrCode;
+        
+        // Config agar lebih responsif di HP
+        const config = { 
+            fps: 10, 
+            qrbox: { width: 200, height: 200 },
+            aspectRatio: 1.0
+        };
+        
+        // Coba gunakan kamera belakang (environment)
+        html5QrCode.start({ facingMode: { exact: "environment" } }, config, onScanSuccess)
+        .catch(err => {
+            // Jika gagal exact environment (biasanya di laptop/PC), coba mode user (depan) atau auto
+            console.log("Retrying with generic constraints...");
+            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
+            .catch(err2 => {
+                document.getElementById('qr-reader').innerHTML = `<div class="text-center p-4 text-xs text-red-500">Gagal memulai scanner: ${err2}</div>`;
+            });
+        });
+    }
+
 
     function stopQRScanner() {
         return new Promise((resolve) => {
