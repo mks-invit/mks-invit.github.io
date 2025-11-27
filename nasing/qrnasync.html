@@ -16,69 +16,117 @@
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#3498db',
-                        'primary-dark': '#2980b9',
-                        'bg-light': '#f4f7f6',
-                        'bg-dark': '#121212',
-                        'card-dark': '#1e1e1e'
-                    },
-                    fontFamily: {
-                        sans: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif']
-                    }
+    tailwind.config = {
+        darkMode: 'class',
+        theme: {
+            extend: {
+                colors: {
+                    // Kita ubah jadi Variable agar dinamis
+                    primary: 'var(--color-primary)',
+                    'primary-dark': 'var(--color-primary-dark)',
+                    'bg-light': '#f4f7f6',
+                    'bg-dark': '#121212',
+                    'card-dark': '#1e1e1e'
+                },
+                fontFamily: {
+                    sans: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif']
                 }
             }
         }
-    </script>
+    }
+</script>
 
-    <style>
-        /* Animasi & Custom Styles */
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-slide-down { animation: slideDown 0.3s ease-out; }
-        
-        .tree-line { border-left: 2px dashed #d1d5db; }
-        .dark .tree-line { border-left: 2px dashed #4b5563; }
-        
-        @keyframes pulse-highlight { 0%, 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7); transform: scale(1); } 50% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0); transform: scale(1.02); } }
-        .highlight-card { animation: pulse-highlight 1.5s ease-in-out 3; border-color: #facc15 !important; z-index: 10; }
-        
-        @keyframes bounce-gentle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-        .animate-bounce-gentle { animation: bounce-gentle 2s infinite; }
+<style>
+    /* DEFINISI VARIABEL WARNA DEFAULT */
+    :root {
+        --color-primary: #3498db;      /* Biru Default */
+        --color-primary-dark: #2980b9;
+    }
 
-        /* Custom Scrollbar */
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-        .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
-        .dark .custom-scroll::-webkit-scrollbar-thumb { background-color: #4b5563; }
+    /* Animasi & Custom Styles (SAMA SEPERTI SEBELUMNYA) */
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-slide-down { animation: slideDown 0.3s ease-out; }
+    
+    .tree-line { border-left: 2px dashed #d1d5db; }
+    .dark .tree-line { border-left: 2px dashed #4b5563; }
+    
+    @keyframes pulse-highlight { 0%, 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7); transform: scale(1); } 50% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0); transform: scale(1.02); } }
+    .highlight-card { animation: pulse-highlight 1.5s ease-in-out 3; border-color: #facc15 !important; z-index: 10; }
+    
+    @keyframes bounce-gentle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+    .animate-bounce-gentle { animation: bounce-gentle 2s infinite; }
 
-        /* Auto Suggestion List */
-        .suggestion-list {
-            position: absolute; width: 100%; max-height: 150px; overflow-y: auto; z-index: 50;
-            background-color: #ffffff; border: 1px solid #d1d5db; border-radius: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-top: 4px;
-        }
-        .dark .suggestion-list { background-color: #1e1e1e; border-color: #4b5563; }
+    /* Custom Scrollbar */
+    .custom-scroll::-webkit-scrollbar { width: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+    .dark .custom-scroll::-webkit-scrollbar-thumb { background-color: #4b5563; }
 
-        /* Lineage Tracer Highlight */
-        .trace-active {
-            border-color: #f59e0b !important;
-            background-color: #fffbeb !important;
-            box-shadow: 0 0 15px rgba(245, 158, 11, 0.5) !important;
-            transform: scale(1.02);
-            z-index: 20;
-            opacity: 1 !important;
-        }
-        .dark .trace-active { background-color: #78350f !important; border-color: #fcd34d !important; }
-        .dimmed-mode .group:not(.trace-active) { opacity: 0.3; filter: grayscale(80%); transition: all 0.3s ease; }
+    /* Auto Suggestion List */
+    .suggestion-list {
+        position: absolute; width: 100%; max-height: 150px; overflow-y: auto; z-index: 50;
+        background-color: #ffffff; border: 1px solid #d1d5db; border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-top: 4px;
+    }
+    .dark .suggestion-list { background-color: #1e1e1e; border-color: #4b5563; }
 
-        /* Input Error State */
-        .input-error { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
-        .dark .input-error { border-color: #ef4444 !important; background-color: #450a0a !important; }
-    </style>
+    /* Lineage Tracer Highlight */
+    .trace-active {
+        border-color: var(--color-primary) !important; /* Ikut warna tema */
+        background-color: #fffbeb !important;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2) !important;
+        transform: scale(1.02);
+        z-index: 20;
+        opacity: 1 !important;
+    }
+    .dark .trace-active { background-color: #4a2c0f !important; border-color: var(--color-primary) !important; }
+    .dimmed-mode .group:not(.trace-active) { opacity: 0.3; filter: grayscale(80%); transition: all 0.3s ease; }
+
+    /* Input Error State */
+    .input-error { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
+    .dark .input-error { border-color: #ef4444 !important; background-color: #450a0a !important; }
+
+    /* Badge Nama Tema (Muncul saat diklik) */
+    .theme-toast {
+        position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+        background: rgba(0,0,0,0.8); color: white; padding: 5px 15px; border-radius: 20px;
+        font-size: 12px; z-index: 100; opacity: 0; transition: opacity 0.5s; pointer-events: none;
+    }
+	
+	
+	
+	
+	/* --- UPDATE CSS UNTUK BACKGROUND IMAGE --- */
+body {
+    transition: background-image 0.5s ease-in-out;
+    background-color: #f4f7f6; /* Warna cadangan jika gambar gagal load */
+    /* Agar gambar memenuhi layar & tetap diam saat discroll */
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    position: relative;
+    min-height: 100vh;
+}
+
+/* Lapisan Overlay (Kaca Film) agar teks terbaca */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1; /* Taruh di belakang teks */
+    
+    /* Mode Terang: Lapisan Putih Tipis (85%) */
+    background-color: rgba(255, 255, 255, 0.85); 
+    transition: background-color 0.3s ease;
+}
+
+/* Mode Gelap: Lapisan Hitam Tipis (85%) */
+.dark body::before {
+    background-color: rgba(18, 18, 18, 0.90);
+}
+	
+</style>
 </head>
 
 <body class="bg-bg-light text-slate-700 dark:bg-bg-dark dark:text-gray-200 font-sans transition-colors duration-300 px-5 pt-5 pb-0 min-h-screen">
@@ -132,6 +180,14 @@
             </button>
 
             <button id="theme-btn" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-slate-700 hover:text-white hover:border-slate-700 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300" title="Ganti Tema"><i class="fas fa-moon"></i></button>
+			
+			<div class="relative">
+        <button id="btn-regional-theme" onclick="cycleRegionalTheme()" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-primary hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-primary" title="Ganti Tema Warna">
+            <i class="fas fa-palette"></i>
+        </button>
+        <div id="theme-name-toast" class="theme-toast">Tema Default</div>
+    </div>
+			
             <button id="btn-login-trigger" onclick="openLoginModal()" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-green-600 hover:bg-green-600 hover:text-white hover:border-green-600 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-green-400" title="Login Admin"><i class="fas fa-lock"></i></button>
             <button id="btn-logout-trigger" onclick="doLogout()" class="hidden w-10 h-10 rounded-full border border-red-300 bg-white text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600" title="Keluar"><i class="fas fa-sign-out-alt"></i></button>
             <button id="btn-install-app" onclick="installPWA()" class="hidden w-10 h-10 rounded-full border border-teal-400 text-teal-600 hover:bg-teal-600 hover:text-white flex items-center justify-center transition-all duration-200 shadow-sm" title="Install Aplikasi"><i class="fas fa-download"></i></button>
@@ -1876,6 +1932,91 @@ async function downloadNarrativePDF() {
     }, 100);
 }
 	
+	
+	
+	
+	
+	
+	// --- KONFIGURASI TEMA DENGAN GAMBAR SENDIRI ---
+    const REGIONAL_THEMES = [
+        { 
+            name: "Lipa Sabbe (Biru)", 
+            primary: "#3498db", dark: "#2980b9",
+            // GANTI LINK DI BAWAH INI DENGAN LINK GAMBAR ANDA
+            bgImage: "https://img.freepik.com/free-photo/3d-ship-with-sea-landscape_23-2151144939.jpg?semt=ais_hybrid&w=740&q=80" 
+        },
+        { 
+            name: "Merah Gowa (Adat)", 
+            primary: "#c0392b", dark: "#a93226",
+            // GANTI LINK DI BAWAH INI
+            bgImage: "https://images.unsplash.com/photo-1605218427368-35b0f5b12854?q=80&w=1920&auto=format&fit=crop"
+        },
+        { 
+            name: "Hijau Bone (Alam)", 
+            primary: "#27ae60", dark: "#219150",
+            // GANTI LINK DI BAWAH INI
+            bgImage: "https://images.unsplash.com/photo-1596484552839-869d846513b1?q=80&w=1920&auto=format&fit=crop"
+        },
+        { 
+            name: "Ungu Sengkang (Mewah)", 
+            primary: "#8e44ad", dark: "#6c3483",
+            // GANTI LINK DI BAWAH INI
+            bgImage: "https://images.unsplash.com/photo-1558865869-c93f6f8482af?q=80&w=1920&auto=format&fit=crop"
+        },
+        { 
+            name: "Phinisi (Klasik)", 
+            primary: "#d35400", dark: "#a04000",
+            // GANTI LINK DI BAWAH INI
+            bgImage: "https://images.unsplash.com/photo-1565511854124-b15c916298a0?q=80&w=1920&auto=format&fit=crop"
+        }
+    ];
+    
+    let currentThemeIdx = 0;
+
+    function cycleRegionalTheme() {
+        currentThemeIdx = (currentThemeIdx + 1) % REGIONAL_THEMES.length;
+        applyRegionalTheme(currentThemeIdx);
+        localStorage.setItem('regionalThemeIdx', currentThemeIdx);
+    }
+
+    function applyRegionalTheme(index) {
+        const theme = REGIONAL_THEMES[index];
+        const root = document.documentElement;
+        
+        // 1. Ubah Warna Utama
+        root.style.setProperty('--color-primary', theme.primary);
+        root.style.setProperty('--color-primary-dark', theme.dark);
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', theme.primary);
+        
+        // 2. Ubah Background Image (URL)
+        // Kita gunakan url('...') untuk memuat gambar
+        document.body.style.backgroundImage = `url('${theme.bgImage}')`;
+
+        // 3. Tampilkan Toast Nama Tema
+        const toast = document.getElementById('theme-name-toast');
+        if(toast) {
+            toast.innerText = theme.name;
+            toast.style.opacity = '1';
+            toast.style.top = '70px';
+            setTimeout(() => { 
+                toast.style.opacity = '0'; 
+                toast.style.top = '80px';
+            }, 2000);
+        }
+    }
+
+    // --- INITIAL LOAD ---
+    const oldOnLoad = window.onload;
+    window.onload = function() {
+        if(oldOnLoad) oldOnLoad();
+        const savedTheme = localStorage.getItem('regionalThemeIdx');
+        if (savedTheme) {
+            currentThemeIdx = parseInt(savedTheme);
+            applyRegionalTheme(currentThemeIdx);
+        } else {
+            applyRegionalTheme(0);
+        }
+    };
 	
 </script>
 
