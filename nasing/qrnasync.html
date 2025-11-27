@@ -260,7 +260,9 @@
     <div class="bg-white dark:bg-card-dark w-11/12 max-w-7xl h-[90vh] rounded-xl shadow-2xl flex flex-col animate-slide-down relative border border-gray-200 dark:border-gray-700">
         <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800 rounded-t-xl"><div><h3 class="text-xl font-bold font-serif text-slate-800 dark:text-gray-100"><i class="fas fa-scroll text-indigo-500 mr-2"></i>Kisah Puang Guru Nasing</h3><p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Silsilah dalam format cerita narasi</p></div><button onclick="document.getElementById('narrative-modal').classList.add('hidden')" class="w-8 h-8 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center text-gray-500 transition-colors"><i class="fas fa-times"></i></button></div>
         <div class="flex-1 overflow-y-auto p-6 custom-scroll bg-[#fdfbf7] dark:bg-[#1a1a1a]"><div id="narrative-content" class="prose dark:prose-invert max-w-none font-serif leading-relaxed text-slate-700 dark:text-gray-300"><p class="text-center text-gray-400 italic">Memuat kisah...</p></div></div>
-        <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-white dark:bg-card-dark rounded-b-xl flex-wrap"><button onclick="copyNarrative()" class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-sm transition-colors flex items-center gap-2"><i class="fas fa-copy"></i> Salin Cerita</button><button onclick="downloadHierarchyText()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm transition-colors flex items-center gap-2 shadow-sm"><i class="fas fa-sitemap"></i> Download Pohon</button></div>
+        <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-white dark:bg-card-dark rounded-b-xl flex-wrap"><button onclick="downloadNarrativePDF()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm transition-colors flex items-center gap-2 shadow-sm font-semibold">
+    <i class="fas fa-file-pdf"></i> Download PDF Cerita
+</button><button onclick="downloadHierarchyText()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm transition-colors flex items-center gap-2 shadow-sm"><i class="fas fa-sitemap"></i> Download Pohon</button></div>
     </div>
 </div>
 
@@ -1248,7 +1250,11 @@ function openDetailPopup(id, event) {
         let story = `<div style="margin-left: ${marginLeft}px" class="mb-3 ${borderClass} relative w-auto">`;
         if(level > 0) { story += `<div class="absolute -left-[19px] top-2.5 w-2 h-2 rounded-full bg-indigo-300 dark:bg-indigo-600"></div>`; }
         story += `<div class="text-base leading-relaxed text-left text-slate-700 dark:text-gray-300 font-serif w-full pr-1 md:pr-4"><span class="font-bold text-slate-900 dark:text-white text-lg">${statusAlm}${person.name}</span>`;
-        if (person.spouse) { const spouseFormatted = person.spouse.split(',').map(s => s.trim()).join(' & '); story += ` menikah dengan <span class="font-semibold text-indigo-600 dark:text-indigo-400">${spouseFormatted}</span>.`; }
+        if (person.spouse) { 
+    // Bagian .split('(')[0] ini yang akan membuang keterangan "(Status)"
+    const spouseFormatted = person.spouse.split(',').map(s => s.split('(')[0].trim()).join(' & '); 
+    story += ` menikah dengan <span class="font-semibold text-indigo-600 dark:text-indigo-400">${spouseFormatted}</span>.`; 
+}
         if (children.length > 0) {
             story += ` Dikaruniai <strong>${children.length}</strong> anak: `;
             const childNames = children.map((c) => { let childStatus = (c.isDead == 1) ? ((c.gender === 'P') ? "(Almh) " : "(Alm) ") : ""; return `${childStatus}${c.name}`; });
@@ -1645,6 +1651,172 @@ function openDetailPopup(id, event) {
         }
         input.value = ''; 
     }
+	
+	// --- FITUR DOWNLOAD PDF NARASI (CERITA) ---
+async function downloadNarrativePDF() {
+    if (!allData || allData.length === 0) { alert("Data kosong."); return; }
+    if (!window.jspdf) { alert("Library PDF sedang dimuat..."); return; }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+    
+    // Konfigurasi Halaman
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 15;
+    const maxLineWidth = pageWidth - (margin * 2);
+    let yPos = 20;
+
+    // --- HEADER ---
+    doc.setFont("times", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(50, 50, 50);
+    doc.text("KISAH KELUARGA BESAR PUANG GURU NASING", pageWidth / 2, yPos, { align: 'center' });
+    
+    yPos += 8;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Dokumen Narasi Silsilah | Diunduh: ${new Date().toLocaleDateString('id-ID')}`, pageWidth / 2, yPos, { align: 'center' });
+    
+    yPos += 10;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(margin, yPos, pageWidth - margin, yPos);
+    yPos += 10;
+
+    // --- DATA PREPARATION ---
+    const userRootId = localStorage.getItem('userRootId');
+    let roots = [];
+    if (isLoggedIn && userRootId && userRootId !== 'all') {
+        roots = allData.filter(d => d.id == userRootId);
+    } else {
+        roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root');
+    }
+    roots.sort((a, b) => (parseInt(a.birthOrder)||99) - (parseInt(b.birthOrder)||99));
+
+    // --- FUNGSI REKURSIF PDF ---
+    function printStoryNode(person, level) {
+        // Cek Ganti Halaman
+        if (yPos > pageHeight - 20) {
+            doc.addPage();
+            yPos = 20;
+        }
+
+        const indent = level * 8; // Indentasi per level
+        const contentWidth = maxLineWidth - indent;
+        
+        // 1. Gambar Garis Visual (Hierarki)
+        if (level > 0) {
+            // Garis vertikal biru muda (mirip border-indigo-200)
+            doc.setDrawColor(199, 210, 254); 
+            doc.setLineWidth(0.8);
+            doc.line(margin + indent - 4, yPos - 2, margin + indent - 4, yPos + 8); // Garis pendek penanda
+            
+            // Dot/Titik
+            doc.setFillColor(165, 180, 252); // Indigo-300
+            doc.circle(margin + indent - 4, yPos + 1, 1, 'F');
+        }
+
+        // 2. Susun Teks Cerita
+        let statusAlm = "";
+        if (person.isDead == 1) statusAlm = (person.gender === 'P') ? "(Almh) " : "(Alm) ";
+
+        // Logika Pasangan (Tanpa Status Menikah)
+        let spouseText = "";
+        if (person.spouse) {
+            // Hapus "(Menikah)", "(Cerai)", dll
+            const cleanSpouse = person.spouse.split(',').map(s => s.split('(')[0].trim()).join(' & ');
+            spouseText = ` menikah dengan ${cleanSpouse}.`;
+        }
+
+        // Logika Anak
+        let children = allData.filter(d => d.parentId == person.id || (d.motherName && d.motherName.trim() === person.name));
+        children.sort((a, b) => (parseInt(a.birthOrder)||99) - (parseInt(b.birthOrder)||99));
+        
+        let childrenText = "";
+        if (children.length > 0) {
+            const childNames = children.map(c => {
+                let cStatus = (c.isDead == 1) ? ((c.gender === 'P') ? "(Almh) " : "(Alm) ") : "";
+                return `${cStatus}${c.name}`;
+            });
+            
+            if (childNames.length === 1) {
+                childrenText = ` Dikaruniai 1 anak: ${childNames[0]}.`;
+            } else {
+                const last = childNames.pop();
+                childrenText = ` Dikaruniai ${children.length} anak: ${childNames.join(', ')}, dan ${last}.`;
+            }
+        }
+
+        // 3. Render Teks ke PDF
+        // Karena jsPDF susah ganti font di tengah kalimat (Bold nama, normal sisanya),
+        // Kita cetak Nama dulu (Bold), lalu sisanya (Normal).
+        
+        doc.setFont("times", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(0, 0, 0); // Hitam untuk Nama
+        
+        const nameFull = statusAlm + person.name;
+        doc.text(nameFull, margin + indent, yPos);
+        
+        // Hitung lebar teks nama untuk posisi teks berikutnya
+        const nameWidth = doc.getStringUnitWidth(nameFull) * 11 / 2.83465; // Konversi pt ke mm approx
+        
+        // Cetak sisa cerita (Normal)
+        doc.setFont("times", "normal");
+        doc.setTextColor(60, 60, 60); // Abu tua
+        
+        const fullStory = spouseText + childrenText;
+        // Split teks agar tidak lewat margin kanan (Word Wrap)
+        // Kita kurangi width yang tersedia dengan lebar nama
+        const splitText = doc.splitTextToSize(fullStory, contentWidth - nameWidth - 1);
+        
+        // Baris pertama (disambung langsung setelah nama)
+        if (splitText.length > 0) {
+            doc.text(splitText[0], margin + indent + nameWidth + 1, yPos);
+        }
+        
+        // Baris sisanya (turun ke bawah)
+        if (splitText.length > 1) {
+            for(let i=1; i<splitText.length; i++) {
+                yPos += 5;
+                doc.text(splitText[i], margin + indent, yPos);
+            }
+        }
+
+        yPos += 8; // Spasi antar orang
+
+        // 4. Rekursif ke Anak
+        children.forEach(child => {
+            printStoryNode(child, level + 1);
+        });
+    }
+
+    // --- EKSEKUSI LOOP ---
+    roots.forEach(root => {
+        // Judul per Root
+        if (yPos > pageHeight - 30) { doc.addPage(); yPos = 20; }
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(79, 70, 229); // Indigo
+        doc.text(`Garis Keturunan: ${root.name}`, margin, yPos);
+        
+        // Garis pemisah tipis
+        doc.setDrawColor(200, 200, 200); 
+        doc.setLineWidth(0.2);
+        doc.line(margin, yPos+2, margin+50, yPos+2);
+        
+        yPos += 10;
+        printStoryNode(root, 0);
+        yPos += 10; // Jarak antar root
+    });
+
+    // --- SAVE ---
+    const dateStr = new Date().toISOString().slice(0,10);
+    doc.save(`Kisah_Keluarga_PGN_${dateStr}.pdf`);
+}
+	
+	
 </script>
 
 </body>
