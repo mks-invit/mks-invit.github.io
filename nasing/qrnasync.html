@@ -21,7 +21,6 @@
         theme: {
             extend: {
                 colors: {
-                    // Kita ubah jadi Variable agar dinamis
                     primary: 'var(--color-primary)',
                     'primary-dark': 'var(--color-primary-dark)',
                     'bg-light': '#f4f7f6',
@@ -43,7 +42,7 @@
         --color-primary-dark: #2980b9;
     }
 
-    /* Animasi & Custom Styles (SAMA SEPERTI SEBELUMNYA) */
+    /* Animasi & Custom Styles */
     @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     .animate-slide-down { animation: slideDown 0.3s ease-out; }
     
@@ -72,7 +71,7 @@
 
     /* Lineage Tracer Highlight */
     .trace-active {
-        border-color: var(--color-primary) !important; /* Ikut warna tema */
+        border-color: var(--color-primary) !important;
         background-color: #fffbeb !important;
         box-shadow: 0 0 15px rgba(0, 0, 0, 0.2) !important;
         transform: scale(1.02);
@@ -86,78 +85,45 @@
     .input-error { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
     .dark .input-error { border-color: #ef4444 !important; background-color: #450a0a !important; }
 
-    /* Badge Nama Tema (Muncul saat diklik) */
+    /* Badge Nama Tema */
     .theme-toast {
         position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
         background: rgba(0,0,0,0.8); color: white; padding: 5px 15px; border-radius: 20px;
         font-size: 12px; z-index: 100; opacity: 0; transition: opacity 0.5s; pointer-events: none;
     }
 	
-	
-	
-	
-	/* --- UPDATE CSS UNTUK BACKGROUND IMAGE --- */
-body {
-    transition: background-image 0.5s ease-in-out;
-    background-color: #f4f7f6; /* Warna cadangan jika gambar gagal load */
-    /* Agar gambar memenuhi layar & tetap diam saat discroll */
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
-    position: relative;
-    min-height: 100vh;
-}
+	/* BACKGROUND IMAGE */
+    body {
+        transition: background-image 0.5s ease-in-out;
+        background-color: #f4f7f6;
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        position: relative;
+        min-height: 100vh;
+    }
 
-/* Lapisan Overlay (Kaca Film) agar teks terbaca */
-body::before {
-    content: "";
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    z-index: -1; /* Taruh di belakang teks */
-    
-    /* Mode Terang: Lapisan Putih Tipis (85%) */
-    background-color: rgba(255, 255, 255, 0.85); 
-    transition: background-color 0.3s ease;
-}
-
-/* Mode Gelap: Lapisan Hitam Tipis (85%) */
-.dark body::before {
-    background-color: rgba(18, 18, 18, 0.90);
-}
+    body::before {
+        content: "";
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+        background-color: rgba(255, 255, 255, 0.85); 
+        transition: background-color 0.3s ease;
+    }
+    .dark body::before { background-color: rgba(18, 18, 18, 0.90); }
 	
-	    /* --- ANIMASI LOADING PHINISI --- */
+	/* ANIMASI LOADING PHINISI */
     @keyframes phinisi-rock {
         0%, 100% { transform: rotate(-3deg) translateY(0); }
         50% { transform: rotate(3deg) translateY(-4px); }
     }
-    
     @keyframes wave-flow {
         0% { transform: translateX(0); }
         100% { transform: translateX(-50px); }
     }
-
-    .phinisi-ship {
-        animation: phinisi-rock 3s ease-in-out infinite;
-        transform-origin: center bottom;
-    }
-
-    .waves-container {
-        overflow: hidden;
-        width: 120px;
-        height: 20px;
-        position: relative;
-        margin-top: -5px;
-    }
-
-    .waves-svg {
-        width: 200px; /* Lebih lebar dari container agar bisa jalan */
-        animation: wave-flow 2s linear infinite;
-        fill: var(--color-primary);
-        opacity: 0.6;
-    }
-
-	
+    .phinisi-ship { animation: phinisi-rock 3s ease-in-out infinite; transform-origin: center bottom; }
+    .waves-container { overflow: hidden; width: 120px; height: 20px; position: relative; margin-top: -5px; }
+    .waves-svg { width: 200px; animation: wave-flow 2s linear infinite; fill: var(--color-primary); opacity: 0.6; }
 </style>
 </head>
 
@@ -206,19 +172,13 @@ body::before {
         
         <div class="flex justify-center items-center gap-4 mb-6">
             <button onclick="fetchData()" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300" title="Refresh Data"><i class="fas fa-sync-alt"></i></button>
-            
-            <button id="btn-expand-toggle" onclick="toggleExpandAll()" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-purple-500 hover:text-white hover:border-purple-500 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300" title="Buka Semua">
-                <i id="icon-expand" class="fas fa-expand"></i>
-            </button>
-
+            <button id="btn-expand-toggle" onclick="toggleExpandAll()" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-purple-500 hover:text-white hover:border-purple-500 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300" title="Buka Semua"><i id="icon-expand" class="fas fa-expand"></i></button>
             <button id="theme-btn" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-slate-700 hover:text-white hover:border-slate-700 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300" title="Ganti Tema"><i class="fas fa-moon"></i></button>
 			
 			<div class="relative">
-        <button id="btn-regional-theme" onclick="cycleRegionalTheme()" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-primary hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-primary" title="Ganti Tema Warna">
-            <i class="fas fa-palette"></i>
-        </button>
-        <div id="theme-name-toast" class="theme-toast">Tema Default</div>
-    </div>
+                <button id="btn-regional-theme" onclick="cycleRegionalTheme()" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-primary hover:bg-primary hover:text-white hover:border-primary flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-primary" title="Ganti Tema Warna"><i class="fas fa-palette"></i></button>
+                <div id="theme-name-toast" class="theme-toast">Tema Default</div>
+            </div>
 			
             <button id="btn-login-trigger" onclick="openLoginModal()" class="w-10 h-10 rounded-full border border-gray-300 bg-white text-green-600 hover:bg-green-600 hover:text-white hover:border-green-600 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600 dark:text-green-400" title="Login Admin"><i class="fas fa-lock"></i></button>
             <button id="btn-logout-trigger" onclick="doLogout()" class="hidden w-10 h-10 rounded-full border border-red-300 bg-white text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 flex items-center justify-center transition-all duration-200 shadow-sm dark:bg-gray-800 dark:border-gray-600" title="Keluar"><i class="fas fa-sign-out-alt"></i></button>
@@ -233,6 +193,7 @@ body::before {
                 <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow border-b-4 border-green-500 text-center"><div class="text-[10px] text-gray-500 uppercase">Hidup</div><div class="text-xl font-bold text-slate-700 dark:text-white" id="stat-living">0</div></div>
             </div>
         </div>
+        
         <div class="relative w-full max-w-xs mx-auto mt-2 group z-30">
             <div class="flex items-center bg-white dark:bg-gray-800 rounded-full px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm focus-within:shadow-md focus-within:ring-2 focus-within:ring-primary focus-within:border-primary transition-all">
                 <i class="fas fa-search text-gray-400 mr-3 group-focus-within:text-primary"></i>
@@ -242,8 +203,7 @@ body::before {
         </div>
     </header>
 
-        <div id="loader" class="flex flex-col items-center justify-center mt-20 transition-opacity duration-300" style="display:none;">
-        
+    <div id="loader" class="flex flex-col items-center justify-center mt-20 transition-opacity duration-300" style="display:none;">
         <div class="relative w-32 h-32 flex items-end justify-center pb-2">
             <svg class="phinisi-ship w-24 h-24 text-primary drop-shadow-lg" viewBox="0 0 100 100" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                 <path d="M10,75 Q50,95 90,75 L85,65 L15,65 Z" />
@@ -254,19 +214,16 @@ body::before {
                 <path d="M65,10 L75,12 L65,14 Z" class="text-red-500"/>
             </svg>
         </div>
-
         <div class="waves-container">
             <svg class="waves-svg" viewBox="0 0 100 20" preserveAspectRatio="none">
                 <path d="M0,10 Q25,20 50,10 T100,10 T150,10 V20 H0 Z" />
             </svg>
         </div>
-
         <div class="text-center mt-4">
             <p class="text-sm font-bold text-primary tracking-widest uppercase animate-pulse">Membelah Ombak...</p>
             <p class="text-[10px] text-gray-400 mt-1 italic">Mengambil Data Keluarga</p>
         </div>
     </div>
-
 
     <div id="tree-root" class="hidden"></div>
 
@@ -315,38 +272,26 @@ body::before {
 <div id="login-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden justify-center items-center p-4">
     <div class="bg-white dark:bg-card-dark w-full max-w-sm rounded-xl shadow-2xl p-6 animate-slide-down overflow-hidden">
         <h3 class="text-xl font-bold text-center mb-4 dark:text-white">Login Admin</h3>
-        
         <div class="flex border-b border-gray-200 dark:border-gray-700 mb-4">
             <button onclick="switchLoginTab('pass')" id="tab-pass" class="w-1/2 py-2 text-sm font-semibold text-primary border-b-2 border-primary transition-colors">Password</button>
             <button onclick="switchLoginTab('qr')" id="tab-qr" class="w-1/2 py-2 text-sm font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors">Scan QR Code</button>
         </div>
-
         <div id="login-form-pass" class="space-y-4">
             <div><label class="block text-sm font-medium mb-1 dark:text-gray-300">Username</label><input type="text" id="login-user" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"></div>
             <div><label class="block text-sm font-medium mb-1 dark:text-gray-300">Password</label><input type="password" id="login-pass" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white"></div>
         </div>
-
         <div id="login-form-qr" class="hidden flex-col items-center justify-center">
             <div id="qr-reader" class="w-full h-56 bg-gray-100 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 flex items-center justify-center">
                 <span class="text-xs text-gray-400">Kamera belum aktif</span>
             </div>
-            
             <p class="text-[10px] text-gray-500 mt-2 text-center mb-3">Arahkan kamera ke QR Code Admin</p>
-            
             <div class="flex items-center w-full mb-3">
-                <div class="h-px bg-gray-200 flex-1"></div>
-                <span class="px-2 text-[10px] text-gray-400 font-bold">ATAU</span>
-                <div class="h-px bg-gray-200 flex-1"></div>
+                <div class="h-px bg-gray-200 flex-1"></div><span class="px-2 text-[10px] text-gray-400 font-bold">ATAU</span><div class="h-px bg-gray-200 flex-1"></div>
             </div>
-
-            <button onclick="triggerFileScan()" class="w-full py-2 bg-white border border-indigo-200 text-indigo-600 rounded-lg text-sm font-semibold hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2 shadow-sm">
-                <i class="fas fa-image"></i> Ambil dari Galeri
-            </button>
+            <button onclick="triggerFileScan()" class="w-full py-2 bg-white border border-indigo-200 text-indigo-600 rounded-lg text-sm font-semibold hover:bg-indigo-50 transition-colors flex items-center justify-center gap-2 shadow-sm"><i class="fas fa-image"></i> Ambil dari Galeri</button>
             <input type="file" id="qr-file-input" class="hidden" accept="image/*" onchange="handleQrFile(this)">
         </div>
-
         <div id="login-error" class="text-red-500 text-xs hidden text-center mt-2">Username/Password/QR Salah!</div>
-        
         <div class="flex gap-2 pt-4">
             <button onclick="closeLoginModal()" class="w-1/2 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 font-medium">Batal</button>
             <button id="btn-confirm-login" onclick="doLogin()" class="w-1/2 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark font-medium shadow-md">Masuk</button>
@@ -371,9 +316,7 @@ body::before {
     <div class="bg-white dark:bg-card-dark w-11/12 max-w-7xl h-[90vh] rounded-xl shadow-2xl flex flex-col animate-slide-down relative border border-gray-200 dark:border-gray-700">
         <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800 rounded-t-xl"><div><h3 class="text-xl font-bold font-serif text-slate-800 dark:text-gray-100"><i class="fas fa-scroll text-indigo-500 mr-2"></i>Kisah Puang Guru Nasing</h3><p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Silsilah dalam format cerita narasi</p></div><button onclick="document.getElementById('narrative-modal').classList.add('hidden')" class="w-8 h-8 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center text-gray-500 transition-colors"><i class="fas fa-times"></i></button></div>
         <div class="flex-1 overflow-y-auto p-6 custom-scroll bg-[#fdfbf7] dark:bg-[#1a1a1a]"><div id="narrative-content" class="prose dark:prose-invert max-w-none font-serif leading-relaxed text-slate-700 dark:text-gray-300"><p class="text-center text-gray-400 italic">Memuat kisah...</p></div></div>
-        <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-white dark:bg-card-dark rounded-b-xl flex-wrap"><button onclick="downloadNarrativePDF()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm transition-colors flex items-center gap-2 shadow-sm font-semibold">
-    <i class="fas fa-file-pdf"></i> Download PDF
-</button><button onclick="downloadHierarchyText()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm transition-colors flex items-center gap-2 shadow-sm"><i class="fas fa-sitemap"></i> Download Pohon</button></div>
+        <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3 bg-white dark:bg-card-dark rounded-b-xl flex-wrap"><button onclick="downloadNarrativePDF()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm transition-colors flex items-center gap-2 shadow-sm font-semibold"><i class="fas fa-file-pdf"></i> Download PDF</button><button onclick="downloadHierarchyText()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm transition-colors flex items-center gap-2 shadow-sm"><i class="fas fa-sitemap"></i> Download Pohon</button></div>
     </div>
 </div>
 
@@ -398,22 +341,16 @@ body::before {
         <div class="mb-4">
             <div class="flex justify-between items-end mb-2"><label class="text-sm font-semibold dark:text-gray-300">Daftar Anggota Keluarga</label></div>
             <div id="children-inputs-container" class="space-y-3"></div>
-<button type="button" id="btn-add-more-child" class="hidden mt-3 text-sm font-medium text-primary hover:text-primary-dark flex items-center gap-1" onclick="addMoreChildDynamic()"><i class="fas fa-plus-circle"></i> Tambah anak lagi</button>
+            <button type="button" id="btn-add-more-child" class="hidden mt-3 text-sm font-medium text-primary hover:text-primary-dark flex items-center gap-1" onclick="addMoreChildDynamic()"><i class="fas fa-plus-circle"></i> Tambah anak lagi</button>
         </div>
-        
         <div class="mb-4 pt-2 border-t border-gray-100 dark:border-gray-700">
-    <label class="block text-sm font-semibold mb-1 dark:text-gray-300">Pasangan Orang Tua (Ibu/Ayah)</label>
-    <div class="relative">
-        <input type="text" id="inp-mother" class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-400 text-sm" placeholder="Ketik min. 3 huruf..." autocomplete="off" oninput="handleSpouseInputWrapper(this)">
-        
-        <div id="mother-spouse-warning" class="hidden mt-1.5 w-full p-2 bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-500 text-xs text-yellow-700 dark:text-yellow-300 font-bold rounded-r flex items-center shadow-sm animate-pulse">
-    <i class="fas fa-exclamation-triangle mr-2 text-lg"></i>
-    <span>Hati-hati! Nama ini atau Nama Ibunya sudah tercatat di silsilah.</span>
-</div>
-    </div>
-    <p class="text-[10px] text-gray-400 mt-1">*Pilih dari daftar untuk menautkan data secara otomatis</p>
-</div>
-
+            <label class="block text-sm font-semibold mb-1 dark:text-gray-300">Pasangan Orang Tua (Ibu/Ayah)</label>
+            <div class="relative">
+                <input type="text" id="inp-mother" class="w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white placeholder-gray-400 text-sm" placeholder="Ketik min. 3 huruf..." autocomplete="off" oninput="handleSpouseInputWrapper(this)">
+                <div id="mother-spouse-warning" class="hidden mt-1.5 w-full p-2 bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-500 text-xs text-yellow-700 dark:text-yellow-300 font-bold rounded-r flex items-center shadow-sm animate-pulse"><i class="fas fa-exclamation-triangle mr-2 text-lg"></i><span>Hati-hati! Nama ini atau Nama Ibunya sudah tercatat di silsilah.</span></div>
+            </div>
+            <p class="text-[10px] text-gray-400 mt-1">*Pilih dari daftar untuk menautkan data secara otomatis</p>
+        </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700 mt-6"><button class="px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200" onclick="closeModal()">Batal</button><button id="btn-save" class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400" onclick="submitData()">Simpan</button></div>
     </div>
 </div>
@@ -421,36 +358,19 @@ body::before {
 <div id="pdf-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[95] hidden justify-center items-center p-4">
     <div class="bg-white dark:bg-card-dark w-full max-w-md rounded-xl shadow-2xl p-6 animate-slide-down relative border-t-4 border-red-600">
         <button onclick="closePDFModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i class="fas fa-times"></i></button>
-        
         <div class="text-center mb-6">
-            <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
-                <i class="fas fa-print"></i>
-            </div>
+            <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl"><i class="fas fa-print"></i></div>
             <h3 class="text-xl font-bold text-slate-800 dark:text-white">Cetak Dokumen Silsilah</h3>
             <p class="text-xs text-gray-500 mt-1">Generasi dokumen PDF siap cetak</p>
         </div>
-
         <div class="space-y-4">
             <div>
                 <label class="block text-sm font-semibold mb-2 dark:text-gray-300">Format Dokumen</label>
                 <div class="grid grid-cols-2 gap-3">
-                    <label class="cursor-pointer border-2 border-red-100 dark:border-gray-700 rounded-lg p-3 hover:border-red-500 transition-colors has-[:checked]:border-red-500 has-[:checked]:bg-red-50 dark:has-[:checked]:bg-gray-800">
-                        <input type="radio" name="pdf-type" value="tree" class="hidden" checked>
-                        <div class="text-center">
-                            <i class="fas fa-sitemap text-2xl text-gray-400 mb-2 block"></i>
-                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Pohon Visual</span>
-                        </div>
-                    </label>
-                    <label class="cursor-pointer border-2 border-red-100 dark:border-gray-700 rounded-lg p-3 hover:border-red-500 transition-colors has-[:checked]:border-red-500 has-[:checked]:bg-red-50 dark:has-[:checked]:bg-gray-800">
-                        <input type="radio" name="pdf-type" value="list" class="hidden">
-                        <div class="text-center">
-                            <i class="fas fa-list-ol text-2xl text-gray-400 mb-2 block"></i>
-                            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Daftar Keluarga</span>
-                        </div>
-                    </label>
+                    <label class="cursor-pointer border-2 border-red-100 dark:border-gray-700 rounded-lg p-3 hover:border-red-500 transition-colors has-[:checked]:border-red-500 has-[:checked]:bg-red-50 dark:has-[:checked]:bg-gray-800"><input type="radio" name="pdf-type" value="tree" class="hidden" checked><div class="text-center"><i class="fas fa-sitemap text-2xl text-gray-400 mb-2 block"></i><span class="text-xs font-bold text-gray-700 dark:text-gray-300">Pohon Visual</span></div></label>
+                    <label class="cursor-pointer border-2 border-red-100 dark:border-gray-700 rounded-lg p-3 hover:border-red-500 transition-colors has-[:checked]:border-red-500 has-[:checked]:bg-red-50 dark:has-[:checked]:bg-gray-800"><input type="radio" name="pdf-type" value="list" class="hidden"><div class="text-center"><i class="fas fa-list-ol text-2xl text-gray-400 mb-2 block"></i><span class="text-xs font-bold text-gray-700 dark:text-gray-300">Daftar Keluarga</span></div></label>
                 </div>
             </div>
-
             <div>
                 <label class="block text-sm font-semibold mb-2 dark:text-gray-300">Ukuran Kertas</label>
                 <select id="pdf-size" class="w-full p-2 border rounded bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm">
@@ -459,10 +379,39 @@ body::before {
                     <option value="legal">Legal</option>
                 </select>
             </div>
-            
-            <button onclick="generatePDFAction()" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95">
-                <i class="fas fa-file-download"></i> Download PDF
-            </button>
+            <button onclick="generatePDFAction()" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all active:scale-95"><i class="fas fa-file-download"></i> Download PDF</button>
+        </div>
+    </div>
+</div>
+
+<div id="aesthetic-alert" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[200] hidden justify-center items-center p-4 transition-opacity duration-300">
+    <div class="bg-white dark:bg-[#1e1e1e] w-full max-w-sm rounded-2xl shadow-2xl p-6 transform scale-95 transition-all duration-300 border border-gray-100 dark:border-gray-700 relative overflow-hidden group">
+        
+        <div id="alert-glow" class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+        <div id="alert-glow-2" class="absolute -bottom-10 -left-10 w-32 h-32 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+
+        <div class="relative z-10 flex flex-col items-center text-center">
+            <div id="alert-icon-wrapper" class="w-16 h-16 rounded-full flex items-center justify-center mb-4 text-3xl shadow-lg ring-4 ring-opacity-20 transition-all duration-500">
+                <i id="alert-icon" class="fas fa-info"></i>
+            </div>
+
+            <h3 id="alert-title" class="text-xl font-bold text-slate-800 dark:text-white mb-2 font-serif tracking-wide">Judul Alert</h3>
+            <p id="alert-msg" class="text-sm text-gray-600 dark:text-gray-300 mb-6 leading-relaxed px-2"></p>
+
+            <div id="alert-btn-single" class="w-full hidden">
+                <button onclick="closeAestheticAlert()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold shadow-lg hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-95 transition-all duration-200">
+                    Mengerti
+                </button>
+            </div>
+
+            <div id="alert-btn-confirm" class="w-full hidden flex gap-3">
+                <button onclick="closeAestheticAlert()" class="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                    Batal
+                </button>
+                <button id="btn-confirm-yes" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 text-white font-semibold shadow-lg hover:shadow-red-500/30 hover:scale-[1.02] active:scale-95 transition-all duration-200">
+                    Ya, Lanjutkan
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -478,6 +427,79 @@ body::before {
     let pendingQueue = JSON.parse(localStorage.getItem('pendingChanges') || '[]');
     let isTraceActive = false; 
     const htmlEl = document.documentElement;
+
+    // --- LOGIKA ALERT ESTETIK BARU ---
+    function showCustomAlert(title, message, type = 'info') {
+        const modal = document.getElementById('aesthetic-alert');
+        const iconWrap = document.getElementById('alert-icon-wrapper');
+        const icon = document.getElementById('alert-icon');
+        const titleEl = document.getElementById('alert-title');
+        const msgEl = document.getElementById('alert-msg');
+        
+        // Reset Tampilan Tombol
+        document.getElementById('alert-btn-single').classList.remove('hidden');
+        document.getElementById('alert-btn-confirm').classList.add('hidden');
+        document.getElementById('alert-btn-confirm').classList.remove('flex'); // Pastikan flex hilang
+        
+        titleEl.innerText = title;
+        msgEl.innerHTML = message; 
+
+        // Reset Style Icon
+        iconWrap.className = "w-16 h-16 rounded-full flex items-center justify-center mb-4 text-3xl shadow-lg ring-4 ring-opacity-20 transition-all duration-500 mb-4";
+        
+        if (type === 'success') {
+            iconWrap.classList.add('bg-green-100', 'text-green-600', 'ring-green-400');
+            icon.className = "fas fa-check-circle animate-bounce";
+        } else if (type === 'error') {
+            iconWrap.classList.add('bg-red-100', 'text-red-600', 'ring-red-400');
+            icon.className = "fas fa-times-circle animate-pulse";
+        } else if (type === 'warning') {
+            iconWrap.classList.add('bg-orange-100', 'text-orange-600', 'ring-orange-400');
+            icon.className = "fas fa-exclamation-triangle animate-pulse";
+        } else {
+            iconWrap.classList.add('bg-blue-100', 'text-blue-600', 'ring-blue-400');
+            icon.className = "fas fa-info-circle";
+        }
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => {
+            modal.firstElementChild.classList.remove('scale-95', 'opacity-0');
+            modal.firstElementChild.classList.add('scale-100', 'opacity-100');
+        }, 10);
+    }
+
+    function showCustomConfirm(title, message, onYes) {
+        showCustomAlert(title, message, 'warning');
+        
+        // Ubah tombol jadi mode confirm
+        document.getElementById('alert-btn-single').classList.add('hidden');
+        const btnContainer = document.getElementById('alert-btn-confirm');
+        btnContainer.classList.remove('hidden');
+        btnContainer.classList.add('flex');
+        
+        const btnYes = document.getElementById('btn-confirm-yes');
+        // Hapus event listener lama dengan clone
+        const newBtn = btnYes.cloneNode(true);
+        btnYes.parentNode.replaceChild(newBtn, btnYes);
+        
+        newBtn.onclick = function() {
+            closeAestheticAlert();
+            // Beri jeda sedikit agar modal tertutup dulu
+            setTimeout(() => { if(onYes) onYes(); }, 200);
+        };
+    }
+
+    function closeAestheticAlert() {
+        const modal = document.getElementById('aesthetic-alert');
+        modal.firstElementChild.classList.remove('scale-100', 'opacity-100');
+        modal.firstElementChild.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 200);
+    }
+    // --- AKHIR LOGIKA ALERT ESTETIK ---
 
     function startApp() {
         const elem = document.documentElement;
@@ -495,7 +517,6 @@ body::before {
         const icon = document.querySelector('#theme-btn i');
         if (isDarkNow) { icon.classList.replace('fa-moon', 'fa-sun'); } else { icon.classList.replace('fa-sun', 'fa-moon'); }
     });
-
 
     async function fetchData() {
         const localData = localStorage.getItem('familyDataCache');
@@ -525,12 +546,11 @@ body::before {
         } 
         catch (e) { 
             console.error("Gagal mengambil data server: " + e);
-            if (allData.length > 0) alert("Mode Offline: Menampilkan data terakhir yang tersimpan.");
-            else alert("Gagal mengambil data dan tidak ada cache.");
+            if (allData.length > 0) showCustomAlert("Mode Offline", "Gagal terhubung ke server. Menampilkan data terakhir yang tersimpan.", "warning");
+            else showCustomAlert("Koneksi Gagal", "Gagal mengambil data dan tidak ada cache tersimpan.", "error");
             showLoader(false); 
         }
     }
-
 
     function updateStats() {
         if(!allData) return;
@@ -547,43 +567,42 @@ body::before {
     
     function showLoader(show) { document.getElementById('loader').style.display = show ? 'flex' : 'none'; document.getElementById('tree-root').style.display = show ? 'none' : 'block'; }
 
-function renderTree() {
-    const c = document.getElementById('tree-root'); 
-    c.innerHTML = '';
-    
-    const userRootId = localStorage.getItem('userRootId');
-    let roots = [];
-    
-    if (isLoggedIn && userRootId && userRootId !== 'all') {
-        roots = allData.filter(d => d.id == userRootId);
-        if(roots.length === 0) { 
-            c.innerHTML = '<div class="text-center text-gray-500 mt-4 text-sm">Data root id "'+userRootId+'" tidak ditemukan.</div>'; 
-            return; 
+    function renderTree() {
+        const c = document.getElementById('tree-root'); 
+        c.innerHTML = '';
+        
+        const userRootId = localStorage.getItem('userRootId');
+        let roots = [];
+        
+        if (isLoggedIn && userRootId && userRootId !== 'all') {
+            roots = allData.filter(d => d.id == userRootId);
+            if(roots.length === 0) { 
+                c.innerHTML = '<div class="text-center text-gray-500 mt-4 text-sm">Data root id "'+userRootId+'" tidak ditemukan.</div>'; 
+                return; 
+            }
+        } else { 
+            roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root'); 
         }
-    } else { 
-        roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root'); 
+        
+        roots.sort((a, b) => {
+            const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999;
+            const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999;
+            return orderA - orderB;
+        });
+
+        const fragment = document.createDocumentFragment(); 
+        const ul = document.createElement('ul'); 
+        ul.className = 'pl-0 border-none';
+        
+        roots.forEach(r => ul.appendChild(createNode(r, 0))); 
+        
+        fragment.appendChild(ul); 
+        c.appendChild(fragment); 
+        
+        isExpandedGlobal = false;
+        const iconExpand = document.getElementById('icon-expand');
+        if(iconExpand) iconExpand.classList.replace('fa-compress', 'fa-expand');
     }
-    
-    roots.sort((a, b) => {
-        const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999;
-        const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999;
-        return orderA - orderB;
-    });
-
-    const fragment = document.createDocumentFragment(); 
-    const ul = document.createElement('ul'); 
-    ul.className = 'pl-0 border-none';
-    
-    roots.forEach(r => ul.appendChild(createNode(r, 0))); 
-    
-    fragment.appendChild(ul); 
-    c.appendChild(fragment); 
-    
-    isExpandedGlobal = false;
-    const iconExpand = document.getElementById('icon-expand');
-    if(iconExpand) iconExpand.classList.replace('fa-compress', 'fa-expand');
-}
-
     
     function createNode(p, lvl) {
         const li = document.createElement('li'); 
@@ -751,13 +770,13 @@ function renderTree() {
     }
     
     function getNextBirthOrderFromDB(parentId) {
-    if (!parentId || parentId === 'root') return 1;
-    const siblings = allData.filter(d => d.parentId == parentId);
-    if (siblings.length === 0) return 1; 
-    let maxOrder = 0;
-    siblings.forEach(s => { const val = parseInt(s.birthOrder); if (!isNaN(val) && val > maxOrder) maxOrder = val; });
-    return maxOrder + 1;
-}
+        if (!parentId || parentId === 'root') return 1;
+        const siblings = allData.filter(d => d.parentId == parentId);
+        if (siblings.length === 0) return 1; 
+        let maxOrder = 0;
+        siblings.forEach(s => { const val = parseInt(s.birthOrder); if (!isNaN(val) && val > maxOrder) maxOrder = val; });
+        return maxOrder + 1;
+    }
 
     function handleSearchInput(v) {
         const dd = document.getElementById('custom-search-results');
@@ -777,7 +796,7 @@ function renderTree() {
         if (!n) return;
         const lowerName = n.toLowerCase();
         let targets = allData.filter(d => (d.name && d.name.toLowerCase().includes(lowerName)) || (d.spouse && d.spouse.toLowerCase().includes(lowerName)));
-        if (targets.length === 0) { alert("Nama tidak ditemukan!"); return; }
+        if (targets.length === 0) { showCustomAlert("Maaf", "Nama tersebut tidak ditemukan dalam silsilah!", "error"); return; }
         document.querySelectorAll('.highlight-card').forEach(el => el.classList.remove('highlight-card'));
         targets.forEach(targetData => {
             const targetId = targetData.id;
@@ -798,146 +817,159 @@ function renderTree() {
         hideSearch();
     }
     
-function handleSpouseInputWrapper(input) {
-    handleSpouseSuggest(input); 
-    checkSpouseWarning(input); 
-}
+    function handleSpouseInputWrapper(input) {
+        // Hapus koma secara otomatis jika user mengetik koma
+        if (input.value.includes(',')) {
+            input.value = input.value.replace(/,/g, '');
+            showCustomAlert("Format Nama", "Mohon <b>jangan gunakan koma (,)</b> pada nama.<br>Gunakan spasi atau titik untuk gelar.", "warning");
+        }
+        handleSpouseSuggest(input); 
+        checkSpouseWarning(input); 
+    }
 
-function checkSpouseWarning(input) {
-    const val = input.value.trim().toLowerCase();
-    let warningEl;
-    if (input.id === 'inp-mother') { warningEl = document.getElementById('mother-spouse-warning'); } 
-    else { const entry = input.closest('.spouse-row'); if (entry) warningEl = entry.querySelector('.spouse-warning'); }
+    function checkSpouseWarning(input) {
+        const val = input.value.trim().toLowerCase();
+        let warningEl;
+        if (input.id === 'inp-mother') { warningEl = document.getElementById('mother-spouse-warning'); } 
+        else { const entry = input.closest('.spouse-row'); if (entry) warningEl = entry.querySelector('.spouse-warning'); }
 
-    if (!warningEl) return;
-    if (val.length < 2) { warningEl.classList.add('hidden'); warningEl.classList.remove('flex'); return; }
+        if (!warningEl) return;
+        if (val.length < 2) { warningEl.classList.add('hidden'); warningEl.classList.remove('flex'); return; }
 
-    const isExist = allData.some(d => (d.name && d.name.toLowerCase() === val) || (d.motherName && d.motherName.toLowerCase() === val));
+        const isExist = allData.some(d => (d.name && d.name.toLowerCase() === val) || (d.motherName && d.motherName.toLowerCase() === val));
 
-    if (isExist) { warningEl.classList.remove('hidden'); warningEl.classList.add('flex'); } 
-    else { warningEl.classList.add('hidden'); warningEl.classList.remove('flex'); }
-}
+        if (isExist) { warningEl.classList.remove('hidden'); warningEl.classList.add('flex'); } 
+        else { warningEl.classList.add('hidden'); warningEl.classList.remove('flex'); }
+    }
 
     function handleSpouseSuggest(input) {
-    let oldList = input.parentNode.querySelector('.suggestion-list'); 
-    if (oldList) oldList.remove();
-    const val = input.value.trim(); 
-    if (val.length < 3) return; 
+        let oldList = input.parentNode.querySelector('.suggestion-list'); 
+        if (oldList) oldList.remove();
+        const val = input.value.trim(); 
+        if (val.length < 3) return; 
 
-    const matches = searchableNamesList.filter(n => n.toLowerCase().includes(val.toLowerCase())); 
-    if (matches.length === 0) return;
+        const matches = searchableNamesList.filter(n => n.toLowerCase().includes(val.toLowerCase())); 
+        if (matches.length === 0) return;
 
-    const ul = document.createElement('ul'); 
-    ul.className = 'suggestion-list animate-slide-down custom-scroll';
-    matches.slice(0, 10).forEach(name => {
-        const li = document.createElement('li'); 
-        li.className = "px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700 last:border-0"; 
-        li.textContent = name; 
-        li.onclick = function() { input.value = name; ul.remove(); checkSpouseWarning(input); }; 
-        ul.appendChild(li);
-    });
-    input.parentNode.appendChild(ul);
-}
-
-
-function addMoreChildDynamic() {
-    const inputs = document.querySelectorAll('.inp-child-order');
-    let nextVal = 1;
-    if (inputs.length > 0) {
-        const lastInput = inputs[inputs.length - 1]; const lastVal = parseInt(lastInput.value);
-        if (!isNaN(lastVal)) { nextVal = lastVal + 1; }
-    } else {
-        const parentId = document.getElementById('inp-parent').value;
-        nextVal = getNextBirthOrderFromDB(parentId);
+        const ul = document.createElement('ul'); 
+        ul.className = 'suggestion-list animate-slide-down custom-scroll';
+        matches.slice(0, 10).forEach(name => {
+            const li = document.createElement('li'); 
+            li.className = "px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-100 dark:border-gray-700 last:border-0"; 
+            li.textContent = name; 
+            li.onclick = function() { input.value = name; ul.remove(); checkSpouseWarning(input); }; 
+            ul.appendChild(li);
+        });
+        input.parentNode.appendChild(ul);
     }
-    addChildInputRow("", "", 0, "L", nextVal); 
-}
 
-function addChildInputRow(n="", spousesStr="", isDead=0, gender="L", order="", mStatus="Lajang") {
-    const c = document.getElementById('children-inputs-container'); 
-    const d = document.createElement('div'); 
-    d.className = 'child-input-row bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 relative animate-slide-down mb-3 border-l-4 border-l-primary shadow-sm';
-    const rndGrp = Math.random().toString(36).substring(7);
-    const delBtn = c.children.length > 0 ? `<button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors" onclick="this.closest('.child-input-row').remove(); updateSaveButtonState();"><i class="fas fa-times"></i></button>` : ``; 
+    function addMoreChildDynamic() {
+        const inputs = document.querySelectorAll('.inp-child-order');
+        let nextVal = 1;
+        if (inputs.length > 0) {
+            const lastInput = inputs[inputs.length - 1]; const lastVal = parseInt(lastInput.value);
+            if (!isNaN(lastVal)) { nextVal = lastVal + 1; }
+        } else {
+            const parentId = document.getElementById('inp-parent').value;
+            nextVal = getNextBirthOrderFromDB(parentId);
+        }
+        addChildInputRow("", "", 0, "L", nextVal); 
+    }
 
-    d.innerHTML = `
-        ${delBtn}
-        <div class="mb-3 pr-6 relative">
-            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Nama Lengkap</label>
-            <div class="relative">
-                <input type="text" class="inp-child-name w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white shadow-sm" placeholder="Nama anak..." value="${n}" autocomplete="off" oninput="handleChildNameInput(this)">
-                <div class="duplicate-warning hidden mt-1 text-[10px] text-red-600 dark:text-red-400 font-bold flex items-center animate-pulse"><i class="fas fa-times-circle mr-1"></i> Error: Nama ini sudah terdaftar!</div>
-            </div>
-        </div>
-        <div class="grid grid-cols-2 gap-3 mb-3">
-            <div>
-                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Urutan Lahir</label>
-                <input type="number" class="inp-child-order w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white shadow-sm" placeholder="Ke-?" value="${order}" min="1">
-            </div>
-             <div>
-                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Jenis Kelamin & Kondisi</label>
-                <div class="flex items-center gap-1 bg-white dark:bg-gray-900/30 p-1.5 rounded border border-gray-200 dark:border-gray-600 h-[38px] shadow-sm">
-                    <label class="cursor-pointer flex items-center"><input type="radio" name="gender-${rndGrp}" value="L" class="inp-child-gender text-blue-600 focus:ring-blue-500" ${gender!=='P'?'checked':''}><span class="ml-1 text-xs dark:text-gray-300 font-semibold">L</span></label>
-                    <label class="cursor-pointer ml-3 flex items-center"><input type="radio" name="gender-${rndGrp}" value="P" class="inp-child-gender text-pink-600 focus:ring-pink-500" ${gender==='P'?'checked':''}><span class="ml-1 text-xs dark:text-gray-300 font-semibold">P</span></label>
-                    <div class="w-px h-4 bg-gray-300 dark:bg-gray-500 mx-2"></div>
-                    <label class="cursor-pointer flex items-center"><input type="checkbox" class="inp-child-dead text-red-500 rounded focus:ring-red-500" ${isDead==1?"checked":""}><span class="ml-1 text-[10px] font-bold text-red-500">Alm</span></label>
+    function addChildInputRow(n="", spousesStr="", isDead=0, gender="L", order="", mStatus="Lajang") {
+        const c = document.getElementById('children-inputs-container'); 
+        const d = document.createElement('div'); 
+        d.className = 'child-input-row bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 relative animate-slide-down mb-3 border-l-4 border-l-primary shadow-sm';
+        const rndGrp = Math.random().toString(36).substring(7);
+        const delBtn = c.children.length > 0 ? `<button type="button" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors" onclick="this.closest('.child-input-row').remove(); updateSaveButtonState();"><i class="fas fa-times"></i></button>` : ``; 
+
+        d.innerHTML = `
+            ${delBtn}
+            <div class="mb-3 pr-6 relative">
+                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Nama Lengkap</label>
+                <div class="relative">
+                    <input type="text" class="inp-child-name w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white shadow-sm" placeholder="Nama anak..." value="${n}" autocomplete="off" oninput="handleChildNameInput(this)">
+                    <div class="duplicate-warning hidden mt-1 text-[10px] text-red-600 dark:text-red-400 font-bold flex items-center animate-pulse"><i class="fas fa-times-circle mr-1"></i> Error: Nama ini sudah terdaftar!</div>
                 </div>
             </div>
-        </div>
-        <div class="bg-white dark:bg-gray-900/20 p-2.5 rounded border border-gray-200 dark:border-gray-600">
-            <div class="flex justify-between items-center mb-2 pb-1 border-b border-gray-100 dark:border-gray-700">
-                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Daftar Pasangan</label>
-                <button type="button" onclick="addSpouseRow(this.closest('.bg-white').querySelector('.spouses-container'))" class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-100 border border-indigo-200 font-bold transition-colors shadow-sm dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800 dark:hover:bg-indigo-900/50"><i class="fas fa-plus mr-1"></i>Tambah</button>
+            <div class="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Urutan Lahir</label>
+                    <input type="number" class="inp-child-order w-full p-2 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white shadow-sm" placeholder="Ke-?" value="${order}" min="1">
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1 block">Jenis Kelamin & Kondisi</label>
+                    <div class="flex items-center gap-1 bg-white dark:bg-gray-900/30 p-1.5 rounded border border-gray-200 dark:border-gray-600 h-[38px] shadow-sm">
+                        <label class="cursor-pointer flex items-center"><input type="radio" name="gender-${rndGrp}" value="L" class="inp-child-gender text-blue-600 focus:ring-blue-500" ${gender!=='P'?'checked':''}><span class="ml-1 text-xs dark:text-gray-300 font-semibold">L</span></label>
+                        <label class="cursor-pointer ml-3 flex items-center"><input type="radio" name="gender-${rndGrp}" value="P" class="inp-child-gender text-pink-600 focus:ring-pink-500" ${gender==='P'?'checked':''}><span class="ml-1 text-xs dark:text-gray-300 font-semibold">P</span></label>
+                        <div class="w-px h-4 bg-gray-300 dark:bg-gray-500 mx-2"></div>
+                        <label class="cursor-pointer flex items-center"><input type="checkbox" class="inp-child-dead text-red-500 rounded focus:ring-red-500" ${isDead==1?"checked":""}><span class="ml-1 text-[10px] font-bold text-red-500">Alm</span></label>
+                    </div>
+                </div>
             </div>
-            <div class="spouses-container space-y-2 empty:text-center empty:py-2"></div>
-            <div class="empty-msg hidden text-[10px] text-gray-400 text-center italic">Belum ada pasangan</div>
-        </div>
-    `;
-    c.appendChild(d);
+            <div class="bg-white dark:bg-gray-900/20 p-2.5 rounded border border-gray-200 dark:border-gray-600">
+                <div class="flex justify-between items-center mb-2 pb-1 border-b border-gray-100 dark:border-gray-700">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Daftar Pasangan</label>
+                    <button type="button" onclick="addSpouseRow(this.closest('.bg-white').querySelector('.spouses-container'))" class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-100 border border-indigo-200 font-bold transition-colors shadow-sm dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-800 dark:hover:bg-indigo-900/50"><i class="fas fa-plus mr-1"></i>Tambah</button>
+                </div>
+                <div class="spouses-container space-y-2 empty:text-center empty:py-2"></div>
+                <div class="empty-msg hidden text-[10px] text-gray-400 text-center italic">Belum ada pasangan</div>
+            </div>
+        `;
+        c.appendChild(d);
 
-    const container = d.querySelector('.spouses-container');
-    if (spousesStr && spousesStr.trim() !== "") {
-        const arr = spousesStr.split(','); 
-        arr.forEach(s => {
-            let fullString = s.trim();
-            if(!fullString) return;
-            let name = fullString;
-            let status = "Menikah"; 
-            const match = fullString.match(/^(.*?)\s*\(([^)]+)\)$/);
-            if (match) { name = match[1].trim(); status = match[2].trim(); if(status === 'Cerai') status = 'Cerai Hidup'; }
-            addSpouseRow(container, name, status);
-        });
+        const container = d.querySelector('.spouses-container');
+        if (spousesStr && spousesStr.trim() !== "") {
+            const arr = spousesStr.split(','); 
+            arr.forEach(s => {
+                let fullString = s.trim();
+                if(!fullString) return;
+                let name = fullString;
+                let status = "Menikah"; 
+                const match = fullString.match(/^(.*?)\s*\(([^)]+)\)$/);
+                if (match) { name = match[1].trim(); status = match[2].trim(); if(status === 'Cerai') status = 'Cerai Hidup'; }
+                addSpouseRow(container, name, status);
+            });
+        }
     }
-}
 
-function addSpouseRow(container, name = "", status = "Menikah") {
-    if (!container) return;
-    const wrapper = document.createElement('div');
-    wrapper.className = "spouse-row mb-3 animate-slide-down border-b border-gray-100 dark:border-gray-700 pb-2 last:border-0"; 
-    
-    const opts = ['Menikah', 'Cerai Hidup', 'Cerai Mati', 'Belum Menikah'];
-    const optionsHtml = opts.map(o => `<option value="${o}" ${status === o ? 'selected' : ''}>${o}</option>`).join('');
+    function addSpouseRow(container, name = "", status = "Menikah") {
+        if (!container) return;
+        const wrapper = document.createElement('div');
+        wrapper.className = "spouse-row mb-3 animate-slide-down border-b border-gray-100 dark:border-gray-700 pb-2 last:border-0"; 
+        
+        const opts = ['Menikah', 'Cerai Hidup', 'Cerai Mati', 'Belum Menikah'];
+        const optionsHtml = opts.map(o => `<option value="${o}" ${status === o ? 'selected' : ''}>${o}</option>`).join('');
 
-    wrapper.innerHTML = `
-        <div class="flex items-start gap-2">
-            <div class="flex-grow relative">
-                <input type="text" class="inp-spouse-name w-full p-2 border border-gray-300 rounded-l text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
-                    placeholder="Nama Pasangan..." value="${name}" autocomplete="off" 
-                    oninput="handleSpouseInputWrapper(this)"> 
+        wrapper.innerHTML = `
+            <div class="flex items-start gap-2">
+                <div class="flex-grow relative">
+                    <input type="text" class="inp-spouse-name w-full p-2 border border-gray-300 rounded-l text-sm focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
+                        placeholder="Nama Pasangan..." value="${name}" autocomplete="off" 
+                        oninput="handleSpouseInputWrapper(this)"> 
+                </div>
+                <div class="w-1/3 min-w-[100px]">
+                    <select class="inp-spouse-status w-full p-2 border-t border-b border-r border-gray-300 rounded-r text-sm bg-gray-50 focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white">${optionsHtml}</select>
+                </div>
+                <button type="button" class="w-9 h-9 flex-shrink-0 bg-red-100 text-red-500 rounded hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center border border-red-200" onclick="this.closest('.spouse-row').remove()"><i class="fas fa-trash-alt text-xs"></i></button>
             </div>
-            <div class="w-1/3 min-w-[100px]">
-                <select class="inp-spouse-status w-full p-2 border-t border-b border-r border-gray-300 rounded-r text-sm bg-gray-50 focus:outline-none focus:ring-1 focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-white">${optionsHtml}</select>
-            </div>
-            <button type="button" class="w-9 h-9 flex-shrink-0 bg-red-100 text-red-500 rounded hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center border border-red-200" onclick="this.closest('.spouse-row').remove()"><i class="fas fa-trash-alt text-xs"></i></button>
-        </div>
-        <div class="spouse-warning hidden mt-1.5 w-full p-2 bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-500 text-xs text-yellow-700 dark:text-yellow-300 font-bold rounded-r flex items-center shadow-sm"><i class="fas fa-exclamation-triangle mr-2 text-lg"></i><span>Hati-hati! Nama ini atau Nama Ibunya sudah tercatat di silsilah.</span></div>
-    `;
-    container.appendChild(wrapper);
-}
+            <div class="spouse-warning hidden mt-1.5 w-full p-2 bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-500 text-xs text-yellow-700 dark:text-yellow-300 font-bold rounded-r flex items-center shadow-sm"><i class="fas fa-exclamation-triangle mr-2 text-lg"></i><span>Hati-hati! Nama ini atau Nama Ibunya sudah tercatat di silsilah.</span></div>
+        `;
+        container.appendChild(wrapper);
+    }
 
-    function handleChildNameInput(input) {
+        function handleChildNameInput(input) {
+        // --- [BARU] VALIDASI KOMA ---
+        if (input.value.includes(',')) {
+            input.value = input.value.replace(/,/g, ''); // Hapus koma otomatis
+            showCustomAlert("Format Nama", "Mohon <b>jangan gunakan koma (,)</b> pada nama anak.<br>Gunakan spasi atau titik untuk gelar.", "warning");
+        }
+        // ----------------------------
+
         const nameVal = input.value.toLowerCase().trim();
         let predicted = "";
+        
+        // Logika Prediksi Gender (Tetap Sama)
         if (nameVal.length > 2 && typeof allData !== 'undefined' && allData.length > 0) {
             const firstWord = nameVal.split(' ')[0];
             const dbMatches = allData.filter(d => d.name && d.name.toLowerCase().includes(firstWord));
@@ -972,12 +1004,21 @@ function addSpouseRow(container, name = "", status = "Menikah") {
                 });
             }
         }
+
+        // Logika Suggestion List & Duplikat (Tetap Sama)
         let oldList = input.parentNode.querySelector('.suggestion-list'); if (oldList) oldList.remove();
         const wrapper = input.parentNode; const warningEl = wrapper.querySelector('.duplicate-warning');
         const isDuplicate = allData.some(d => d.name.toLowerCase() === nameVal);
         input.classList.remove('input-error', 'border-red-500', 'focus:ring-red-500'); input.classList.add('focus:ring-primary'); warningEl.classList.add('hidden');
-        if (nameVal.length > 0 && isDuplicate) { warningEl.classList.remove('hidden'); warningEl.innerHTML = '<i class="fas fa-times-circle mr-1"></i> Error: Nama ini sudah terdaftar!'; input.classList.add('input-error', 'border-red-500', 'focus:ring-red-500'); input.classList.remove('focus:ring-primary'); }
+        
+        if (nameVal.length > 0 && isDuplicate) { 
+            warningEl.classList.remove('hidden'); 
+            warningEl.innerHTML = '<i class="fas fa-times-circle mr-1"></i> Error: Nama ini sudah terdaftar!'; 
+            input.classList.add('input-error', 'border-red-500', 'focus:ring-red-500'); 
+            input.classList.remove('focus:ring-primary'); 
+        }
         updateSaveButtonState();
+
         if (nameVal.length < 3) return; 
         const matches = searchableNamesList.filter(n => n.toLowerCase().includes(nameVal)); if (matches.length === 0) return;
         const ul = document.createElement('ul'); ul.className = 'suggestion-list animate-slide-down custom-scroll';
@@ -989,6 +1030,7 @@ function addSpouseRow(container, name = "", status = "Menikah") {
         });
         input.parentNode.appendChild(ul);
     }
+
 
     function updateSaveButtonState() {
         const btn = document.getElementById('btn-save'); const errors = document.querySelectorAll('.input-error');
@@ -1014,14 +1056,18 @@ function addSpouseRow(container, name = "", status = "Menikah") {
                 pendingQueue.shift(); localStorage.setItem('pendingChanges', JSON.stringify(pendingQueue)); updateSyncUI(); 
             }
             const r = await fetch(API_URL); allData = await r.json(); prepareSearchableNames(); renderTree(); updateStats();
-        } catch (e) { alert("Proses Sync terhenti (Cek koneksi internet): " + e); console.error(e); } 
+            showCustomAlert("Sync Berhasil", "Semua perubahan data telah disimpan ke server.", "success");
+        } catch (e) { 
+            showCustomAlert("Sync Gagal", "Proses Sync terhenti (Cek koneksi internet): " + e, "error"); 
+            console.error(e); 
+        } 
         finally { showLoader(false); btn.disabled = false; updateSyncUI(); }
     }
     
     function openLoginModal() { document.getElementById('login-modal').classList.replace('hidden', 'flex'); document.getElementById('login-user').value=''; document.getElementById('login-pass').value=''; document.getElementById('login-error').classList.add('hidden'); switchLoginTab('pass'); }
     function closeLoginModal() { document.getElementById('login-modal').classList.replace('flex', 'hidden'); stopQRScanner(); }
     
-	    async function doLogin(qrTokenInput = null) {
+	async function doLogin(qrTokenInput = null) {
         const btn = document.getElementById('btn-confirm-login');
         const err = document.getElementById('login-error');
         const originalText = btn.innerText;
@@ -1030,19 +1076,9 @@ function addSpouseRow(container, name = "", status = "Menikah") {
         btn.disabled = true; 
         err.classList.add('hidden');
 
-        // Siapkan payload
         let payload = { action: "login" };
-        
-        if (qrTokenInput) {
-            // Login via QR
-            payload.u = qrTokenInput; // Kirim token sebagai 'u'
-            payload.p = "";
-            payload.type = "qr";
-        } else {
-            // Login via Password
-            payload.u = document.getElementById('login-user').value;
-            payload.p = document.getElementById('login-pass').value;
-        }
+        if (qrTokenInput) { payload.u = qrTokenInput; payload.p = ""; payload.type = "qr"; } 
+        else { payload.u = document.getElementById('login-user').value; payload.p = document.getElementById('login-pass').value; }
 
         try { 
             const response = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) }); 
@@ -1053,29 +1089,22 @@ function addSpouseRow(container, name = "", status = "Menikah") {
                 localStorage.setItem('isLoggedIn', 'true'); 
                 localStorage.setItem('userRootId', result.rootId || 'all'); 
                 localStorage.setItem('userRole', result.role); 
-                
                 closeLoginModal(); 
                 updateLoginUI(); 
                 renderTree(); 
-                
-                // Baris alert dihapus agar tidak ada popup mengganggu
-                // alert("Berhasil login via " + (qrTokenInput ? "QR Code" : "Password")); 
-                
-                console.log("Login berhasil via " + (qrTokenInput ? "QR" : "Password")); // Log di console saja
+                showCustomAlert("Login Berhasil", "Selamat datang Admin! Akses diberikan.", "success");
             } else { 
                 err.classList.remove('hidden'); 
-                // Jika gagal via QR, restart scanner agar bisa coba lagi
                 if(qrTokenInput) startQRScanner();
             } 
         } catch (e) { 
-            alert("Gagal Login: " + e); 
+            showCustomAlert("Login Error", "Terjadi kesalahan saat login: " + e, "error");
         } finally { 
             btn.innerText = originalText; 
             btn.disabled = false; 
         }
     }
 
-	
     function doLogout() { isLoggedIn = false; localStorage.removeItem('isLoggedIn'); localStorage.removeItem('userRootId'); updateLoginUI(); renderTree(); }
     
     function updateLoginUI() { 
@@ -1085,90 +1114,98 @@ function addSpouseRow(container, name = "", status = "Menikah") {
         else { adminGroup.classList.add('hidden'); adminGroup.classList.remove('flex'); if(isAdminMenuOpen) toggleAdminMenu(); }
     }
 
+    function openModal(mode, id) {
+        document.getElementById('modal').classList.replace('hidden', 'flex'); 
+        document.getElementById('inp-mode').value = mode; 
+        document.getElementById('children-inputs-container').innerHTML = ''; 
+        document.getElementById('inp-mother').value = ''; 
+        document.getElementById('inp-parent').value = '';
 
-function openModal(mode, id) {
-    document.getElementById('modal').classList.replace('hidden', 'flex'); 
-    document.getElementById('inp-mode').value = mode; 
-    document.getElementById('children-inputs-container').innerHTML = ''; 
-    document.getElementById('inp-mother').value = ''; 
-    document.getElementById('inp-parent').value = '';
-
-    if (mode === 'add') { 
-        document.getElementById('modal-title').innerText = "Tambah Keturunan"; 
-        document.getElementById('inp-parent').value = id; 
-        document.getElementById('btn-add-more-child').classList.remove('hidden'); 
-        const nextOrder = getNextBirthOrderFromDB(id);
-        addChildInputRow("", "", 0, "L", nextOrder); 
-        const f = allData.find(d => d.id == id); 
-        if (f && f.spouse && f.spouse.split(',').length === 1) {
-            let cleanName = f.spouse.split('(')[0].trim();
-            document.getElementById('inp-mother').value = cleanName; 
+        if (mode === 'add') { 
+            document.getElementById('modal-title').innerText = "Tambah Keturunan"; 
+            document.getElementById('inp-parent').value = id; 
+            document.getElementById('btn-add-more-child').classList.remove('hidden'); 
+            const nextOrder = getNextBirthOrderFromDB(id);
+            addChildInputRow("", "", 0, "L", nextOrder); 
+            const f = allData.find(d => d.id == id); 
+            if (f && f.spouse && f.spouse.split(',').length === 1) {
+                let cleanName = f.spouse.split('(')[0].trim();
+                document.getElementById('inp-mother').value = cleanName; 
+            }
+        } else { 
+            document.getElementById('modal-title').innerText = "Edit Data"; 
+            document.getElementById('btn-add-more-child').classList.add('hidden'); 
+            const p = allData.find(d => d.id == id); 
+            document.getElementById('inp-id').value = id; 
+            addChildInputRow(p.name, p.spouse, p.isDead, p.gender, p.birthOrder || "", p.maritalStatus || "Lajang"); 
+            document.getElementById('inp-mother').value = p.motherName || ''; 
         }
-    } else { 
-        document.getElementById('modal-title').innerText = "Edit Data"; 
-        document.getElementById('btn-add-more-child').classList.add('hidden'); 
-        const p = allData.find(d => d.id == id); 
-        document.getElementById('inp-id').value = id; 
-        addChildInputRow(p.name, p.spouse, p.isDead, p.gender, p.birthOrder || "", p.maritalStatus || "Lajang"); 
-        document.getElementById('inp-mother').value = p.motherName || ''; 
     }
-}
 
     function closeModal() { document.getElementById('modal').classList.replace('flex', 'hidden'); }
     
-function submitData() {
-    const mode = document.getElementById('inp-mode').value; 
-    const rows = document.querySelectorAll('.child-input-row'); 
-    const childrenData = [];
+    function submitData() {
+        const mode = document.getElementById('inp-mode').value; 
+        const rows = document.querySelectorAll('.child-input-row'); 
+        const childrenData = [];
 
-    rows.forEach(r => { 
-        const nInput = r.querySelector('.inp-child-name');
-        const n = nInput ? nInput.value.trim() : "";
-        const spouseRows = r.querySelectorAll('.spouse-row');
-        let spouseList = [];
-        let collectedStatuses = []; 
-        spouseRows.forEach(sr => {
-            const sNameInp = sr.querySelector('.inp-spouse-name');
-            const sStatusInp = sr.querySelector('.inp-spouse-status');
-            const sName = sNameInp ? sNameInp.value.trim() : "";
-            const sStatus = sStatusInp ? sStatusInp.value : "Menikah";
-            if (sName) { spouseList.push(`${sName} (${sStatus})`); collectedStatuses.push(sStatus); }
+        rows.forEach(r => { 
+            const nInput = r.querySelector('.inp-child-name');
+            const n = nInput ? nInput.value.trim() : "";
+            const spouseRows = r.querySelectorAll('.spouse-row');
+            let spouseList = [];
+            let collectedStatuses = []; 
+            spouseRows.forEach(sr => {
+                const sNameInp = sr.querySelector('.inp-spouse-name');
+                const sStatusInp = sr.querySelector('.inp-spouse-status');
+                const sName = sNameInp ? sNameInp.value.trim() : "";
+                const sStatus = sStatusInp ? sStatusInp.value : "Menikah";
+                if (sName) { spouseList.push(`${sName} (${sStatus})`); collectedStatuses.push(sStatus); }
+            });
+            
+            const sFinal = spouseList.join(', ');
+            let globalMaritalStatus = "Lajang";
+            if (collectedStatuses.length > 0) {
+                if (collectedStatuses.includes("Menikah")) { globalMaritalStatus = "Menikah"; } 
+                else if (collectedStatuses.some(s => s.includes("Cerai"))) { globalMaritalStatus = collectedStatuses.find(s => s.includes("Cerai")); } 
+                else if (collectedStatuses.includes("Belum Menikah")) { globalMaritalStatus = "Belum Menikah"; }
+            }
+            const deadCheck = r.querySelector('.inp-child-dead');
+            const isDead = deadCheck ? deadCheck.checked : false;
+            const orderInput = r.querySelector('.inp-child-order');
+            const order = orderInput ? orderInput.value : "";
+            let genderVal = 'L'; 
+            r.querySelectorAll('.inp-child-gender').forEach(rd => { if(rd.checked) genderVal = rd.value; });
+
+            if (n) { childrenData.push({ name: n, spouse: sFinal, isDead: isDead, gender: genderVal, birthOrder: order, maritalStatus: globalMaritalStatus }); }
         });
+
+        if (childrenData.length === 0) { showCustomAlert("Data Kosong", "Wajib mengisi minimal satu <b>Nama Anak</b> sebelum menyimpan!", "error"); return; }
         
-        const sFinal = spouseList.join(', ');
-        let globalMaritalStatus = "Lajang";
-        if (collectedStatuses.length > 0) {
-            if (collectedStatuses.includes("Menikah")) { globalMaritalStatus = "Menikah"; } 
-            else if (collectedStatuses.some(s => s.includes("Cerai"))) { globalMaritalStatus = collectedStatuses.find(s => s.includes("Cerai")); } 
-            else if (collectedStatuses.includes("Belum Menikah")) { globalMaritalStatus = "Belum Menikah"; }
+        const pl = { action: mode, motherName: document.getElementById('inp-mother').value }; 
+        if (mode === 'add') { pl.parentId = document.getElementById('inp-parent').value; pl.children = childrenData; } 
+        else { 
+            pl.id = document.getElementById('inp-id').value; 
+            pl.name = childrenData[0].name; 
+            pl.spouse = childrenData[0].spouse; 
+            pl.isDead = childrenData[0].isDead; 
+            pl.gender = childrenData[0].gender; 
+            pl.birthOrder = childrenData[0].birthOrder; 
+            pl.maritalStatus = childrenData[0].maritalStatus; 
         }
-        const deadCheck = r.querySelector('.inp-child-dead');
-        const isDead = deadCheck ? deadCheck.checked : false;
-        const orderInput = r.querySelector('.inp-child-order');
-        const order = orderInput ? orderInput.value : "";
-        let genderVal = 'L'; 
-        r.querySelectorAll('.inp-child-gender').forEach(rd => { if(rd.checked) genderVal = rd.value; });
-
-        if (n) { childrenData.push({ name: n, spouse: sFinal, isDead: isDead, gender: genderVal, birthOrder: order, maritalStatus: globalMaritalStatus }); }
-    });
-
-    if (childrenData.length === 0) { alert("Wajib isi minimal satu nama anak!"); return; }
-    
-    const pl = { action: mode, motherName: document.getElementById('inp-mother').value }; 
-    if (mode === 'add') { pl.parentId = document.getElementById('inp-parent').value; pl.children = childrenData; } 
-    else { 
-        pl.id = document.getElementById('inp-id').value; 
-        pl.name = childrenData[0].name; 
-        pl.spouse = childrenData[0].spouse; 
-        pl.isDead = childrenData[0].isDead; 
-        pl.gender = childrenData[0].gender; 
-        pl.birthOrder = childrenData[0].birthOrder; 
-        pl.maritalStatus = childrenData[0].maritalStatus; 
+        enqueueAction(pl);
     }
-    enqueueAction(pl);
-}
 
-    function deleteItem(id) { if(confirm("Hapus data ini beserta keturunannya? (Akan masuk antrean Sync)")) { enqueueAction({ action: 'delete', id: id }); } }
+    function deleteItem(id) { 
+        showCustomConfirm(
+            "Hapus Data?", 
+            "Apakah Anda yakin ingin menghapus data ini beserta seluruh keturunannya?<br><span class='text-xs text-red-500 font-bold'>Tindakan ini akan masuk antrean Sync.</span>", 
+            function() {
+                enqueueAction({ action: 'delete', id: id });
+                showCustomAlert("Dihapus", "Data berhasil dihapus dan masuk antrean Sync.", "success");
+            }
+        );
+    }
 
     function openCalcModal() { document.getElementById('calc-modal').classList.replace('hidden','flex'); document.getElementById('calc-result').classList.add('hidden'); document.getElementById('calc-id-a').value = ''; document.getElementById('calc-id-b').value = ''; document.querySelectorAll('#calc-modal input[type="text"]').forEach(i => i.value = ''); }
     function suggestCalc(input, listId, hiddenInputId) {
@@ -1199,10 +1236,9 @@ function submitData() {
         if (!calcWrapper) { document.querySelectorAll('ul[id^="list-"]').forEach(el => el.classList.add('hidden')); }
     });
 
-
     function calculateRelation() {
         const idA = document.getElementById('calc-id-a').value; const idB = document.getElementById('calc-id-b').value;
-        if(!idA || !idB) { alert("Pilih kedua orang dari daftar saran!"); return; }
+        if(!idA || !idB) { showCustomAlert("Data Kurang", "Mohon pilih <b>Orang Pertama</b> dan <b>Orang Kedua</b> dari daftar saran yang muncul!", "error"); return; }
         if(idA === idB) { showResult("Orang Sama", "Anda memilih orang yang sama."); return; }
         const graph = buildRelationshipGraph(); const path = findShortestPath(graph, idA, idB);
         if (!path) { showResult("Jalurnya hubungan terlalu jauh !!!"); } else { const explanation = interpretPath(path); showResult(explanation.title, explanation.desc); }
@@ -1285,38 +1321,35 @@ function submitData() {
 
     function showResult(title, desc) { document.getElementById('calc-result').classList.remove('hidden'); document.getElementById('res-title').innerText = title; document.getElementById('res-desc').innerHTML = desc; }
 
-function openDetailPopup(id, event) {
-    if(event) event.stopPropagation();
-    const p = allData.find(d => d.id == id); if(!p) return;
-    
-    const modal = document.getElementById('detail-modal'); 
-    modal.classList.remove('hidden'); 
-    modal.classList.add('flex');
-    
-    document.getElementById('det-name').textContent = p.name;
-    const spouseDisplay = p.spouse ? p.spouse.split(',').map(s => s.trim()).join(' & ') : "Belum ada pasangan terdata";
-    document.getElementById('det-spouse').textContent = "Pasangan: " + spouseDisplay;
-    const isMale = (p.gender !== 'P'); 
-    const iconClass = isMale ? "fa-user-tie text-blue-500" : "fa-user-nurse text-pink-500";
-    document.getElementById('det-avatar').innerHTML = `<i class="fas ${iconClass}"></i>`;
-    document.getElementById('det-gender').textContent = isMale ? "Laki-laki" : "Perempuan";
-    document.getElementById('det-order').textContent = p.birthOrder ? "Anak ke-" + p.birthOrder : "-";
-    const statusEl = document.getElementById('det-status'); 
-    const statusRow = statusEl.parentElement; 
-    
-    if (p.isDead == 1) { 
-        statusRow.classList.add('hidden'); 
-    } else { 
-        statusRow.classList.remove('hidden'); 
-        let rawStatus = p.maritalStatus || "Lajang";
-        let displayStatus = rawStatus;
-        if (rawStatus === "Lajang" || rawStatus === "Belum Menikah") { displayStatus = isMale ? "Lajang (Perjaka)" : "Gadis"; }
-        statusEl.textContent = displayStatus; 
+    function openDetailPopup(id, event) {
+        if(event) event.stopPropagation();
+        const p = allData.find(d => d.id == id); if(!p) return;
+        const modal = document.getElementById('detail-modal'); 
+        modal.classList.remove('hidden'); 
+        modal.classList.add('flex');
+        document.getElementById('det-name').textContent = p.name;
+        const spouseDisplay = p.spouse ? p.spouse.split(',').map(s => s.trim()).join(' & ') : "Belum ada pasangan terdata";
+        document.getElementById('det-spouse').textContent = "Pasangan: " + spouseDisplay;
+        const isMale = (p.gender !== 'P'); 
+        const iconClass = isMale ? "fa-user-tie text-blue-500" : "fa-user-nurse text-pink-500";
+        document.getElementById('det-avatar').innerHTML = `<i class="fas ${iconClass}"></i>`;
+        document.getElementById('det-gender').textContent = isMale ? "Laki-laki" : "Perempuan";
+        document.getElementById('det-order').textContent = p.birthOrder ? "Anak ke-" + p.birthOrder : "-";
+        const statusEl = document.getElementById('det-status'); 
+        const statusRow = statusEl.parentElement; 
+        if (p.isDead == 1) { 
+            statusRow.classList.add('hidden'); 
+        } else { 
+            statusRow.classList.remove('hidden'); 
+            let rawStatus = p.maritalStatus || "Lajang";
+            let displayStatus = rawStatus;
+            if (rawStatus === "Lajang" || rawStatus === "Belum Menikah") { displayStatus = isMale ? "Lajang (Perjaka)" : "Gadis"; }
+            statusEl.textContent = displayStatus; 
+        }
+        const condEl = document.getElementById('det-condition'); 
+        condEl.textContent = (p.isDead == 1) ? "Meninggal Dunia (Alm/Almh)" : "Masih Hidup"; 
+        condEl.className = (p.isDead == 1) ? "font-semibold text-red-500" : "font-semibold text-green-600";
     }
-    const condEl = document.getElementById('det-condition'); 
-    condEl.textContent = (p.isDead == 1) ? "Meninggal Dunia (Alm/Almh)" : "Masih Hidup"; 
-    condEl.className = (p.isDead == 1) ? "font-semibold text-red-500" : "font-semibold text-green-600";
-}
 
     let isAdminMenuOpen = false;
     function toggleAdminMenu() {
@@ -1329,9 +1362,15 @@ function openDetailPopup(id, event) {
     function handleRestoreFile(input) {
         const file = input.files[0]; if (!file) return; const resetInput = () => { input.value = ''; }; const reader = new FileReader();
         reader.onload = function(e) {
-            try { const importedData = JSON.parse(e.target.result); if (!Array.isArray(importedData)) { throw new Error("Format file salah! File harus berisi Array data JSON."); }
-            const confirmMsg = `Ditemukan ${importedData.length} data anggota keluarga.\n\nPERINGATAN: \nTindakan ini akan MENGHAPUS semua data lama di server dan menggantinya dengan data dari file ini.\n\nApakah Anda yakin ingin melanjutkan?`;
-            if (confirm(confirmMsg)) { enqueueAction({ action: 'restore_all', data: importedData }); alert("Permintaan Restore telah masuk antrean Sync (Tombol Oranye).\nSilakan klik tombol Sync untuk memproses ke server."); } } catch (err) { console.error(err); alert("Gagal membaca file: " + err.message); } finally { resetInput(); }
+            try { 
+                const importedData = JSON.parse(e.target.result); 
+                if (!Array.isArray(importedData)) { throw new Error("Format file salah! File harus berisi Array data JSON."); }
+                const confirmMsg = `Ditemukan <b>${importedData.length}</b> data anggota keluarga.<br><br>PERINGATAN:<br>Tindakan ini akan MENGHAPUS semua data lama di server dan menggantinya dengan data dari file ini.`;
+                showCustomConfirm("Restore Data", confirmMsg, function() {
+                    enqueueAction({ action: 'restore_all', data: importedData }); 
+                    showCustomAlert("Restore Berhasil", "Permintaan Restore telah masuk antrean Sync (Tombol Oranye).", "success");
+                });
+            } catch (err) { console.error(err); showCustomAlert("Gagal", "Gagal membaca file: " + err.message, "error"); } finally { resetInput(); }
         };
         reader.readAsText(file);
     }
@@ -1360,7 +1399,6 @@ function openDetailPopup(id, event) {
         if(level > 0) { story += `<div class="absolute -left-[19px] top-2.5 w-2 h-2 rounded-full bg-indigo-300 dark:bg-indigo-600"></div>`; }
         story += `<div class="text-base leading-relaxed text-left text-slate-700 dark:text-gray-300 font-serif w-full pr-1 md:pr-4"><span class="font-bold text-slate-900 dark:text-white text-lg">${statusAlm}${person.name}</span>`;
         if (person.spouse) { 
-    // Bagian .split('(')[0] ini yang akan membuang keterangan "(Status)"
     const spouseFormatted = person.spouse.split(',').map(s => s.split('(')[0].trim()).join(' & '); 
     story += ` menikah dengan <span class="font-semibold text-indigo-600 dark:text-indigo-400">${spouseFormatted}</span>.`; 
 }
@@ -1382,101 +1420,37 @@ function openDetailPopup(id, event) {
 
     function copyNarrative() {
         const container = document.getElementById('narrative-content');
-        if (!container || container.innerText.trim() === "") { alert("Belum ada cerita yang dimuat untuk disalin."); return; }
+        if (!container || container.innerText.trim() === "") { showCustomAlert("Kosong", "Belum ada cerita yang dimuat untuk disalin.", "error"); return; }
         const textToCopy = container.innerText;
-        if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(textToCopy).then(() => { alert("Berhasil! Kisah keluarga telah disalin ke clipboard."); }).catch((err) => { console.error("Gagal copy via Navigator, mencoba fallback...", err); fallbackCopyText(textToCopy); }); } else { fallbackCopyText(textToCopy); }
+        if (navigator.clipboard && window.isSecureContext) { navigator.clipboard.writeText(textToCopy).then(() => { showCustomAlert("Tersalin", "Kisah keluarga telah disalin ke clipboard.", "success"); }).catch((err) => { console.error("Gagal copy via Navigator, mencoba fallback...", err); fallbackCopyText(textToCopy); }); } else { fallbackCopyText(textToCopy); }
     }
     function fallbackCopyText(text) {
         const textArea = document.createElement("textarea"); textArea.value = text;
         textArea.style.position = "fixed"; textArea.style.left = "-9999px"; textArea.style.top = "0";
         document.body.appendChild(textArea); textArea.focus(); textArea.select();
-        try { const successful = document.execCommand('copy'); if (successful) { alert("Berhasil! Kisah keluarga telah disalin ke clipboard."); } else { alert("Maaf, gagal menyalin teks. Silakan seleksi dan salin manual."); } } catch (err) { console.error("Fallback copy error", err); alert("Browser Anda tidak mendukung fitur salin otomatis."); }
+        try { const successful = document.execCommand('copy'); if (successful) { showCustomAlert("Tersalin", "Kisah keluarga telah disalin ke clipboard.", "success"); } else { showCustomAlert("Gagal", "Maaf, gagal menyalin teks. Silakan seleksi dan salin manual.", "error"); } } catch (err) { console.error("Fallback copy error", err); showCustomAlert("Browser Error", "Browser Anda tidak mendukung fitur salin otomatis.", "error"); }
         document.body.removeChild(textArea);
     }
 
-    // --- FITUR DOWNLOAD POHON HTML (WARNA) ---
-function downloadHierarchyText() {
-    // 1. Cek Data
-    if (!allData || allData.length === 0) { alert("Data kosong."); return; }
-    
-    // 2. Siapkan Root
-    const userRootId = localStorage.getItem('userRootId'); 
-    let roots = [];
-    if (isLoggedIn && userRootId && userRootId !== 'all') { 
-        roots = allData.filter(d => d.id == userRootId); 
-    } else { 
-        roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root'); 
+    function downloadHierarchyText() {
+        if (!allData || allData.length === 0) { showCustomAlert("Data Kosong", "Tidak ada data untuk diunduh.", "error"); return; }
+        const userRootId = localStorage.getItem('userRootId'); 
+        let roots = [];
+        if (isLoggedIn && userRootId && userRootId !== 'all') { roots = allData.filter(d => d.id == userRootId); } else { roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root'); }
+        roots.sort((a, b) => { const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999; const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999; return orderA - orderB; });
+        if (roots.length === 0) { showCustomAlert("Data Kosong", "Data leluhur utama tidak ditemukan.", "error"); return; }
+        const colors = [ "#FFD700", "#00BFFF", "#32CD32", "#FF69B4", "#FFA500", "#9370DB", "#00FA9A", "#FF6347", "#87CEEB", "#DDA0DD" ];
+        const dateStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        let htmlContent = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Silsilah Keluarga Puang Guru Nasing</title><style>body{background-color:#1e1e1e;color:#cccccc;font-family:'Consolas','Monaco','Courier New',monospace;white-space:pre;padding:20px;font-size:14px;line-height:1.5;}.header{color:#ffffff;font-weight:bold;margin-bottom:20px;border-bottom:1px dashed #555;padding-bottom:10px;}.tree-line{color:#555555;}.spouse{color:#888888;font-style:italic;font-size:0.9em;}</style></head><body><div class="header">=== STRUKTUR KELUARGA BESAR PUANG GURU NASING ===\nDiunduh pada: ${dateStr}\nKeterangan: (Alm)=Pria Wafat, (Almh)=Wanita Wafat\nWarna teks menunjukkan perbedaan generasi.\n=================================================</div>`;
+        roots.forEach(root => { htmlContent += generateColoredTree(root, "", true, true, 0, colors); htmlContent += "\n\n<div class='tree-line'>-------------------------------------------------</div>\n\n"; });
+        htmlContent += `</body></html>`;
+        try {
+            const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" }); 
+            const url = URL.createObjectURL(blob); 
+            const link = document.createElement("a"); link.style.display = "none"; link.href = url; const fileNameDate = new Date().toISOString().slice(0,10); link.download = `Pohon_Keluarga_Warna_PGN_${fileNameDate}.html`; document.body.appendChild(link); link.click(); 
+            setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 1000);
+        } catch (e) { console.error("Gagal download:", e); showCustomAlert("Gagal", "Gagal mendownload file.", "error"); }
     }
-    roots.sort((a, b) => { 
-        const orderA = (a.birthOrder && !isNaN(a.birthOrder)) ? parseInt(a.birthOrder) : 9999; 
-        const orderB = (b.birthOrder && !isNaN(b.birthOrder)) ? parseInt(b.birthOrder) : 9999; 
-        return orderA - orderB; 
-    });
-
-    if (roots.length === 0) { alert("Data leluhur utama tidak ditemukan."); return; }
-
-    // 3. Konfigurasi Warna & Tanggal
-    const colors = [ "#FFD700", "#00BFFF", "#32CD32", "#FF69B4", "#FFA500", "#9370DB", "#00FA9A", "#FF6347", "#87CEEB", "#DDA0DD" ];
-    const dateStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    
-    // 4. Susun Konten HTML
-    let htmlContent = `<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8">
-<title>Silsilah Keluarga Puang Guru Nasing</title>
-<style>
-    body{background-color:#1e1e1e;color:#cccccc;font-family:'Consolas','Monaco','Courier New',monospace;white-space:pre;padding:20px;font-size:14px;line-height:1.5;}
-    .header{color:#ffffff;font-weight:bold;margin-bottom:20px;border-bottom:1px dashed #555;padding-bottom:10px;}
-    .tree-line{color:#555555;}
-    .spouse{color:#888888;font-style:italic;font-size:0.9em;}
-</style>
-</head>
-<body>
-<div class="header">
-=== STRUKTUR KELUARGA BESAR PUANG GURU NASING ===
-Diunduh pada: ${dateStr}
-Keterangan: (Alm)=Pria Wafat, (Almh)=Wanita Wafat
-Warna teks menunjukkan perbedaan generasi.
-=================================================
-</div>`;
-
-    roots.forEach(root => { 
-        htmlContent += generateColoredTree(root, "", true, true, 0, colors); 
-        htmlContent += "\n\n<div class='tree-line'>-------------------------------------------------</div>\n\n"; 
-    });
-    
-    htmlContent += `</body></html>`;
-
-    // ==========================================
-    // PERBAIKAN LOGIKA DOWNLOAD (TIMEOUT FIX)
-    // ==========================================
-    try {
-        const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" }); 
-        const url = URL.createObjectURL(blob); 
-        
-        const link = document.createElement("a"); 
-        link.style.display = "none"; // Sembunyikan link agar tidak merusak layout
-        link.href = url; 
-        
-        const fileNameDate = new Date().toISOString().slice(0,10); 
-        link.download = `Pohon_Keluarga_Warna_PGN_${fileNameDate}.html`; 
-        
-        document.body.appendChild(link); 
-        link.click(); 
-        
-        // PENTING: Beri jeda 100ms sebelum menghapus link
-        // Ini memberi waktu browser mobile untuk memproses file Blob
-        setTimeout(() => {
-            document.body.removeChild(link); 
-            window.URL.revokeObjectURL(url);
-        }, 100);
-
-    } catch (e) {
-        console.error("Gagal download:", e);
-        alert("Gagal mendownload file. Browser tidak mendukung fitur Blob.");
-    }
-}
 
     function generateColoredTree(person, prefix, isLast, isRoot, level, colors) {
         let result = ""; let lineSymbol = ""; if (!isRoot) { lineSymbol = isLast ? "\\-- " : "+-- "; }
@@ -1493,19 +1467,19 @@ Warna teks menunjukkan perbedaan generasi.
     }
 
     function exportCSV() {
-        if (!allData || allData.length === 0) { alert("Data kosong."); return; }
+        if (!allData || allData.length === 0) { showCustomAlert("Data Kosong", "Tidak ada data.", "error"); return; }
         let csvContent = "data:text/csv;charset=utf-8,ID,Nama,Jenis Kelamin,Parent ID,Pasangan,Ibu,Urutan Lahir,Status Pernikahan,Status Hidup\n";
         allData.forEach(row => { const cols = [ `"${row.id || ''}"`, `"${row.name || ''}"`, `"${row.gender || 'L'}"`, `"${row.parentId || ''}"`, `"${row.spouse || ''}"`, `"${row.motherName || ''}"`, `"${row.birthOrder || ''}"`, `"${row.maritalStatus || ''}"`, `"${row.isDead == 1 ? 'Meninggal' : 'Hidup'}"` ]; csvContent += cols.join(",") + "\r\n"; });
         const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); const dateStr = new Date().toISOString().slice(0,10); link.setAttribute("download", `Data_Keluarga_PGN_${dateStr}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
     function backupJSON() {
-        if (!allData || allData.length === 0) { alert("Tidak ada data untuk dibackup."); return; }
-        try { const jsonContent = JSON.stringify(allData, null, 2); const blob = new Blob([jsonContent], { type: 'application/json' }); const url = window.URL.createObjectURL(blob); const link = document.createElement("a"); link.style.display = "none"; link.href = url; const dateStr = new Date().toISOString().slice(0,10); link.setAttribute("download", `Backup_Silsilah_Full_${dateStr}.json`); document.body.appendChild(link); link.click(); setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 100); } catch (e) { console.error(e); alert("Gagal membuat backup: " + e.message); }
+        if (!allData || allData.length === 0) { showCustomAlert("Data Kosong", "Tidak ada data untuk dibackup.", "error"); return; }
+        try { const jsonContent = JSON.stringify(allData, null, 2); const blob = new Blob([jsonContent], { type: 'application/json' }); const url = window.URL.createObjectURL(blob); const link = document.createElement("a"); link.style.display = "none"; link.href = url; const dateStr = new Date().toISOString().slice(0,10); link.setAttribute("download", `Backup_Silsilah_Full_${dateStr}.json`); document.body.appendChild(link); link.click(); setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 100); } catch (e) { console.error(e); showCustomAlert("Gagal", "Gagal membuat backup: " + e.message, "error"); }
     }
 
     function exportGEDCOM() {
-        if (!allData || allData.length === 0) { alert("Data kosong."); return; }
+        if (!allData || allData.length === 0) { showCustomAlert("Data Kosong", "Tidak ada data.", "error"); return; }
         let ged = "0 HEAD\n1 SOUR KeluargaBesarPGNApp\n1 GEDC\n2 VERS 5.5.1\n2 FORM LINEAGE-LINKED\n1 CHAR UTF-8\n";
         allData.forEach(p => {
             const safeId = p.id.toString().replace(/\s/g, '_'); ged += `0 @I${safeId}@ INDI\n`; ged += `1 NAME ${p.name}\n`; ged += `1 SEX ${p.gender === 'P' ? 'F' : 'M'}\n`;
@@ -1517,7 +1491,7 @@ Warna teks menunjukkan perbedaan generasi.
             if (children.length > 0) { const safeFid = p.id.toString().replace(/\s/g, '_'); ged += `0 @F${safeFid}@ FAM\n`; ged += `1 HUSB @I${safeFid}@\n`; children.forEach(ch => { const safeChId = ch.id.toString().replace(/\s/g, '_'); ged += `1 CHIL @I${safeChId}@\n`; }); }
         });
         ged += "0 TRLR";
-        try { const blob = new Blob([ged], { type: "text/plain;charset=utf-8" }); const url = window.URL.createObjectURL(blob); const link = document.createElement("a"); link.style.display = "none"; link.href = url; const dateStr = new Date().toISOString().slice(0,10); link.setAttribute("download", `Silsilah_PGN_${dateStr}.ged`); document.body.appendChild(link); link.click(); setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 100); } catch (e) { console.error("Gagal download GEDCOM:", e); alert("Gagal membuat file GEDCOM: " + e.message); }
+        try { const blob = new Blob([ged], { type: "text/plain;charset=utf-8" }); const url = window.URL.createObjectURL(blob); const link = document.createElement("a"); link.style.display = "none"; link.href = url; const dateStr = new Date().toISOString().slice(0,10); link.setAttribute("download", `Silsilah_PGN_${dateStr}.ged`); document.body.appendChild(link); link.click(); setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 100); } catch (e) { console.error("Gagal download GEDCOM:", e); showCustomAlert("Gagal", "Gagal membuat file GEDCOM: " + e.message, "error"); }
     }
 
     // --- PDF LOGIC (BARU) ---
@@ -1525,8 +1499,8 @@ Warna teks menunjukkan perbedaan generasi.
     function closePDFModal() { document.getElementById('pdf-modal').classList.add('hidden'); document.getElementById('pdf-modal').classList.remove('flex'); }
 
     async function generatePDFAction() {
-        if (!allData || allData.length === 0) { alert("Data kosong."); return; }
-        if (!window.jspdf) { alert("Library PDF sedang dimuat, coba sesaat lagi."); return; }
+        if (!allData || allData.length === 0) { showCustomAlert("Data Kosong", "Tidak ada data.", "error"); return; }
+        if (!window.jspdf) { showCustomAlert("Tunggu", "Library PDF sedang dimuat, coba sesaat lagi.", "warning"); return; }
 
         const { jsPDF } = window.jspdf;
         const type = document.querySelector('input[name="pdf-type"]:checked').value;
@@ -1535,201 +1509,96 @@ Warna teks menunjukkan perbedaan generasi.
         
         const doc = new jsPDF({ orientation: orientation, unit: 'mm', format: size });
         
-        // --- HEADER DOKUMEN ---
         doc.setFont("helvetica", "bold"); 
         doc.setFontSize(16); 
         doc.setTextColor(40, 40, 40);
-        
         const pageWidth = doc.internal.pageSize.getWidth(); 
         const pageHeight = doc.internal.pageSize.getHeight();
         
         doc.text("KELUARGA BESAR PUANG GURU NASING", pageWidth / 2, 15, { align: 'center' });
-        
         doc.setFontSize(10); 
         doc.setFont("helvetica", "normal");
         doc.text(`Diunduh pada: ${new Date().toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}`, pageWidth / 2, 22, { align: 'center' });
-        
         doc.setLineWidth(0.5); 
         doc.line(10, 25, pageWidth - 10, 25);
 
         let yPos = 35;
-
-        // --- SIAPKAN DATA HIERARKI (ROOTS) ---
         const userRootId = localStorage.getItem('userRootId'); 
         let roots = [];
-        if (isLoggedIn && userRootId && userRootId !== 'all') { 
-            roots = allData.filter(d => d.id == userRootId); 
-        } else { 
-            roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root'); 
-        }
-        // Urutkan Root berdasarkan urutan lahir
+        if (isLoggedIn && userRootId && userRootId !== 'all') { roots = allData.filter(d => d.id == userRootId); } else { roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root'); }
         roots.sort((a, b) => (a.birthOrder || 99) - (b.birthOrder || 99));
 
-        // Palet Warna RGB untuk Generasi (Gen 0 - Gen 5+)
-        const genColorsRGB = [
-            [50, 50, 50],    // Gen 0: Dark Charcoal
-            [0, 80, 200],    // Gen 1: Strong Blue
-            [0, 120, 60],    // Gen 2: Forest Green
-            [100, 0, 150],   // Gen 3: Deep Purple
-            [200, 100, 0],   // Gen 4: Burnt Orange
-            [0, 128, 128]    // Gen 5: Teal
-        ];
+        const genColorsRGB = [ [50, 50, 50], [0, 80, 200], [0, 120, 60], [100, 0, 150], [200, 100, 0], [0, 128, 128] ];
 
-        // ==========================================
-        // MODE 1: POHON VISUAL (TREE)
-        // ==========================================
         if (type === 'tree') {
             doc.setFontSize(10); 
             doc.text("Struktur Pohon Keluarga (Indentasi Menunjukkan Generasi)", 14, yPos); 
             yPos += 10;
-
             function printNode(person, level, prefix) {
                 if (yPos > pageHeight - 20) { doc.addPage(); yPos = 20; } 
-                
                 let nameStr = prefix + (level > 0 ? "+-- " : "") + person.name;
-                
-                // Logic Pewarnaan (Sama dengan List Mode)
-                if(person.isDead == 1) {
-                    doc.setTextColor(220, 38, 38); // Merah (Wafat)
-                    nameStr += (person.gender === 'P' ? " (Almh)" : " (Alm)");
-                } else {
-                    // Warna berdasarkan generasi
-                    const color = genColorsRGB[level % genColorsRGB.length];
-                    doc.setTextColor(color[0], color[1], color[2]);
-                }
-
+                if(person.isDead == 1) { doc.setTextColor(220, 38, 38); nameStr += (person.gender === 'P' ? " (Almh)" : " (Alm)"); } 
+                else { const color = genColorsRGB[level % genColorsRGB.length]; doc.setTextColor(color[0], color[1], color[2]); }
                 doc.text(nameStr, 14, yPos);
-                
                 if (person.spouse) {
-                    doc.setTextColor(150, 150, 150); // Abu-abu untuk pasangan
+                    doc.setTextColor(150, 150, 150);
                     const cleanSpouse = person.spouse.split(',').map(s => s.split('(')[0].trim()).join(' & ');
                     doc.text(` [Ps: ${cleanSpouse}]`, 14 + (doc.getStringUnitWidth(nameStr) * 3.5), yPos); 
                 }
-                
                 yPos += 6; 
-                
                 let children = allData.filter(d => d.parentId == person.id || (d.motherName && d.motherName.trim() === person.name));
                 children.sort((a, b) => (a.birthOrder || 99) - (b.birthOrder || 99));
-                
                 const nextPrefix = prefix + (level > 0 ? "|   " : "");
                 children.forEach(c => printNode(c, level + 1, nextPrefix));
             }
-            
             roots.forEach(r => printNode(r, 0, ""));
-        } 
-        
-        // ==========================================
-        // MODE 2: DAFTAR KELUARGA (LIST / TABEL)
-        // ==========================================
-        else {
+        } else {
             doc.setFontSize(10); 
-            
-            // Header Tabel
-            doc.setFillColor(220, 38, 38); // Header Merah
-            doc.rect(10, yPos - 5, pageWidth - 20, 8, 'F');
-            doc.setTextColor(255, 255, 255); // Teks Putih
-            doc.setFont("helvetica", "bold");
-            
-            // Kolom Header
-            doc.text("No", 12, yPos); 
-            doc.text("Nama Anggota Keluarga", 25, yPos); 
-            doc.text("Pasangan (Suami/Istri)", 100, yPos); 
-            doc.text("Nama Orang Tua", 155, yPos);
-            
+            doc.setFillColor(220, 38, 38); doc.rect(10, yPos - 5, pageWidth - 20, 8, 'F');
+            doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold");
+            doc.text("No", 12, yPos); doc.text("Nama Anggota Keluarga", 25, yPos); doc.text("Pasangan (Suami/Istri)", 100, yPos); doc.text("Nama Orang Tua", 155, yPos);
             yPos += 8;
             let counter = 1;
-
-            // Fungsi Rekursif untuk Tabel
             function printListRow(person, level) {
-                // 1. Cek Ganti Halaman
                 if (yPos > pageHeight - 20) { 
-                    doc.addPage(); 
-                    yPos = 20; 
-                    // Cetak Header Tabel lagi
-                    doc.setFillColor(220, 38, 38);
-                    doc.rect(10, yPos - 5, pageWidth - 20, 8, 'F');
-                    doc.setTextColor(255, 255, 255);
-                    doc.setFont("helvetica", "bold");
-                    doc.text("No", 12, yPos); 
-                    doc.text("Nama Anggota Keluarga", 25, yPos); 
-                    doc.text("Pasangan (Suami/Istri)", 100, yPos); 
-                    doc.text("Nama Orang Tua", 155, yPos);
+                    doc.addPage(); yPos = 20; 
+                    doc.setFillColor(220, 38, 38); doc.rect(10, yPos - 5, pageWidth - 20, 8, 'F');
+                    doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold");
+                    doc.text("No", 12, yPos); doc.text("Nama Anggota Keluarga", 25, yPos); doc.text("Pasangan (Suami/Istri)", 100, yPos); doc.text("Nama Orang Tua", 155, yPos);
                     yPos += 8;
                 }
-
                 doc.setFont("helvetica", "normal"); 
-                
-                // 2. Cetak Nomor (Hitam)
-                doc.setTextColor(0, 0, 0);
-                doc.text(String(counter++), 12, yPos);
-
-                // 3. Cetak Nama (Berwarna sesuai kondisi)
+                doc.setTextColor(0, 0, 0); doc.text(String(counter++), 12, yPos);
                 let n = person.name;
-                if(person.isDead == 1) { 
-                    doc.setTextColor(220, 38, 38); // Merah jika wafat (Prioritas Tertinggi)
-                    n += " (Alm/h)";
-                } else {
-                    // Gunakan warna generasi jika masih hidup
-                    const color = genColorsRGB[level % genColorsRGB.length];
-                    doc.setTextColor(color[0], color[1], color[2]);
-                }
-                
-                // Tambahkan spasi visual untuk anak/cucu
-                let indent = "";
-                if(level > 0) indent = "  ".repeat(level) + "L "; 
+                if(person.isDead == 1) { doc.setTextColor(220, 38, 38); n += " (Alm/h)"; } 
+                else { const color = genColorsRGB[level % genColorsRGB.length]; doc.setTextColor(color[0], color[1], color[2]); }
+                let indent = ""; if(level > 0) indent = "  ".repeat(level) + "L "; 
                 doc.text(indent + n, 25, yPos);
-
-                // RESET Warna kembali ke Abu-abu tua untuk kolom lainnya
                 doc.setTextColor(80, 80, 80);
-
-                // 4. Cetak Pasangan
-                let spouseText = "-";
-                if(person.spouse) {
-                    spouseText = person.spouse.split(',').map(s => s.split('(')[0].trim()).join(' & ');
-                }
+                let spouseText = "-"; if(person.spouse) { spouseText = person.spouse.split(',').map(s => s.split('(')[0].trim()).join(' & '); }
                 if(spouseText.length > 25) spouseText = spouseText.substring(0, 25) + "...";
                 doc.text(spouseText, 100, yPos);
-
-                // 5. Cetak Nama Orang Tua
-                let parentName = "-"; 
-                if(person.parentId && person.parentId !== 'root') { 
-                    const parent = allData.find(d => d.id == person.parentId); 
-                    if(parent) parentName = parent.name; 
-                }
+                let parentName = "-"; if(person.parentId && person.parentId !== 'root') { const parent = allData.find(d => d.id == person.parentId); if(parent) parentName = parent.name; }
                 doc.text(parentName, 155, yPos);
-
-                // Garis Pemisah Baris
-                yPos += 7; 
-                doc.setDrawColor(230, 230, 230); 
-                doc.line(10, yPos-4, pageWidth-10, yPos-4); 
-
-                // 6. REKURSIF: Cari Anak
+                yPos += 7; doc.setDrawColor(230, 230, 230); doc.line(10, yPos-4, pageWidth-10, yPos-4); 
                 let children = allData.filter(d => d.parentId == person.id || (d.motherName && d.motherName.trim() === person.name));
                 children.sort((a, b) => (a.birthOrder || 99) - (b.birthOrder || 99));
-                
                 children.forEach(c => printListRow(c, level + 1));
             }
-
-            // Jalankan loop utama
             roots.forEach(r => printListRow(r, 0));
         }
 
-        // --- FOOTER & SAVE ---
         const totalPages = doc.internal.getNumberOfPages();
         for (let i = 1; i <= totalPages; i++) {
-            doc.setPage(i); 
-            doc.setFontSize(8); 
-            doc.setTextColor(150, 150, 150);
+            doc.setPage(i); doc.setFontSize(8); doc.setTextColor(150, 150, 150);
             doc.text(`Halaman ${i} dari ${totalPages} - Generated by Keluarga Besar PGN App`, pageWidth / 2, pageHeight - 10, { align: 'center' });
         }
-
         doc.save(`Silsilah_PGN_${type}_${new Date().getTime()}.pdf`);
         closePDFModal();
     }
 
-    // --- UPDATE LOGIKA LOGIN ---
     let html5QrcodeScanner = null;
-    let currentLoginMode = 'pass'; // 'pass' atau 'qr'
+    let currentLoginMode = 'pass'; 
 
     function switchLoginTab(mode) {
         currentLoginMode = mode;
@@ -1740,345 +1609,113 @@ Warna teks menunjukkan perbedaan generasi.
         const btnLogin = document.getElementById('btn-confirm-login');
 
         if (mode === 'qr') {
-            // Style Tab
             tabPass.className = "w-1/2 py-2 text-sm font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors";
             tabQr.className = "w-1/2 py-2 text-sm font-semibold text-primary border-b-2 border-primary transition-colors";
-            
-            // Tampilan Form
-            formPass.classList.add('hidden');
-            formQr.classList.remove('hidden');
-            formQr.classList.add('flex');
-            btnLogin.classList.add('hidden'); // Sembunyikan tombol 'Masuk' manual saat scan
-
-            // Mulai Scanner
+            formPass.classList.add('hidden'); formQr.classList.remove('hidden'); formQr.classList.add('flex'); btnLogin.classList.add('hidden'); 
             startQRScanner();
         } else {
-            // Style Tab
             tabPass.className = "w-1/2 py-2 text-sm font-semibold text-primary border-b-2 border-primary transition-colors";
             tabQr.className = "w-1/2 py-2 text-sm font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors";
-            
-            // Tampilan Form
-            formPass.classList.remove('hidden');
-            formQr.classList.add('hidden');
-            formQr.classList.remove('flex');
-            btnLogin.classList.remove('hidden');
-
-            // Stop Scanner
+            formPass.classList.remove('hidden'); formQr.classList.add('hidden'); formQr.classList.remove('flex'); btnLogin.classList.remove('hidden');
             stopQRScanner();
         }
     }
 
     function startQRScanner() {
-        if (html5QrcodeScanner) {
-            html5QrcodeScanner.clear().catch(() => {}).finally(() => { html5QrcodeScanner = null; initCam(); });
-        } else {
-            initCam();
-        }
-
+        if (html5QrcodeScanner) { html5QrcodeScanner.clear().catch(() => {}).finally(() => { html5QrcodeScanner = null; initCam(); }); } else { initCam(); }
         function initCam() {
-            const html5QrCode = new Html5Qrcode("qr-reader");
-            html5QrcodeScanner = html5QrCode;
+            const html5QrCode = new Html5Qrcode("qr-reader"); html5QrcodeScanner = html5QrCode;
             const config = { fps: 10, qrbox: { width: 200, height: 200 } };
-            
             html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
-            .catch(err => {
-                console.log("Kamera error/pending", err);
-                document.getElementById('qr-reader').innerHTML = `<div class="flex flex-col items-center justify-center h-full text-gray-400 text-[10px] p-4 text-center"><i class="fas fa-camera-slash text-2xl mb-2"></i><br>Kamera tidak aktif<br>Gunakan tombol Upload</div>`;
-            });
+            .catch(err => { console.log("Kamera error/pending", err); document.getElementById('qr-reader').innerHTML = `<div class="flex flex-col items-center justify-center h-full text-gray-400 text-[10px] p-4 text-center"><i class="fas fa-camera-slash text-2xl mb-2"></i><br>Kamera tidak aktif<br>Gunakan tombol Upload</div>`; });
         }
     }
 
     function stopQRScanner() {
         return new Promise((resolve) => {
-            if (html5QrcodeScanner) {
-                html5QrcodeScanner.stop().then(() => {
-                    html5QrcodeScanner.clear();
-                    html5QrcodeScanner = null;
-                    resolve();
-                }).catch(err => {
-                    console.log("Stop failed", err);
-                    html5QrcodeScanner = null; 
-                    resolve();
-                });
-            } else {
-                resolve();
-            }
+            if (html5QrcodeScanner) { html5QrcodeScanner.stop().then(() => { html5QrcodeScanner.clear(); html5QrcodeScanner = null; resolve(); }).catch(err => { console.log("Stop failed", err); html5QrcodeScanner = null; resolve(); }); } else { resolve(); }
         });
     }
 
-    function onScanSuccess(decodedText) {
-        stopQRScanner(); 
-        doLogin(decodedText); 
-    }
-
+    function onScanSuccess(decodedText) { stopQRScanner(); doLogin(decodedText); }
     function triggerFileScan() { document.getElementById('qr-file-input').click(); }
-
     async function handleQrFile(input) {
         if (!input.files || input.files.length === 0) return;
-        const imageFile = input.files[0];
-        await stopQRScanner();
-        const html5QrCode = new Html5Qrcode("qr-reader");
-        
-        try {
-            document.getElementById('qr-reader').innerHTML = '<div class="flex items-center justify-center h-full text-indigo-500 animate-pulse font-bold">Memindai Gambar...</div>';
-            const decodedText = await html5QrCode.scanFile(imageFile, true);
-            onScanSuccess(decodedText);
-        } catch (err) {
-            console.error(err);
-            alert("QR Code tidak ditemukan pada gambar tersebut. Pastikan gambar jelas.");
-            document.getElementById('qr-reader').innerHTML = '<div class="flex items-center justify-center h-full text-red-400 text-xs">Gagal Deteksi</div>';
-        }
+        const imageFile = input.files[0]; await stopQRScanner(); const html5QrCode = new Html5Qrcode("qr-reader");
+        try { document.getElementById('qr-reader').innerHTML = '<div class="flex items-center justify-center h-full text-indigo-500 animate-pulse font-bold">Memindai Gambar...</div>'; const decodedText = await html5QrCode.scanFile(imageFile, true); onScanSuccess(decodedText); } 
+        catch (err) { console.error(err); showCustomAlert("Gagal", "QR Code tidak ditemukan pada gambar tersebut. Pastikan gambar jelas.", "error"); document.getElementById('qr-reader').innerHTML = '<div class="flex items-center justify-center h-full text-red-400 text-xs">Gagal Deteksi</div>'; }
         input.value = ''; 
     }
 	
-	// --- FITUR DOWNLOAD PDF NARASI (CERITA) ---
-async function downloadNarrativePDF() {
-    // Cek data
-    if (!allData || allData.length === 0) { alert("Data kosong."); return; }
-    if (!window.jspdf) { alert("Library PDF sedang dimuat, mohon tunggu..."); return; }
+	async function downloadNarrativePDF() {
+        if (!allData || allData.length === 0) { showCustomAlert("Data Kosong", "Data kosong.", "error"); return; }
+        if (!window.jspdf) { showCustomAlert("Tunggu", "Library PDF sedang dimuat, mohon tunggu...", "warning"); return; }
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+        const pageWidth = doc.internal.pageSize.getWidth(); const pageHeight = doc.internal.pageSize.getHeight(); const margin = 15; const maxLineWidth = pageWidth - (margin * 2); let yPos = 20;
 
-    const { jsPDF } = window.jspdf;
-    // Format A4, Portrait, satuan mm
-    const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-    
-    // --- KONFIGURASI HALAMAN ---
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 15;
-    const maxLineWidth = pageWidth - (margin * 2);
-    let yPos = 20;
+        doc.setFont("times", "bold"); doc.setFontSize(16); doc.setTextColor(50, 50, 50);
+        doc.text("KISAH KELUARGA BESAR PUANG GURU NASING", pageWidth / 2, yPos, { align: 'center' });
+        yPos += 8; doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(100, 100, 100);
+        doc.text(`Dokumen Narasi Silsilah | Diunduh: ${new Date().toLocaleDateString('id-ID')}`, pageWidth / 2, yPos, { align: 'center' });
+        yPos += 10; doc.setDrawColor(200, 200, 200); doc.line(margin, yPos, pageWidth - margin, yPos); yPos += 10;
 
-    // --- HEADER DOKUMEN ---
-    doc.setFont("times", "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(50, 50, 50);
-    doc.text("KISAH KELUARGA BESAR PUANG GURU NASING", pageWidth / 2, yPos, { align: 'center' });
-    
-    yPos += 8;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Dokumen Narasi Silsilah | Diunduh: ${new Date().toLocaleDateString('id-ID')}`, pageWidth / 2, yPos, { align: 'center' });
-    
-    yPos += 10;
-    doc.setDrawColor(200, 200, 200);
-    doc.line(margin, yPos, pageWidth - margin, yPos);
-    yPos += 10;
+        const userRootId = localStorage.getItem('userRootId'); let roots = [];
+        if (isLoggedIn && userRootId && userRootId !== 'all') { roots = allData.filter(d => d.id == userRootId); } else { roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root'); }
+        roots.sort((a, b) => (parseInt(a.birthOrder)||99) - (parseInt(b.birthOrder)||99));
 
-    // --- PERSIAPAN DATA ---
-    const userRootId = localStorage.getItem('userRootId');
-    let roots = [];
-    if (isLoggedIn && userRootId && userRootId !== 'all') {
-        roots = allData.filter(d => d.id == userRootId);
-    } else {
-        roots = allData.filter(d => !d.parentId || d.parentId === "" || d.id === 'root');
+        function printStoryNode(person, level) {
+            if (yPos > pageHeight - 20) { doc.addPage(); yPos = 20; }
+            const indent = level * 8; const contentWidth = maxLineWidth - indent;
+            if (level > 0) { doc.setDrawColor(199, 210, 254); doc.setLineWidth(0.8); doc.line(margin + indent - 4, yPos - 2, margin + indent - 4, yPos + 8); doc.setFillColor(165, 180, 252); doc.circle(margin + indent - 4, yPos + 1, 1, 'F'); }
+
+            let statusAlm = ""; if (person.isDead == 1) statusAlm = (person.gender === 'P') ? "(Almh) " : "(Alm) ";
+            let spouseText = ""; if (person.spouse) { const cleanSpouse = person.spouse.split(',').map(s => s.split('(')[0].trim()).join(' & '); spouseText = ` menikah dengan ${cleanSpouse}.`; }
+            let children = allData.filter(d => d.parentId == person.id || (d.motherName && d.motherName.trim() === person.name)); children.sort((a, b) => (parseInt(a.birthOrder)||99) - (parseInt(b.birthOrder)||99));
+            let childrenText = ""; if (children.length > 0) { const childNames = children.map(c => { let cStatus = (c.isDead == 1) ? ((c.gender === 'P') ? "(Almh) " : "(Alm) ") : ""; return `${cStatus}${c.name}`; }); if (childNames.length === 1) { childrenText = ` Dikaruniai 1 anak: ${childNames[0]}.`; } else { const last = childNames.pop(); childrenText = ` Dikaruniai ${children.length} anak: ${childNames.join(', ')}, dan ${last}.`; } }
+
+            doc.setFont("times", "bold"); doc.setFontSize(11); doc.setTextColor(0, 0, 0); 
+            const nameFull = statusAlm + person.name; doc.text(nameFull, margin + indent, yPos);
+            const nameWidth = doc.getStringUnitWidth(nameFull) * 11 / 2.83465; 
+            doc.setFont("times", "normal"); doc.setTextColor(60, 60, 60); 
+            const fullStory = spouseText + childrenText; const splitText = doc.splitTextToSize(fullStory, contentWidth - nameWidth - 1);
+            if (splitText.length > 0) { doc.text(splitText[0], margin + indent + nameWidth + 1, yPos); }
+            if (splitText.length > 1) { for(let i=1; i<splitText.length; i++) { yPos += 5; doc.text(splitText[i], margin + indent, yPos); } }
+            yPos += 8; 
+            children.forEach(child => printStoryNode(child, level + 1));
+        }
+
+        roots.forEach(root => {
+            if (yPos > pageHeight - 30) { doc.addPage(); yPos = 20; }
+            doc.setFont("helvetica", "bold"); doc.setFontSize(12); doc.setTextColor(79, 70, 229); 
+            doc.text(`Garis Keturunan: ${root.name}`, margin, yPos); doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.2); doc.line(margin, yPos+2, margin+50, yPos+2);
+            yPos += 10; printStoryNode(root, 0); yPos += 10; 
+        });
+
+        const blob = doc.output('blob'); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; const fileName = `Kisah_Keluarga_PGN_${new Date().toISOString().slice(0,10)}.pdf`; link.download = fileName; document.body.appendChild(link); link.click(); setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 100);
     }
-    roots.sort((a, b) => (parseInt(a.birthOrder)||99) - (parseInt(b.birthOrder)||99));
-
-    // --- FUNGSI PRINT NODE (Sama seperti sebelumnya) ---
-    function printStoryNode(person, level) {
-        if (yPos > pageHeight - 20) { doc.addPage(); yPos = 20; }
-
-        const indent = level * 8; 
-        const contentWidth = maxLineWidth - indent;
-        
-        // Garis Visual
-        if (level > 0) {
-            doc.setDrawColor(199, 210, 254); 
-            doc.setLineWidth(0.8);
-            doc.line(margin + indent - 4, yPos - 2, margin + indent - 4, yPos + 8); 
-            doc.setFillColor(165, 180, 252); 
-            doc.circle(margin + indent - 4, yPos + 1, 1, 'F');
-        }
-
-        // Susun Teks
-        let statusAlm = "";
-        if (person.isDead == 1) statusAlm = (person.gender === 'P') ? "(Almh) " : "(Alm) ";
-
-        let spouseText = "";
-        if (person.spouse) {
-            // Hapus status (Menikah) agar narasi enak dibaca
-            const cleanSpouse = person.spouse.split(',').map(s => s.split('(')[0].trim()).join(' & ');
-            spouseText = ` menikah dengan ${cleanSpouse}.`;
-        }
-
-        let children = allData.filter(d => d.parentId == person.id || (d.motherName && d.motherName.trim() === person.name));
-        children.sort((a, b) => (parseInt(a.birthOrder)||99) - (parseInt(b.birthOrder)||99));
-        
-        let childrenText = "";
-        if (children.length > 0) {
-            const childNames = children.map(c => {
-                let cStatus = (c.isDead == 1) ? ((c.gender === 'P') ? "(Almh) " : "(Alm) ") : "";
-                return `${cStatus}${c.name}`;
-            });
-            if (childNames.length === 1) { childrenText = ` Dikaruniai 1 anak: ${childNames[0]}.`; } 
-            else { const last = childNames.pop(); childrenText = ` Dikaruniai ${children.length} anak: ${childNames.join(', ')}, dan ${last}.`; }
-        }
-
-        // Render Teks (Nama Bold + Sisa Normal)
-        doc.setFont("times", "bold");
-        doc.setFontSize(11);
-        doc.setTextColor(0, 0, 0); 
-        
-        const nameFull = statusAlm + person.name;
-        doc.text(nameFull, margin + indent, yPos);
-        
-        const nameWidth = doc.getStringUnitWidth(nameFull) * 11 / 2.83465; 
-        
-        doc.setFont("times", "normal");
-        doc.setTextColor(60, 60, 60); 
-        
-        const fullStory = spouseText + childrenText;
-        const splitText = doc.splitTextToSize(fullStory, contentWidth - nameWidth - 1);
-        
-        if (splitText.length > 0) { doc.text(splitText[0], margin + indent + nameWidth + 1, yPos); }
-        if (splitText.length > 1) {
-            for(let i=1; i<splitText.length; i++) {
-                yPos += 5;
-                doc.text(splitText[i], margin + indent, yPos);
-            }
-        }
-        yPos += 8; 
-
-        children.forEach(child => printStoryNode(child, level + 1));
-    }
-
-    // --- LOOP UTAMA ---
-    roots.forEach(root => {
-        if (yPos > pageHeight - 30) { doc.addPage(); yPos = 20; }
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(12);
-        doc.setTextColor(79, 70, 229); 
-        doc.text(`Garis Keturunan: ${root.name}`, margin, yPos);
-        doc.setDrawColor(200, 200, 200); 
-        doc.setLineWidth(0.2);
-        doc.line(margin, yPos+2, margin+50, yPos+2);
-        yPos += 10;
-        printStoryNode(root, 0);
-        yPos += 10; 
-    });
-
-    // ==========================================
-    // PERBAIKAN LOGIKA DOWNLOAD (FORCE DOWNLOAD)
-    // ==========================================
-    const dateStr = new Date().toISOString().slice(0,10);
-    const fileName = `Kisah_Keluarga_PGN_${dateStr}.pdf`;
-
-    // 1. Generate Blob Object (Biner)
-    const blob = doc.output('blob');
-    
-    // 2. Buat URL Objek Sementara
-    const url = URL.createObjectURL(blob);
-
-    // 3. Buat Element Anchor (Link) Palsu
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    
-    // 4. Masukkan ke body, Klik, lalu Hapus
-    document.body.appendChild(link);
-    link.click();
-    
-    setTimeout(() => {
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-    }, 100);
-}
 	
-	
-	
-	
-	
-	
-	// --- KONFIGURASI TEMA DENGAN GAMBAR SENDIRI ---
     const REGIONAL_THEMES = [
-        { 
-            name: " ", 
-            primary: "#3498db", dark: "#2980b9",
-            // GANTI LINK DI BAWAH INI DENGAN LINK GAMBAR ANDA
-            bgImage: "https://img.freepik.com/free-photo/3d-ship-with-sea-landscape_23-2151144939.jpg?semt=ais_hybrid&w=740&q=80" 
-        },
-        { 
-            name: " ", 
-            primary: "#c0392b", dark: "#a93226",
-            // GANTI LINK DI BAWAH INI
-            bgImage: "https://img.freepik.com/free-photo/view-fantasy-pirate-ship_23-2151488558.jpg?semt=ais_hybrid&w=740&q=80"
-        },
-        { 
-            name: " ", 
-            primary: "#27ae60", dark: "#219150",
-            // GANTI LINK DI BAWAH INI
-            bgImage: "https://img.freepik.com/free-vector/pirate-ship-cartoon-vector-icon-illustration-transportation-object-icon-isolated-flat-vector_138676-14828.jpg?semt=ais_hybrid&w=740&q=80"
-        },
-        { 
-            name: " ", 
-            primary: "#8e44ad", dark: "#6c3483",
-            // GANTI LINK DI BAWAH INI
-            bgImage: "https://img.freepik.com/free-vector/ships-boats-sketch-set_1284-12636.jpg?semt=ais_hybrid&w=740&q=80"
-        },
-        { 
-            name: " ", 
-            primary: "#d35400", dark: "#a04000",
-            // GANTI LINK DI BAWAH INI
-            bgImage: "https://img.freepik.com/free-photo/hidden-waterfall-paradise_23-2151951200.jpg?semt=ais_hybrid&w=740&q=80"
-        }
+        { name: " ", primary: "#3498db", dark: "#2980b9", bgImage: "https://img.freepik.com/free-photo/3d-ship-with-sea-landscape_23-2151144939.jpg?semt=ais_hybrid&w=740&q=80" },
+        { name: " ", primary: "#c0392b", dark: "#a93226", bgImage: "https://img.freepik.com/free-photo/view-fantasy-pirate-ship_23-2151488558.jpg?semt=ais_hybrid&w=740&q=80" },
+        { name: " ", primary: "#27ae60", dark: "#219150", bgImage: "https://img.freepik.com/free-vector/pirate-ship-cartoon-vector-icon-illustration-transportation-object-icon-isolated-flat-vector_138676-14828.jpg?semt=ais_hybrid&w=740&q=80" },
+        { name: " ", primary: "#8e44ad", dark: "#6c3483", bgImage: "https://img.freepik.com/free-vector/ships-boats-sketch-set_1284-12636.jpg?semt=ais_hybrid&w=740&q=80" },
+        { name: " ", primary: "#d35400", dark: "#a04000", bgImage: "https://img.freepik.com/free-photo/hidden-waterfall-paradise_23-2151951200.jpg?semt=ais_hybrid&w=740&q=80" }
     ];
     
     let currentThemeIdx = 0;
-
-    function cycleRegionalTheme() {
-        currentThemeIdx = (currentThemeIdx + 1) % REGIONAL_THEMES.length;
-        applyRegionalTheme(currentThemeIdx);
-        localStorage.setItem('regionalThemeIdx', currentThemeIdx);
-    }
-
+    function cycleRegionalTheme() { currentThemeIdx = (currentThemeIdx + 1) % REGIONAL_THEMES.length; applyRegionalTheme(currentThemeIdx); localStorage.setItem('regionalThemeIdx', currentThemeIdx); }
     function applyRegionalTheme(index) {
-        const theme = REGIONAL_THEMES[index];
-        const root = document.documentElement;
-        
-        // 1. Ubah Warna Utama
-        root.style.setProperty('--color-primary', theme.primary);
-        root.style.setProperty('--color-primary-dark', theme.dark);
-        document.querySelector('meta[name="theme-color"]').setAttribute('content', theme.primary);
-        
-        // 2. Ubah Background Image (URL)
-        // Kita gunakan url('...') untuk memuat gambar
-        document.body.style.backgroundImage = `url('${theme.bgImage}')`;
-
-        // 3. Tampilkan Toast Nama Tema
-        const toast = document.getElementById('theme-name-toast');
-        if(toast) {
-            toast.innerText = theme.name;
-            toast.style.opacity = '1';
-            toast.style.top = '70px';
-            setTimeout(() => { 
-                toast.style.opacity = '0'; 
-                toast.style.top = '80px';
-            }, 2000);
-        }
+        const theme = REGIONAL_THEMES[index]; const root = document.documentElement;
+        root.style.setProperty('--color-primary', theme.primary); root.style.setProperty('--color-primary-dark', theme.dark); document.querySelector('meta[name="theme-color"]').setAttribute('content', theme.primary); document.body.style.backgroundImage = `url('${theme.bgImage}')`;
+        const toast = document.getElementById('theme-name-toast'); if(toast) { toast.innerText = theme.name; toast.style.opacity = '1'; toast.style.top = '70px'; setTimeout(() => { toast.style.opacity = '0'; toast.style.top = '80px'; }, 2000); }
     }
 
-        // --- INITIAL LOAD (GABUNGAN SEMUA FUNGSI STARTUP) ---
     window.onload = function() {
-        // 1. Fungsi Utama Aplikasi (Dari kode lama)
-        updateLoginUI(); 
-        updateSyncUI(); 
-        fetchData(); 
-        setupOutsideClickCloser();
-
-        // 2. Load Tema Daerah yang Tersimpan (Dari kode baru)
+        updateLoginUI(); updateSyncUI(); fetchData(); setupOutsideClickCloser();
         const savedTheme = localStorage.getItem('regionalThemeIdx');
-        if (savedTheme) {
-            currentThemeIdx = parseInt(savedTheme);
-            applyRegionalTheme(currentThemeIdx);
-        } else {
-            // Jika belum ada, pakai tema default (0)
-            applyRegionalTheme(0);
-        }
+        if (savedTheme) { currentThemeIdx = parseInt(savedTheme); applyRegionalTheme(currentThemeIdx); } else { applyRegionalTheme(0); }
     };
-
-	
 </script>
-
 </body>
 </html>
