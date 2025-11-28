@@ -249,29 +249,54 @@
     <button id="btn-sync" onclick="doSync()" class="hidden relative w-12 h-12 rounded-full bg-orange-500 text-white shadow-lg items-center justify-center hover:bg-orange-600 hover:scale-110 transition-all duration-200 animate-bounce-gentle" title="Sync ke Server"><i class="fas fa-cloud-upload-alt"></i><span id="sync-badge" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-sm border border-white dark:border-gray-800">0</span></button>
 </div>
 
-<div class="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3">
-    <div id="admin-menu-container" class="hidden relative items-center justify-end">
-        <div id="admin-menu-options" class="absolute right-16 flex gap-3 transition-all duration-300 opacity-0 translate-x-10 pointer-events-none scale-90 origin-right items-center">
-            <button onclick="generateSecretLink()" class="w-12 h-12 rounded-full bg-pink-600 text-white shadow-lg flex items-center justify-center hover:bg-pink-700 hover:scale-110 transition-all duration-200 group/item" title="Buat Link Auto-Login">
-    <i class="fas fa-qrcode"></i>
-    <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Buat Link QR</span>
-</button>
-			<button onclick="exportGEDCOM()" class="w-12 h-12 rounded-full bg-sky-500 text-white shadow-lg flex items-center justify-center hover:bg-sky-600 hover:scale-110 transition-all duration-200 group/item"><i class="fas fa-project-diagram"></i><span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Export GEDCOM</span></button>
-            <button onclick="exportCSV()" class="w-12 h-12 rounded-full bg-emerald-500 text-white shadow-lg flex items-center justify-center hover:bg-emerald-600 hover:scale-110 transition-all duration-200 group/item"><i class="fas fa-file-csv"></i><span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Export CSV</span></button>
-            <button onclick="backupJSON()" class="w-12 h-12 rounded-full bg-slate-600 text-white shadow-lg flex items-center justify-center hover:bg-slate-700 hover:scale-110 transition-all duration-200 group/item"><i class="fas fa-file-code"></i><span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Backup JSON</span></button>
-            <button onclick="triggerRestore()" class="w-12 h-12 rounded-full bg-purple-600 text-white shadow-lg flex items-center justify-center hover:bg-purple-700 hover:scale-110 transition-all duration-200 group/item"><i class="fas fa-upload"></i><span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Restore JSON</span></button>
+<div class="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-2"> <div id="admin-menu-container" class="hidden relative items-center justify-end">
+        
+        <div id="admin-menu-options" class="absolute right-12 flex gap-2 transition-all duration-300 opacity-0 translate-x-10 pointer-events-none scale-90 origin-right items-center">
+            
+            <button onclick="generateSecretLink()" class="w-10 h-10 rounded-full bg-pink-600 text-white shadow-lg flex items-center justify-center hover:bg-pink-700 hover:scale-110 transition-all duration-200 group/item" title="Buat Link Auto-Login">
+                <i class="fas fa-qrcode text-xs"></i>
+                <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap right-0">Buat Link QR</span>
+            </button>
+
+            <button onclick="exportGEDCOM()" class="w-10 h-10 rounded-full bg-sky-500 text-white shadow-lg flex items-center justify-center hover:bg-sky-600 hover:scale-110 transition-all duration-200 group/item">
+                <i class="fas fa-project-diagram text-xs"></i>
+                <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap right-0">Export GEDCOM</span>
+            </button>
+
+            <button onclick="exportCSV()" class="w-10 h-10 rounded-full bg-emerald-500 text-white shadow-lg flex items-center justify-center hover:bg-emerald-600 hover:scale-110 transition-all duration-200 group/item">
+                <i class="fas fa-file-csv text-xs"></i>
+                <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap right-0">Export CSV</span>
+            </button>
+
+            <button onclick="backupJSON()" class="w-10 h-10 rounded-full bg-slate-600 text-white shadow-lg flex items-center justify-center hover:bg-slate-700 hover:scale-110 transition-all duration-200 group/item">
+                <i class="fas fa-file-code text-xs"></i>
+                <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap right-0">Backup JSON</span>
+            </button>
+            
+            <button onclick="triggerRestore()" class="w-10 h-10 rounded-full bg-purple-600 text-white shadow-lg flex items-center justify-center hover:bg-purple-700 hover:scale-110 transition-all duration-200 group/item">
+                <i class="fas fa-upload text-xs"></i>
+                <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap right-0">Restore JSON</span>
+            </button>
+            
             <input type="file" id="restore-file-input" class="hidden" accept=".json" onchange="handleRestoreFile(this)">
         </div>
-        <button id="btn-admin-menu" onclick="toggleAdminMenu()" class="w-14 h-14 rounded-full bg-slate-700 text-white shadow-xl flex items-center justify-center hover:bg-slate-800 transition-all duration-200 z-50 relative"><i class="fas fa-ellipsis-v text-xl transition-transform duration-300" id="icon-admin-menu"></i></button>
+
+        <button id="btn-admin-menu" onclick="toggleAdminMenu()" class="w-10 h-10 rounded-full bg-slate-700 text-white shadow-xl flex items-center justify-center hover:bg-slate-800 transition-all duration-200 z-50 relative">
+            <i class="fas fa-ellipsis-v text-sm transition-transform duration-300" id="icon-admin-menu"></i>
+        </button>
     </div>
     
-    <button onclick="openPDFModal()" class="w-14 h-14 rounded-full bg-red-600 text-white shadow-xl flex items-center justify-center hover:bg-red-700 hover:scale-110 transition-all duration-200 group relative">
-        <i class="fas fa-file-pdf text-xl group-hover:animate-bounce"></i>
+    <button onclick="openPDFModal()" class="w-10 h-10 rounded-full bg-red-600 text-white shadow-xl flex items-center justify-center hover:bg-red-700 hover:scale-110 transition-all duration-200 group relative">
+        <i class="fas fa-file-pdf text-sm group-hover:animate-bounce"></i>
         <span class="absolute right-full mr-3 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Cetak PDF</span>
     </button>
     
-    <button onclick="openNarrativeMode()" class="w-14 h-14 rounded-full bg-indigo-600 text-white shadow-xl flex items-center justify-center hover:bg-indigo-700 hover:scale-110 transition-all duration-200 group relative"><i class="fas fa-book-open text-xl group-hover:animate-pulse"></i><span class="absolute right-full mr-3 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Baca Kisah Keluarga</span></button>
+    <button onclick="openNarrativeMode()" class="w-10 h-10 rounded-full bg-indigo-600 text-white shadow-xl flex items-center justify-center hover:bg-indigo-700 hover:scale-110 transition-all duration-200 group relative">
+        <i class="fas fa-book-open text-sm group-hover:animate-pulse"></i>
+        <span class="absolute right-full mr-3 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Baca Kisah Keluarga</span>
+    </button>
 </div>
+
 
 <div id="login-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden justify-center items-center p-4">
     <div class="bg-white dark:bg-card-dark w-full max-w-sm rounded-xl shadow-2xl p-6 animate-slide-down overflow-hidden">
