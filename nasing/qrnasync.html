@@ -420,6 +420,48 @@
     </div>
 </div>
 
+<div id="magic-link-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[210] hidden justify-center items-center p-4 transition-opacity duration-300">
+    <div class="bg-white dark:bg-[#1e1e1e] w-full max-w-sm rounded-2xl shadow-2xl p-6 transform scale-95 transition-all duration-300 border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+        
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+
+        <div class="relative z-10">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-tr from-pink-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg shadow-pink-500/30">
+                    <i class="fas fa-magic text-2xl text-white"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white font-serif">Buat Magic Link</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Isi kredensial untuk login otomatis</p>
+            </div>
+
+            <div class="space-y-4">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-user text-gray-400 text-xs"></i>
+                    </div>
+                    <input type="text" id="magic-user" class="w-full pl-8 p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-sm focus:ring-2 focus:ring-pink-500 focus:border-transparent dark:text-white transition-all outline-none" placeholder="Username (misal: budi)">
+                </div>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-key text-gray-400 text-xs"></i>
+                    </div>
+                    <input type="text" id="magic-pass" class="w-full pl-8 p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl text-sm focus:ring-2 focus:ring-pink-500 focus:border-transparent dark:text-white transition-all outline-none" placeholder="Password">
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeMagicLinkModal()" class="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm">
+                    Batal
+                </button>
+                <button onclick="processMagicLinkGen()" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold shadow-lg hover:shadow-pink-500/30 hover:scale-[1.02] active:scale-95 transition-all duration-200 text-sm flex items-center justify-center gap-2">
+                    <i class="fas fa-link"></i> Buat Link
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <datalist id="existing-members"></datalist>
 
 <script>
@@ -1424,7 +1466,7 @@
             'calc-modal': () => document.getElementById('calc-modal').classList.add('hidden'), 
             'narrative-modal': () => document.getElementById('narrative-modal').classList.add('hidden'), 
             'pdf-modal': () => document.getElementById('pdf-modal').classList.add('hidden'),
-            
+            'magic-link-modal': closeMagicLinkModal,
             // --- BARIS BARU INI ---
             'aesthetic-alert': closeAestheticAlert 
         };
@@ -1820,38 +1862,72 @@
     // ==========================================
 
     // 1. GENERATE LINK (Dipanggil oleh Tombol Pink)
+		// ==========================================
+    // LOGIKA MAGIC LINK ESTETIK
+    // ==========================================
+
+    // 1. BUKA MODAL INPUT (Pengganti Prompt)
     function generateSecretLink() {
-        // Hanya boleh jika sudah login
         if (!isLoggedIn) {
             showCustomAlert("Akses Ditolak", "Anda harus login admin dulu untuk membuat link akses.", "error");
             return;
         }
-
-        // Minta user memasukkan username & password yang mau dibuatkan linknya
-        const u = prompt("Masukkan Username yang akan otomatis login:", "tamu");
-        if (!u) return;
         
-        const p = prompt("Masukkan Password untuk user tersebut:", "tamu123");
-        if (!p) return;
+        // Reset Input
+        document.getElementById('magic-user').value = '';
+        document.getElementById('magic-pass').value = '';
+        
+        // Tampilkan Modal dengan Animasi
+        const modal = document.getElementById('magic-link-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => {
+            modal.firstElementChild.classList.remove('scale-95', 'opacity-0');
+            modal.firstElementChild.classList.add('scale-100', 'opacity-100');
+            document.getElementById('magic-user').focus();
+        }, 10);
+    }
+
+    // 2. TUTUP MODAL
+    function closeMagicLinkModal() {
+        const modal = document.getElementById('magic-link-modal');
+        modal.firstElementChild.classList.remove('scale-100', 'opacity-100');
+        modal.firstElementChild.classList.add('scale-95', 'opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 200);
+    }
+
+    // 3. PROSES PEMBUATAN LINK (Saat tombol "Buat Link" diklik)
+    function processMagicLinkGen() {
+        const u = document.getElementById('magic-user').value.trim();
+        const p = document.getElementById('magic-pass').value.trim();
+
+        if (!u || !p) {
+            // Goyangkan input jika kosong (Animasi error kecil)
+            document.getElementById('magic-user').classList.add('ring-2', 'ring-red-500');
+            setTimeout(() => document.getElementById('magic-user').classList.remove('ring-2', 'ring-red-500'), 500);
+            return;
+        }
 
         // Buat Kode Rahasia (Base64 Encode)
-        // Format: username:password -> dGFtdTp0YW11MTIz
         const raw = u + ":" + p;
         const encoded = btoa(raw); 
 
         // Ambil URL Web App saat ini
         const currentUrl = window.location.href.split('?')[0];
-        
-        // Gabungkan jadi Link
         const finalLink = currentUrl + "?auth=" + encoded;
 
         // Salin ke Clipboard
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(finalLink).then(() => {
-                showCustomAlert("Link Disalin!", "Link Otomatis untuk user <b>" + u + "</b> berhasil disalin.<br>Paste link ini ke pembuat QR Code.", "success");
+                closeMagicLinkModal();
+                showCustomAlert("Berhasil!", "Magic Link untuk user <b>" + u + "</b> telah disalin.<br>Tempel link ini di QR Code Generator.", "success");
             });
         } else {
-            prompt("Salin link ini manual:", finalLink);
+            prompt("Copy link ini manual:", finalLink);
+            closeMagicLinkModal();
         }
     }
 
