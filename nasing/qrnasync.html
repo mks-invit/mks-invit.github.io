@@ -252,7 +252,11 @@
 <div class="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3">
     <div id="admin-menu-container" class="hidden relative items-center justify-end">
         <div id="admin-menu-options" class="absolute right-16 flex gap-3 transition-all duration-300 opacity-0 translate-x-10 pointer-events-none scale-90 origin-right items-center">
-            <button onclick="exportGEDCOM()" class="w-12 h-12 rounded-full bg-sky-500 text-white shadow-lg flex items-center justify-center hover:bg-sky-600 hover:scale-110 transition-all duration-200 group/item"><i class="fas fa-project-diagram"></i><span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Export GEDCOM</span></button>
+            <button onclick="generateSecretLink()" class="w-12 h-12 rounded-full bg-pink-600 text-white shadow-lg flex items-center justify-center hover:bg-pink-700 hover:scale-110 transition-all duration-200 group/item" title="Buat Link Auto-Login">
+    <i class="fas fa-qrcode"></i>
+    <span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Buat Link QR</span>
+</button>
+			<button onclick="exportGEDCOM()" class="w-12 h-12 rounded-full bg-sky-500 text-white shadow-lg flex items-center justify-center hover:bg-sky-600 hover:scale-110 transition-all duration-200 group/item"><i class="fas fa-project-diagram"></i><span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Export GEDCOM</span></button>
             <button onclick="exportCSV()" class="w-12 h-12 rounded-full bg-emerald-500 text-white shadow-lg flex items-center justify-center hover:bg-emerald-600 hover:scale-110 transition-all duration-200 group/item"><i class="fas fa-file-csv"></i><span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Export CSV</span></button>
             <button onclick="backupJSON()" class="w-12 h-12 rounded-full bg-slate-600 text-white shadow-lg flex items-center justify-center hover:bg-slate-700 hover:scale-110 transition-all duration-200 group/item"><i class="fas fa-file-code"></i><span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Backup JSON</span></button>
             <button onclick="triggerRestore()" class="w-12 h-12 rounded-full bg-purple-600 text-white shadow-lg flex items-center justify-center hover:bg-purple-700 hover:scale-110 transition-all duration-200 group/item"><i class="fas fa-upload"></i><span class="absolute bottom-full mb-2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/item:opacity-100 transition-opacity whitespace-nowrap">Restore JSON</span></button>
@@ -1797,10 +1801,120 @@
     }
 
     window.onload = function() {
-        updateLoginUI(); updateSyncUI(); fetchData(); setupOutsideClickCloser();
+        // 1. Cek Apakah ada Auto Login di URL?
+        checkAutoLoginUrl();
+
+        // 2. Setup standar yang sudah ada
+        updateLoginUI(); 
+        updateSyncUI(); 
+        fetchData(); 
+        setupOutsideClickCloser();
+        
+        // 3. Setup Tema
         const savedTheme = localStorage.getItem('regionalThemeIdx');
         if (savedTheme) { currentThemeIdx = parseInt(savedTheme); applyRegionalTheme(currentThemeIdx); } else { applyRegionalTheme(0); }
     };
+	
+	// ==========================================
+    // FITUR MAGIC LINK (AUTO LOGIN QR)
+    // ==========================================
+
+    // 1. GENERATE LINK (Dipanggil oleh Tombol Pink)
+    function generateSecretLink() {
+        // Hanya boleh jika sudah login
+        if (!isLoggedIn) {
+            showCustomAlert("Akses Ditolak", "Anda harus login admin dulu untuk membuat link akses.", "error");
+            return;
+        }
+
+        // Minta user memasukkan username & password yang mau dibuatkan linknya
+        const u = prompt("Masukkan Username yang akan otomatis login:", "tamu");
+        if (!u) return;
+        
+        const p = prompt("Masukkan Password untuk user tersebut:", "tamu123");
+        if (!p) return;
+
+        // Buat Kode Rahasia (Base64 Encode)
+        // Format: username:password -> dGFtdTp0YW11MTIz
+        const raw = u + ":" + p;
+        const encoded = btoa(raw); 
+
+        // Ambil URL Web App saat ini
+        const currentUrl = window.location.href.split('?')[0];
+        
+        // Gabungkan jadi Link
+        const finalLink = currentUrl + "?auth=" + encoded;
+
+        // Salin ke Clipboard
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(finalLink).then(() => {
+                showCustomAlert("Link Disalin!", "Link Otomatis untuk user <b>" + u + "</b> berhasil disalin.<br>Paste link ini ke pembuat QR Code.", "success");
+            });
+        } else {
+            prompt("Salin link ini manual:", finalLink);
+        }
+    }
+
+    // 2. CEK URL SAAT WEBSITE DIBUKA
+    function checkAutoLoginUrl() {
+        // Ambil parameter dari URL (misal: ?auth=YWljOmFpYzEyMw==)
+        const urlParams = new URLSearchParams(window.location.search);
+        const authCode = urlParams.get('auth');
+
+        if (authCode) {
+            try {
+                // Decode Base64 (Kembalikan ke format user:pass)
+                const decoded = atob(authCode); 
+                const parts = decoded.split(':');
+                
+                if (parts.length === 2) {
+                    const u = parts[0];
+                    const p = parts[1];
+                    
+                    console.log("Mendeteksi Auto Login untuk: " + u);
+                    // Jalankan Login Langsung
+                    doLoginDirect(u, p);
+                }
+            } catch (e) {
+                console.error("Link Auto Login tidak valid.");
+            }
+        }
+    }
+
+    // 3. PROSES LOGIN LANGSUNG (Tanpa Modal)
+    async function doLoginDirect(u, p) {
+        showLoader(true); // Tampilkan animasi kapal phinisi
+        
+        try {
+            const response = await fetch(API_URL, { 
+                method: "POST", 
+                body: JSON.stringify({ action: "login", u: u, p: p }) 
+            }); 
+            
+            const result = await response.json();
+            
+            if (result.status === "success") { 
+                isLoggedIn = true; 
+                localStorage.setItem('isLoggedIn', 'true'); 
+                localStorage.setItem('userRootId', result.rootId || 'all'); 
+                localStorage.setItem('userRole', result.role); 
+                
+                updateLoginUI(); 
+                renderTree(); 
+                
+                // Hapus parameter auth dari URL agar bersih (URL kembali normal)
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                showCustomAlert("Login Otomatis", "Berhasil masuk sebagai <b>" + u + "</b> via Magic Link.", "success");
+            } else { 
+                showCustomAlert("Link Kadaluarsa", "Gagal Auto Login: Password/User Salah.", "error");
+            }
+        } catch (e) { 
+            showCustomAlert("Error", "Gagal Login: " + e, "error"); 
+        } finally { 
+            showLoader(false); 
+        }
+    }
 </script>
 </body>
 </html>
