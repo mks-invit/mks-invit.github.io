@@ -1412,8 +1412,21 @@
         story += `</div>`; return story;
     }
 
-    function setupOutsideClickCloser() {
-        const modalActions = { 'login-modal': closeLoginModal, 'modal': closeModal, 'detail-modal': () => document.getElementById('detail-modal').classList.add('hidden'), 'calc-modal': () => document.getElementById('calc-modal').classList.add('hidden'), 'narrative-modal': () => document.getElementById('narrative-modal').classList.add('hidden'), 'pdf-modal': () => document.getElementById('pdf-modal').classList.add('hidden') };
+        function setupOutsideClickCloser() {
+        const modalActions = { 
+            'login-modal': closeLoginModal, 
+            'modal': closeModal, 
+            'detail-modal': () => document.getElementById('detail-modal').classList.add('hidden'), 
+            'calc-modal': () => document.getElementById('calc-modal').classList.add('hidden'), 
+            'narrative-modal': () => document.getElementById('narrative-modal').classList.add('hidden'), 
+            'pdf-modal': () => document.getElementById('pdf-modal').classList.add('hidden'),
+            
+            // --- BARIS BARU INI ---
+            'aesthetic-alert': closeAestheticAlert 
+        };
+        
+        // ... (sisa kode sama)
+
         for (const [modalId, closeFunction] of Object.entries(modalActions)) { const modalEl = document.getElementById(modalId); if (modalEl) { modalEl.addEventListener('click', function(event) { if (event.target === this) { closeFunction(); } }); } }
         document.addEventListener('click', function(e) { if (isAdminMenuOpen && !e.target.closest('#admin-menu-container')) { toggleAdminMenu(); } });
     }
