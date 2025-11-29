@@ -362,31 +362,40 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
     </div>
-        <script type="module">
-        // Import modul Firebase (Biarkan seperti semula)
+    
+    <script type="module">
+        // Import modul Firebase yang diperlukan (boilerplate wajib)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        // --- Konfigurasi Firebase (Biarkan) ---
+        // --- Bagian Inisialisasi Firebase (Wajib Sesuai Lingkungan Canvas) ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        let app, auth, db, userId = null;
+        let app;
+        let auth;
+        let db;
+        let userId = null;
         
-        // Element References
+        // Dapatkan elemen tombol sekali
         const translationToggleButton = document.getElementById('toggle-translation-button');
         const bookmarkButton = document.getElementById('bookmark-button');
 
-        // Audio State
+
+        // --- State Audio Global ---
         let globalAudioPlayer = new Audio();
         let currentPlayingButton = null; 
+        
+        // Mini Player Elements
         let miniPlayer = null;
         let miniPlayerTitle = null;
         let miniPlayerSubtitle = null;
         let miniPlayerToggle = null;
         let miniPlayerClose = null;
+
+        // --- Variabel untuk Audio Resume ---
         let restoredAudioSrc = null;
         let restoredAudioTime = 0;
 
@@ -397,38 +406,51 @@
             }
         });
 
-        // Icons
-        const playIconSvg = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>`;
-        const pauseIconSvg = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 00-1 1v2a1 1 0 001 1h1a1 1 0 001-1V9a1 1 0 00-1-1H7zm5 0a1 1 0 00-1 1v2a1 1 0 001 1h1a1 1 0 001-1V9a1 1 0 00-1-1h-1z" clip-rule="evenodd"></path></svg>`;
-        const loadingIconSvg = `<svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+        // --- SVG Ikon untuk Tombol Audio ---
+        const playIconSvg = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>`;
+        const pauseIconSvg = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 00-1 1v2a1 1 0 001 1h1a1 1 0 001-1V9a1 1 0 00-1-1H7zm5 0a1 1 0 00-1 1v2a1 1 0 001 1h1a1 1 0 001-1V9a1 1 0 00-1-1h-1z" clip-rule="evenodd"></path></svg>`;
+        const loadingIconSvg = `<svg class="w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
         
-        // --- Firebase Init ---
         async function initializeFirebaseAndAuth() {
             try {
                 if (Object.keys(firebaseConfig).length > 0) {
                     app = initializeApp(firebaseConfig);
                     auth = getAuth(app);
                     db = getFirestore(app);
+                    
                     onAuthStateChanged(auth, async (user) => {
-                        if (user) userId = user.uid;
-                        else if (!initialAuthToken) {
-                            try { const anonymousUser = await signInAnonymously(auth); userId = anonymousUser.user.uid; } 
-                            catch(e) { console.error("Gagal masuk secara anonim:", e); }
+                        if (user) {
+                            userId = user.uid;
+                        } else if (!initialAuthToken) {
+                            try {
+                                const anonymousUser = await signInAnonymously(auth);
+                                userId = anonymousUser.user.uid;
+                            } catch(e) {
+                                console.error("Gagal masuk secara anonim:", e);
+                            }
                         }
                         startApp(); 
                     });
-                    if (initialAuthToken) await signInWithCustomToken(auth, initialAuthToken);
+
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    }
                 } else {
-                    console.error("Firebase config tidak ditemukan.");
+                    console.error("Firebase config tidak ditemukan. Berjalan dalam mode statis.");
                     startApp();
                 }
+
             } catch (error) {
-                console.error("Error Init:", error);
+                console.error("Kesalahan fatal saat inisialisasi Firebase atau autentikasi:", error);
+                const loadingEl = document.getElementById('loading');
+                if (loadingEl) {
+                    loadingEl.textContent = 'Kesalahan Inisialisasi Firebase.';
+                    loadingEl.classList.remove('hidden');
+                }
                 document.getElementById('error-message')?.classList.remove('hidden');
             }
         }
         
-        // --- Logic Sholat ---
         let PRAYER_TIMES = []; 
         let LOKASI_KOTA = "Makassar"; 
         let prayerInterval; 
@@ -440,31 +462,53 @@
                 const bulan = (now.getMonth() + 1).toString().padStart(2, '0');
                 const tanggal = now.getDate().toString().padStart(2, '0');
 
-                // Cari ID Kota
                 const cityResponse = await fetch(`https://api.myquran.com/v2/sholat/kota/cari/${LOKASI_KOTA}`);
-                if (!cityResponse.ok) throw new Error('Gagal cari kota');
+                if (!cityResponse.ok) throw new Error(`Gagal mencari ID kota (status: ${cityResponse.status})`);
+                
                 const cityData = await cityResponse.json();
-                if (!cityData.data || cityData.data.length === 0) throw new Error('Kota tidak ditemukan');
+                if (!cityData.data || cityData.data.length === 0) {
+                    throw new Error(`Kota "${LOKASI_KOTA}" tidak ditemukan`);
+                }
                 const idKota = cityData.data[0].id;
+                
                 LOKASI_KOTA = cityData.data[0].lokasi; 
                 document.getElementById('location-display').textContent = LOKASI_KOTA;
 
-                // Ambil Jadwal
                 const scheduleResponse = await fetch(`https://api.myquran.com/v2/sholat/jadwal/${idKota}/${tahun}/${bulan}/${tanggal}`);
+                if (!scheduleResponse.ok) throw new Error(`Gagal mengambil jadwal (status: ${scheduleResponse.status})`);
+                
                 const scheduleData = await scheduleResponse.json();
+                if (!scheduleData.data || !scheduleData.data.jadwal) {
+                     throw new Error('Data jadwal tidak valid dari API');
+                }
+                
                 const jadwal = scheduleData.data.jadwal;
                 
                 PRAYER_TIMES = [
-                    { name: "Imsak", time: jadwal.imsak }, { name: "Subuh", time: jadwal.subuh },
-                    { name: "Syuruk", time: jadwal.terbit }, { name: "Dhuha", time: jadwal.dhuha },
-                    { name: "Dzuhur", time: jadwal.dzuhur }, { name: "Ashar", time: jadwal.ashar },
-                    { name: "Maghrib", time: jadwal.maghrib }, { name: "Isya", time: jadwal.isya }
+                    { name: "Imsak", time: jadwal.imsak },
+                    { name: "Subuh", time: jadwal.subuh },
+                    { name: "Syuruk", time: jadwal.terbit }, 
+                    { name: "Dhuha", time: jadwal.dhuha },
+                    { name: "Dzuhur", time: jadwal.dzuhur },
+                    { name: "Ashar", time: jadwal.ashar },
+                    { name: "Maghrib", time: jadwal.maghrib },
+                    { name: "Isya", time: jadwal.isya }
                 ];
-                if (loadingEl) loadingEl.textContent = 'Memuat jadwal...'; 
+
+                if (loadingEl) {
+                    loadingEl.textContent = 'Memuat jadwal...'; 
+                }
                 return true; 
+
             } catch (error) {
-                console.error("API Error:", error);
-                if (loadingEl) loadingEl.textContent = `Gagal: ${error.message}`;
+                console.error("Kesalahan API Jadwal Sholat:", error);
+                if (loadingEl) {
+                    loadingEl.textContent = `Gagal memuat: ${error.message}`;
+                    loadingEl.classList.add('text-red-500');
+                }
+                if (!loadingEl) {
+                     document.getElementById('next-prayer-display').innerHTML = `Gagal: ${error.message}`;
+                }
                 return false; 
             }
         }
@@ -472,17 +516,29 @@
         async function loadPrayerTimesForLocation() {
             const listContainer = document.getElementById('prayer-times-list');
             listContainer.innerHTML = `<div id="loading" class="col-span-2 text-center p-6 text-gray-500 dark:text-gray-400"></div>`;
+
             const loadingEl = document.getElementById('loading');
-            loadingEl.textContent = `Memuat untuk ${LOKASI_KOTA}...`;
+            loadingEl.textContent = `Memuat jadwal sholat untuk ${LOKASI_KOTA}...`;
+            
+            document.getElementById('location-display').textContent = LOKASI_KOTA;
+            document.getElementById('next-prayer-display').innerHTML = `Menunggu data jadwal sholat...`;
+
             const success = await fetchPrayerTimes(loadingEl);
-            if (success) updateUI(); 
+            
+            if (success) {
+                updateUI(); 
+            }
         }
 
         async function handleChangeLocation() {
             const inputEl = document.getElementById('location-input');
             const newLocation = inputEl.value.trim();
+            
             if (newLocation && newLocation.toLowerCase() !== LOKASI_KOTA.toLowerCase()) {
-                LOKASI_KOTA = newLocation; inputEl.value = ''; stopAudioPlayback(); 
+                LOKASI_KOTA = newLocation; 
+                inputEl.value = ''; 
+                stopAudioPlayback(); 
+                
                 if (prayerInterval) clearInterval(prayerInterval);
                 await loadPrayerTimesForLocation(); 
                 prayerInterval = setInterval(updateUI, 1000);
@@ -490,7 +546,10 @@
         }
         
         function getNextPrayerTime(now) {
-            if (PRAYER_TIMES.length === 0) return { nextPrayer: null, timeRemainingMs: 0 };
+            if (PRAYER_TIMES.length === 0) {
+                 return { nextPrayer: null, timeRemainingMs: 0 };
+            }
+            
             const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
             let nextPrayer = null;
             let minTimeDiff = Infinity;
@@ -498,83 +557,164 @@
             for (const prayer of PRAYER_TIMES) {
                 const [h, m] = prayer.time.split(':').map(Number);
                 const prayerTimeInMinutes = h * 60 + m;
+                
                 let timeDiff = prayerTimeInMinutes - currentTimeInMinutes;
-                if (timeDiff <= 0) timeDiff += 1440; 
-                if (timeDiff < minTimeDiff) { minTimeDiff = timeDiff; nextPrayer = prayer; }
+
+                if (timeDiff <= 0) {
+                    timeDiff += 1440; 
+                }
+
+                if (timeDiff < minTimeDiff) {
+                    minTimeDiff = timeDiff;
+                    nextPrayer = prayer;
+                }
             }
+
             if (nextPrayer === null && PRAYER_TIMES.length > 0) {
                  nextPrayer = PRAYER_TIMES[0];
                  const [h, m] = nextPrayer.time.split(':').map(Number);
-                 minTimeDiff = (h * 60 + m - currentTimeInMinutes + 1440) % 1440;
+                 const prayerTimeInMinutes = h * 60 + m;
+                 minTimeDiff = (prayerTimeInMinutes - currentTimeInMinutes + 1440) % 1440;
             }
-            return { nextPrayer, timeRemainingMs: (minTimeDiff * 60 - now.getSeconds()) * 1000 };
+
+            const timeRemainingMs = (minTimeDiff * 60 - now.getSeconds()) * 1000;
+            
+            return { nextPrayer, timeRemainingMs };
         }
 
         function formatCountdown(ms) {
             const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-            const h = Math.floor(totalSeconds / 3600);
-            const m = Math.floor((totalSeconds % 3600) / 60);
-            const s = totalSeconds % 60;
-            return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':');
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            return [hours, minutes, seconds]
+                .map(v => v.toString().padStart(2, '0'))
+                .join(':');
         }
 
         function updatePrayerListUI(nextPrayerName) {
             const listContainer = document.getElementById('prayer-times-list');
-            if (!listContainer || PRAYER_TIMES.length === 0) return;
-            if (document.getElementById('loading')) listContainer.innerHTML = '';
-            if (!document.getElementById(`prayer-${PRAYER_TIMES[0].name}`)) listContainer.innerHTML = ''; 
+            if (!listContainer) return;
+            if (PRAYER_TIMES.length === 0) return;
+
+            const loadingEl = document.getElementById('loading');
+            if (loadingEl) {
+                listContainer.innerHTML = '';
+            }
+
+            const existingPrayerItem = document.getElementById(`prayer-${PRAYER_TIMES[0].name}`);
+
+            if (!existingPrayerItem) {
+                 listContainer.innerHTML = ''; 
+            }
             
             PRAYER_TIMES.forEach(prayer => {
                 const isNext = (prayer.name === nextPrayerName);
                 const nextClass = isNext ? 'is-next-prayer' : 'bg-white dark:bg-gray-700 border border-gray-100 dark:border-gray-700';
+
                 let itemEl = document.getElementById(`prayer-${prayer.name}`);
+
                 if (!itemEl) {
-                    const itemHtml = `<div id="prayer-${prayer.name}" class="prayer-list-item p-2 rounded-xl shadow-md flex flex-col items-center justify-center text-center"><span class="prayer-name text-sm font-medium text-gray-900 dark:text-gray-200">${prayer.name}</span><span class="prayer-time text-lg font-bold text-emerald-600 dark:text-emerald-400">${prayer.time}</span></div>`;
+                    const itemHtml = `
+                        <div id="prayer-${prayer.name}" class="prayer-list-item p-2 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
+                            <span class="prayer-name text-sm font-medium text-gray-900 dark:text-gray-200">${prayer.name}</span>
+                            <span class="prayer-time text-lg font-bold text-emerald-600 dark:text-emerald-400">${prayer.time}</span>
+                        </div>
+                    `;
                     listContainer.insertAdjacentHTML('beforeend', itemHtml);
                     itemEl = document.getElementById(`prayer-${prayer.name}`); 
                 }
+
                 itemEl.className = `prayer-list-item p-2 rounded-xl shadow-md flex flex-col items-center justify-center text-center ${nextClass}`;
             });
         }
 
         function updateUI() {
             const now = new Date();
-            const timeEl = document.getElementById('current-time');
-            const dateEl = document.getElementById('current-date');
+
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
+            const currentTimeEl = document.getElementById('current-time');
+            const currentDateEl = document.getElementById('current-date');
             
-            if (timeEl) timeEl.textContent = now.toLocaleTimeString('id-ID', { hour12: false });
-            if (dateEl) dateEl.textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            if (currentTimeEl) currentTimeEl.textContent = now.toLocaleTimeString('id-ID', timeOptions);
+            if (currentDateEl) currentDateEl.textContent = now.toLocaleDateString('id-ID', dateOptions);
 
             if (PRAYER_TIMES.length > 0) {
                 const { nextPrayer, timeRemainingMs } = getNextPrayerTime(now);
-                const displayEl = document.getElementById('next-prayer-display');
-                if (nextPrayer && displayEl) {
-                    displayEl.innerHTML = `<span class="font-bold">${nextPrayer.name}</span> dalam <span class="font-mono">${formatCountdown(timeRemainingMs)}</span>`;
+                const nextPrayerDisplayEl = document.getElementById('next-prayer-display');
+
+                if (nextPrayer && nextPrayerDisplayEl) {
+                    const countdownStr = formatCountdown(timeRemainingMs);
+                    
+                    nextPrayerDisplayEl.innerHTML = `
+                        <span class="font-bold">${nextPrayer.name}</span> dalam 
+                        <span class="font-mono">${countdownStr}</span>
+                    `;
+
                     updatePrayerListUI(nextPrayer.name);
                 }
             }
         }
         
-        // --- Logic Quran ---
         const BASE_QURAN_API = 'https://api.quran.com/api/v4';
-        let surahListCache = [], currentSurahId = null, currentPage = 1, totalPages = 1, allVerses = [], isTranslationVisible = true; 
+        let surahListCache = []; 
+        
+        let currentSurahId = null;
+        let currentPage = 1;
+        let totalPages = 1;
+        let allVerses = []; 
         const VERSES_PER_PAGE = 10;
+        let isTranslationVisible = true; 
 
         function playAudio(audioUrl, buttonElement) {
-            let trackTitle = "Audio", trackSubtitle = "Memutar...";
-            if (buttonElement?.ariaLabel) {
-                if (buttonElement.ariaLabel.startsWith("Putar Surah")) { trackTitle = buttonElement.ariaLabel.replace("Putar Surah ", ""); trackSubtitle = "Surah"; } 
-                else if (buttonElement.ariaLabel.startsWith("Putar Ayat")) { trackTitle = document.getElementById('header-surah-title')?.textContent.split('(')[0].trim() || "Ayat"; trackSubtitle = "Ayat"; }
+            let trackTitle = "Audio";
+            let trackSubtitle = "Sedang memutar...";
+            
+            if (buttonElement && buttonElement.ariaLabel) {
+                if (buttonElement.ariaLabel.startsWith("Putar Surah")) {
+                    trackTitle = buttonElement.ariaLabel.replace("Putar Surah ", "");
+                    trackSubtitle = "Surah";
+                } else if (buttonElement.ariaLabel.startsWith("Putar Ayat")) {
+                    const surahTitle = document.getElementById('header-surah-title')?.textContent;
+                    if (surahTitle) {
+                         trackTitle = surahTitle.split('(')[0].trim(); 
+                         trackSubtitle = buttonElement.ariaLabel.replace("Putar ", ""); 
+                    } else {
+                         trackTitle = buttonElement.ariaLabel.replace("Putar ", ""); 
+                         trackSubtitle = "Ayat";
+                    }
+                }
             }
 
             if (restoredAudioSrc === audioUrl && globalAudioPlayer.src === restoredAudioSrc) {
-                restoredAudioSrc = null; restoredAudioTime = 0;
-                if (currentPlayingButton && currentPlayingButton !== buttonElement) { currentPlayingButton.innerHTML = playIconSvg; currentPlayingButton.disabled = false; }
-                buttonElement.innerHTML = loadingIconSvg; buttonElement.disabled = true;
+                restoredAudioSrc = null; 
+                restoredAudioTime = 0;
+
+                if (currentPlayingButton && currentPlayingButton !== buttonElement) {
+                    currentPlayingButton.innerHTML = playIconSvg;
+                    currentPlayingButton.disabled = false;
+                }
+                
+                buttonElement.innerHTML = loadingIconSvg;
+                buttonElement.disabled = true;
+
                 showMiniPlayer(trackTitle, trackSubtitle);
                 if (miniPlayerToggle) miniPlayerToggle.innerHTML = loadingIconSvg;
-                globalAudioPlayer.play().then(() => { buttonElement.innerHTML = pauseIconSvg; buttonElement.disabled = false; if (miniPlayerToggle) miniPlayerToggle.innerHTML = pauseIconSvg; })
-                .catch(e => { console.error(e); buttonElement.innerHTML = playIconSvg; buttonElement.disabled = false; });
+                
+                globalAudioPlayer.play().then(() => {
+                    buttonElement.innerHTML = pauseIconSvg;
+                    buttonElement.disabled = false;
+                    if (miniPlayerToggle) miniPlayerToggle.innerHTML = pauseIconSvg; 
+                }).catch(error => {
+                    console.error("Error playing restored audio:", error);
+                    buttonElement.innerHTML = playIconSvg;
+                    buttonElement.disabled = false;
+                    if (miniPlayerToggle) miniPlayerToggle.innerHTML = playIconSvg; 
+                });
+                
                 currentPlayingButton = buttonElement;
                 return;
             }
@@ -583,17 +723,44 @@
                 globalAudioPlayer.pause();
                 buttonElement.innerHTML = playIconSvg;
                 currentPlayingButton = null;
+                
                 if (miniPlayerToggle) miniPlayerToggle.innerHTML = playIconSvg; 
-                if (globalAudioPlayer.currentTime > 0) { sessionStorage.setItem('lastAudioSrc', globalAudioPlayer.src); sessionStorage.setItem('lastAudioTime', globalAudioPlayer.currentTime); }
+                
+                if (globalAudioPlayer.currentTime > 0 && !globalAudioPlayer.ended) {
+                     sessionStorage.setItem('lastAudioSrc', globalAudioPlayer.src);
+                     sessionStorage.setItem('lastAudioTime', globalAudioPlayer.currentTime);
+                }
+
             } else {
-                if (currentPlayingButton) { currentPlayingButton.innerHTML = playIconSvg; currentPlayingButton.disabled = false; }
+                if (currentPlayingButton) {
+                    currentPlayingButton.innerHTML = playIconSvg;
+                    currentPlayingButton.disabled = false;
+                }
+                
                 globalAudioPlayer.pause();
-                if (globalAudioPlayer.src !== audioUrl) { globalAudioPlayer.src = audioUrl; globalAudioPlayer.currentTime = 0; }
-                buttonElement.innerHTML = loadingIconSvg; buttonElement.disabled = true;
+
+                if (globalAudioPlayer.src !== audioUrl) {
+                    globalAudioPlayer.src = audioUrl;
+                    globalAudioPlayer.currentTime = 0;
+                }
+                
+                buttonElement.innerHTML = loadingIconSvg;
+                buttonElement.disabled = true;
+                
                 showMiniPlayer(trackTitle, trackSubtitle);
                 if (miniPlayerToggle) miniPlayerToggle.innerHTML = loadingIconSvg;
-                globalAudioPlayer.play().then(() => { buttonElement.innerHTML = pauseIconSvg; buttonElement.disabled = false; if (miniPlayerToggle) miniPlayerToggle.innerHTML = pauseIconSvg; })
-                .catch(e => { console.error(e); buttonElement.innerHTML = playIconSvg; buttonElement.disabled = false; hideMiniPlayer(); });
+
+                globalAudioPlayer.play().then(() => {
+                    buttonElement.innerHTML = pauseIconSvg;
+                    buttonElement.disabled = false;
+                    if (miniPlayerToggle) miniPlayerToggle.innerHTML = pauseIconSvg; 
+                }).catch(error => {
+                    console.error("Error playing audio:", error);
+                    buttonElement.innerHTML = playIconSvg;
+                    buttonElement.disabled = false;
+                    hideMiniPlayer(); 
+                });
+
                 currentPlayingButton = buttonElement;
             }
         }
@@ -604,379 +771,1027 @@
             miniPlayerSubtitle = document.getElementById('mini-player-subtitle');
             miniPlayerToggle = document.getElementById('mini-player-toggle');
             miniPlayerClose = document.getElementById('mini-player-close');
-            if (!miniPlayer) return;
 
-            miniPlayerToggle.addEventListener('click', () => { if (globalAudioPlayer.paused) globalAudioPlayer.play(); else globalAudioPlayer.pause(); });
+            if (!miniPlayer || !miniPlayerToggle || !miniPlayerClose) return;
+
+            miniPlayerToggle.addEventListener('click', () => {
+                if (globalAudioPlayer.paused) {
+                    globalAudioPlayer.play().catch(e => console.error("Mini player play error:", e));
+                } else {
+                    globalAudioPlayer.pause();
+                }
+            });
+
             miniPlayerClose.addEventListener('click', stopAudioPlayback);
-            globalAudioPlayer.onended = () => { if (currentPlayingButton) { currentPlayingButton.innerHTML = playIconSvg; currentPlayingButton.disabled = false; currentPlayingButton = null; } hideMiniPlayer(); sessionStorage.removeItem('lastAudioSrc'); };
-            globalAudioPlayer.onpause = () => { if (miniPlayerToggle) miniPlayerToggle.innerHTML = playIconSvg; };
-            globalAudioPlayer.onplay = () => { if (miniPlayerToggle) miniPlayerToggle.innerHTML = pauseIconSvg; if (currentPlayingButton) currentPlayingButton.innerHTML = pauseIconSvg; };
-            globalAudioPlayer.onwaiting = () => { if (miniPlayerToggle) miniPlayerToggle.innerHTML = loadingIconSvg; };
-            globalAudioPlayer.oncanplay = () => { if (!globalAudioPlayer.paused && miniPlayerToggle) miniPlayerToggle.innerHTML = pauseIconSvg; };
+
+            globalAudioPlayer.onended = () => {
+                if (currentPlayingButton) {
+                    currentPlayingButton.innerHTML = playIconSvg;
+                    currentPlayingButton.disabled = false;
+                    currentPlayingButton = null;
+                }
+                hideMiniPlayer(); 
+                sessionStorage.removeItem('lastAudioSrc');
+                sessionStorage.removeItem('lastAudioTime');
+            };
+            
+            globalAudioPlayer.onpause = () => {
+                if (globalAudioPlayer.currentTime > 0 && !globalAudioPlayer.ended) {
+                }
+                 if (miniPlayerToggle && globalAudioPlayer.src) {
+                    miniPlayerToggle.innerHTML = playIconSvg;
+                 }
+            };
+            globalAudioPlayer.onplay = () => {
+                 if (miniPlayerToggle) {
+                    miniPlayerToggle.innerHTML = pauseIconSvg;
+                 }
+                 if (currentPlayingButton) {
+                     currentPlayingButton.innerHTML = pauseIconSvg;
+                 }
+            };
+             globalAudioPlayer.onwaiting = () => {
+                 if (miniPlayerToggle) {
+                    miniPlayerToggle.innerHTML = loadingIconSvg;
+                 }
+                 if (currentPlayingButton) {
+                     currentPlayingButton.innerHTML = loadingIconSvg;
+                 }
+            };
+            globalAudioPlayer.oncanplay = () => {
+                if (!globalAudioPlayer.paused) {
+                     if (miniPlayerToggle) {
+                        miniPlayerToggle.innerHTML = pauseIconSvg;
+                     }
+                     if (currentPlayingButton) {
+                         currentPlayingButton.innerHTML = pauseIconSvg;
+                     }
+                }
+            };
         }
         
-        function showMiniPlayer(title, subtitle) { if(miniPlayer) { miniPlayerTitle.textContent = title; miniPlayerSubtitle.textContent = subtitle; miniPlayer.style.display = 'flex'; setTimeout(() => miniPlayer.classList.remove('translate-y-24', 'opacity-0'), 10); } }
-        function hideMiniPlayer() { if(miniPlayer) { miniPlayer.classList.add('translate-y-24', 'opacity-0'); setTimeout(() => miniPlayer.style.display = 'none', 300); } }
-        function stopAudioPlayback() { if (!globalAudioPlayer.paused) { globalAudioPlayer.pause(); sessionStorage.setItem('lastAudioSrc', globalAudioPlayer.src); sessionStorage.setItem('lastAudioTime', globalAudioPlayer.currentTime); } if (currentPlayingButton) { currentPlayingButton.innerHTML = playIconSvg; currentPlayingButton.disabled = false; currentPlayingButton = null; } hideMiniPlayer(); }
+        function showMiniPlayer(title, subtitle) {
+            if (!miniPlayer || !miniPlayerTitle || !miniPlayerSubtitle) return;
+            
+            miniPlayerTitle.textContent = title;
+            miniPlayerSubtitle.textContent = subtitle;
+            
+            miniPlayer.style.display = 'flex'; 
+            setTimeout(() => {
+                miniPlayer.classList.remove('translate-y-24', 'opacity-0');
+            }, 10); 
+        }
+
+        function hideMiniPlayer() {
+            if (!miniPlayer) return;
+            miniPlayer.classList.add('translate-y-24', 'opacity-0');
+            
+            setTimeout(() => {
+                 miniPlayer.style.display = 'none';
+            }, 300); 
+        }
+
+        function stopAudioPlayback() {
+            if (!globalAudioPlayer.paused) {
+                globalAudioPlayer.pause();
+                
+                if (globalAudioPlayer.currentTime > 0 && !globalAudioPlayer.ended) {
+                     sessionStorage.setItem('lastAudioSrc', globalAudioPlayer.src);
+                     sessionStorage.setItem('lastAudioTime', globalAudioPlayer.currentTime);
+                }
+            }
+            if (currentPlayingButton) {
+                currentPlayingButton.innerHTML = playIconSvg;
+                currentPlayingButton.disabled = false;
+                currentPlayingButton = null;
+            }
+            hideMiniPlayer(); 
+        }
 
         async function fetchSurahList() {
-            const loading = document.getElementById('quran-loading'); const list = document.getElementById('surah-list');
-            if(!loading) return; loading.classList.remove('hidden'); list.innerHTML = '';
+            const quranLoadingEl = document.getElementById('quran-loading');
+            const surahListEl = document.getElementById('surah-list');
+            if (!quranLoadingEl || !surahListEl) return;
+            
+            quranLoadingEl.classList.remove('hidden');
+            surahListEl.innerHTML = '';
+            
             try {
-                const res = await fetch(`${BASE_QURAN_API}/chapters?language=id`);
-                if(!res.ok) throw new Error('API Error');
-                const data = await res.json(); surahListCache = data.chapters;
-                loading.classList.add('hidden'); renderSurahList(surahListCache);
-            } catch(e) { loading.textContent = 'Gagal memuat.'; }
+                const response = await fetch(`${BASE_QURAN_API}/chapters?language=id`);
+                if (!response.ok) throw new Error('Gagal mengambil daftar surah');
+                
+                const data = await response.json();
+                surahListCache = data.chapters;
+                
+                quranLoadingEl.classList.add('hidden');
+                renderSurahList(surahListCache);
+                
+            } catch (error) {
+                console.error("Kesalahan API Surah:", error);
+                quranLoadingEl.textContent = `Gagal memuat: ${error.message}`;
+            }
         }
         
-        function renderSurahList(data) {
-            const list = document.getElementById('surah-list'); const none = document.getElementById('search-no-results');
-            list.innerHTML = ''; none.classList.add('hidden');
-            if(data.length === 0) { none.classList.remove('hidden'); return; }
-            data.forEach(s => {
-                const btn = document.createElement('button');
-                const audio = `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${s.id}.mp3`;
-                let playCls = "surah-play-button p-2 rounded-full text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-gray-600 transition";
-                if(restoredAudioSrc === audio) playCls += " animate-pulse";
+        function renderSurahList(surahList) {
+            const surahListEl = document.getElementById('surah-list');
+            const noResultsEl = document.getElementById('search-no-results');
+            if (!surahListEl || !noResultsEl) return;
+            
+            surahListEl.innerHTML = '';
+            noResultsEl.classList.add('hidden');
+
+            if (surahList.length === 0) {
+                noResultsEl.classList.remove('hidden');
+                return;
+            }
+            
+            surahList.forEach(surah => {
+                const button = document.createElement('button');
+                button.className = 'surah-button w-full bg-gray-100 dark:bg-gray-700 dark:text-gray-200 shadow-sm hover:bg-emerald-50 dark:hover:bg-gray-600 transition duration-150';
+                button.dataset.surahId = surah.id;
                 
-                btn.className = 'surah-button w-full bg-gray-100 dark:bg-gray-700 dark:text-gray-200 shadow-sm hover:bg-emerald-50 dark:hover:bg-gray-600 transition duration-150';
-                btn.innerHTML = `<div class="flex flex-col items-start"><span class="font-bold text-base text-emerald-700 dark:text-emerald-300">${s.id}. ${s.name_simple}</span><p class="text-xs text-gray-500 dark:text-gray-400">${s.translated_name.name}</p></div><div class="flex items-center space-x-3"><span class="ayah-arabic text-xl text-emerald-600 dark:text-emerald-400">${s.name_arabic}</span><button class="${playCls}" data-audio-url="${audio}" aria-label="Putar Surah ${s.name_simple}">${playIconSvg}</button></div>`;
-                btn.onclick = () => { stopAudioPlayback(); renderSurahDetails(s.id, s.name_simple, s.name_arabic); };
-                btn.querySelector('.surah-play-button').onclick = (e) => { e.stopPropagation(); playAudio(audio, e.currentTarget); };
-                list.appendChild(btn);
-            });
-        }
-
-        window.searchSurah = (q) => {
-            q = q.toLowerCase().trim();
-            if(q === "") renderSurahList(surahListCache);
-            else renderSurahList(surahListCache.filter(s => s.name_simple.toLowerCase().includes(q) || s.translated_name.name.toLowerCase().includes(q) || s.id.toString() === q));
-        }
-
-        async function renderSurahDetails(id, name, arab, page = 1, push = true) {
-            document.getElementById('surah-list').classList.add('hidden'); document.getElementById('search-container').classList.add('hidden'); document.getElementById('load-bookmark-container').classList.add('hidden');
-            const details = document.getElementById('ayah-details'); const content = document.getElementById('ayah-content'); const header = document.getElementById('header-surah-title');
-            details.classList.remove('hidden'); content.innerHTML = '<p class="text-center p-6 text-gray-500">Memuat...</p>';
-            header.textContent = `${name} (${arab})`; header.classList.remove('hidden');
-            document.getElementById('back-to-prayer-icon').classList.remove('hidden'); document.getElementById('checklist-icon-button').classList.add('hidden');
-            translationToggleButton.classList.remove('hidden'); bookmarkButton.classList.remove('hidden'); updateTranslationButtonUI();
-            currentSurahId = id; currentPage = page;
-            if(push) history.pushState({ view: 'ayahDetail', surahId: id, simpleName: name, arabicName: arab, page: page }, '', `#surah/${id}/page/${page}`);
-
-            try {
-                if(allVerses.length === 0 || !allVerses[0].verse_key.startsWith(id + ':')) {
-                    const res = await fetch(`${BASE_QURAN_API}/verses/by_chapter/${id}?language=id&words=false&translations=33&fields=text_uthmani,verse_key,verse_number`);
-                    const d = await res.json(); allVerses = d.verses; totalPages = Math.ceil(allVerses.length / VERSES_PER_PAGE);
+                const revelationType = surah.revelation_place === 'makkah' ? 'Makkiyah' : 'Madaniyah';
+                
+                const surahAudioUrl = `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${surah.id}.mp3`;
+                
+                let playButtonClass = "surah-play-button p-2 rounded-full text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-gray-600 transition";
+                let playButtonIcon = playIconSvg;
+                
+                if (restoredAudioSrc === surahAudioUrl) {
+                    playButtonClass += " animate-pulse";
                 }
-                renderAyahPage();
-                document.getElementById('scrollable-ayah-container').scrollTo({ top: 0 });
-            } catch(e) { content.innerHTML = '<p class="text-center text-red-500">Gagal memuat ayat.</p>'; }
+                
+                const playButtonHtml = `
+                    <button type="button" class="${playButtonClass}" data-audio-url="${surahAudioUrl}" aria-label="Putar Surah ${surah.name_simple}">
+                        ${playButtonIcon}
+                    </button>
+                `;
+
+                button.innerHTML = `
+                    <div class="flex flex-col items-start">
+                        <span class="font-bold text-base text-emerald-700 dark:text-emerald-300">${surah.id}. ${surah.name_simple}</span>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">${surah.translated_name.name} - ${revelationType}</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500">${surah.verses_count} Ayat</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="ayah-arabic text-xl text-emerald-600 dark:text-emerald-400">${surah.name_arabic}</span>
+                        ${playButtonHtml}
+                    </div>
+                `;
+
+                button.addEventListener('click', () => {
+                    stopAudioPlayback(); 
+                    renderSurahDetails(surah.id, surah.name_simple, surah.name_arabic);
+                });
+
+                const playButton = button.querySelector('.surah-play-button');
+                if (playButton) {
+                    playButton.addEventListener('click', (e) => {
+                        e.stopPropagation(); 
+                        playAudio(surahAudioUrl, playButton);
+                    });
+                }
+
+                surahListEl.appendChild(button);
+            });
+            
+            surahListEl.scrollTop = 0;
         }
 
-        function renderAyahPage() {
-            const content = document.getElementById('ayah-content'); content.innerHTML = '';
-            const start = (currentPage - 1) * VERSES_PER_PAGE;
-            const verses = allVerses.slice(start, start + VERSES_PER_PAGE);
-
-            if (currentPage === 1 && currentSurahId !== 1 && currentSurahId !== 9) {
-                 content.innerHTML += `<div class="flex justify-center mb-6"><img src="https://upload.wikimedia.org/wikipedia/commons/2/27/Bismillah-1.png" alt="Bismillah" class="w-48 md:w-64 dark:invert opacity-80" /></div>`;
+        window.searchSurah = (query) => {
+            const normalizedQuery = query.toLowerCase().trim();
+            
+            if (normalizedQuery === "") {
+                renderSurahList(surahListCache); 
+                return;
             }
 
-            verses.forEach(v => {
-                const aud = `https://everyayah.com/data/Alafasy_128kbps/${currentSurahId.toString().padStart(3,'0')}${v.verse_number.toString().padStart(3,'0')}.mp3`;
-                let pCls = "ayah-play-button p-1 rounded-full text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-gray-600 transition";
-                if(restoredAudioSrc === aud) pCls += " animate-pulse";
-                const div = document.createElement('div');
-                div.className = 'p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl shadow-md border-b border-gray-200 dark:border-gray-700';
-                div.innerHTML = `<div class="flex justify-between items-center mb-3 pb-3 border-b border-gray-200 dark:border-gray-600"><span class="text-sm font-bold text-emerald-600 dark:text-emerald-400">QS ${currentSurahId}:${v.verse_number}</span><button class="${pCls}" data-audio-url="${aud}">${playIconSvg}</button></div><p class="ayah-arabic mb-4 text-gray-900 dark:text-gray-100">${v.text_uthmani}</p><p class="translation-text ${isTranslationVisible?'':'hidden'} text-sm text-gray-700 dark:text-gray-300 italic pt-3 border-t border-gray-200 dark:border-gray-600">${v.translations[0].text}</p>`;
-                div.querySelector('.ayah-play-button').onclick = (e) => { e.stopPropagation(); playAudio(aud, e.currentTarget); };
-                content.appendChild(div);
+            const filteredList = surahListCache.filter(surah => 
+                surah.name_simple.toLowerCase().includes(normalizedQuery) ||
+                surah.translated_name.name.toLowerCase().includes(normalizedQuery) ||
+                surah.id.toString() === normalizedQuery
+            );
+            
+            renderSurahList(filteredList);
+        }
+
+        async function renderSurahDetails(surahId, simpleName, arabicName, page = 1, pushState = true) {
+            
+            document.getElementById('surah-list')?.classList.add('hidden');
+            document.getElementById('search-container')?.classList.add('hidden');
+            document.getElementById('load-bookmark-container')?.classList.add('hidden');
+            
+            const ayahDetailsEl = document.getElementById('ayah-details');
+            const ayahContentEl = document.getElementById('ayah-content');
+            const headerSurahTitleEl = document.getElementById('header-surah-title');
+
+            if (!ayahDetailsEl || !ayahContentEl || !headerSurahTitleEl) return;
+            
+            ayahDetailsEl.classList.remove('hidden');
+            ayahContentEl.innerHTML = `<p class="text-center p-6 text-gray-500 dark:text-gray-400">Memuat ayat-ayat ${simpleName}...</p>`;
+
+            headerSurahTitleEl.textContent = `${simpleName} (${arabicName})`;
+            headerSurahTitleEl.classList.remove('hidden');
+
+            document.getElementById('back-to-prayer-icon')?.classList.remove('hidden');
+            document.getElementById('checklist-icon-button')?.classList.add('hidden'); 
+            
+            translationToggleButton?.classList.remove('hidden');
+            bookmarkButton?.classList.remove('hidden');
+            updateTranslationButtonUI();
+            
+            currentSurahId = surahId;
+            currentPage = page;
+
+            if (pushState) {
+                history.pushState({ 
+                    view: 'ayahDetail', 
+                    surahId: surahId, 
+                    simpleName: simpleName, 
+                    arabicName: arabicName,
+                    page: page
+                }, `${simpleName} - Halaman ${page}`, `#surah/${surahId}/page/${page}`);
+            }
+
+            try {
+                if (allVerses.length === 0 || (allVerses.length > 0 && allVerses[0].verse_key.startsWith(surahId + ':') === false)) {
+                    
+                    const response = await fetch(`${BASE_QURAN_API}/verses/by_chapter/${surahId}?language=id&words=false&translations=33&fields=text_uthmani,verse_key,verse_number`);
+                    if (!response.ok) throw new Error('Gagal mengambil data ayat');
+                    
+                    const data = await response.json();
+                    
+                    if (!data.verses || data.verses.length === 0) {
+                        ayahContentEl.innerHTML = `<p class="text-center text-red-500">Ayat tidak ditemukan untuk surah ini.</p>`;
+                        return;
+                    }
+
+                    allVerses = data.verses;
+                    totalPages = Math.ceil(allVerses.length / VERSES_PER_PAGE);
+                }
+                
+                renderAyahPage();
+                
+                const scrollContainer = document.getElementById('scrollable-ayah-container');
+                if (scrollContainer) {
+                    scrollContainer.scrollTo({ top: 0, behavior: 'instant' });
+                }
+
+            } catch (error) {
+                console.error("Kesalahan API Ayat:", error);
+                ayahContentEl.innerHTML = `<p class="text-center text-red-500">Gagal memuat ayat-ayat: ${error.message}</p>`;
+            }
+        }
+
+
+        function renderAyahPage() {
+            const ayahContentEl = document.getElementById('ayah-content');
+            if (!ayahContentEl) return;
+
+            ayahContentEl.innerHTML = '';
+            
+            const startIndex = (currentPage - 1) * VERSES_PER_PAGE;
+            const endIndex = startIndex + VERSES_PER_PAGE;
+            const versesToShow = allVerses.slice(startIndex, endIndex);
+
+            if (currentPage === 1 && currentSurahId !== 1 && currentSurahId !== 9) {
+                 ayahContentEl.innerHTML += `<p class="ayah-arabic text-center mb-4 text-2xl font-light text-gray-900 dark:text-gray-100">Ø¨ÙØ³ÙÙÙ Ù±ÙÙÙÙÙÙ Ù±ÙØ±ÙÙØ­ÙÙÙÙ°ÙÙ Ù±ÙØ±ÙÙØ­ÙÙÙÙ</p>`;
+            }
+
+            versesToShow.forEach(verse => {
+                const arabicText = verse.text_uthmani;
+                const translationText = verse.translations ? verse.translations[0].text : 'Terjemahan tidak tersedia.';
+                
+                const surahPad = currentSurahId.toString().padStart(3, '0');
+                const ayahPad = verse.verse_number.toString().padStart(3, '0');
+                const ayahAudioUrl = `https://everyayah.com/data/Alafasy_128kbps/${surahPad}${ayahPad}.mp3`;
+                
+                let playButtonClass = "ayah-play-button p-1 rounded-full text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-gray-600 transition";
+                
+                if (restoredAudioSrc === ayahAudioUrl) {
+                    playButtonClass += " animate-pulse";
+                }
+
+                const ayahDiv = document.createElement('div');
+                ayahDiv.className = 'p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl shadow-md border-b border-gray-200 dark:border-gray-700';
+
+                const translationClass = isTranslationVisible ? 'translation-text' : 'translation-text hidden';
+
+                ayahDiv.innerHTML = `
+                    <div class="flex justify-between items-center mb-3 pb-3 border-b border-gray-200 dark:border-gray-600">
+                        <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400">QS ${currentSurahId}:${verse.verse_number}</span>
+                        <button type="button" class="${playButtonClass}" data-audio-url="${ayahAudioUrl}" aria-label="Putar Ayat ${verse.verse_number}">
+                            ${playIconSvg}
+                        </button>
+                    </div>
+                    <p class="ayah-arabic mb-4 text-gray-900 dark:text-gray-100">${arabicText}</p>
+                    <p class="${translationClass} text-sm text-gray-700 dark:text-gray-300 italic pt-3 border-t border-gray-200 dark:border-gray-600">${translationText}</p>
+                `;
+                
+                const playButton = ayahDiv.querySelector('.ayah-play-button');
+                if (playButton) {
+                    playButton.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        playAudio(ayahAudioUrl, playButton);
+                    });
+                }
+
+                ayahContentEl.appendChild(ayahDiv);
             });
+
             updatePaginationUI();
         }
 
-        window.changePage = (d) => {
-            const n = currentPage + d; if(n < 1 || n > totalPages) return;
-            currentPage = n; renderAyahPage(); stopAudioPlayback();
-            document.getElementById('scrollable-ayah-container').scrollTo({ top: 0, behavior: 'smooth' });
+        window.changePage = (direction) => {
+            const newPage = currentPage + direction;
+            if (newPage < 1 || newPage > totalPages) {
+                return; 
+            }
+            
+            currentPage = newPage;
+            
+            const headerTitleEl = document.getElementById('header-surah-title');
+            const headerText = headerTitleEl.textContent;
+            const match = headerText.match(/(.*) \((.*)\)/);
+            
+            if (match) {
+                 const simpleName = match[1].trim();
+                 const arabicName = match[2].trim();
+                 
+                 history.pushState({ 
+                    view: 'ayahDetail', 
+                    surahId: currentSurahId, 
+                    simpleName: simpleName, 
+                    arabicName: arabicName,
+                    page: currentPage
+                }, `${simpleName} - Halaman ${currentPage}`, `#surah/${currentSurahId}/page/${currentPage}`);
+            }
+            
+            stopAudioPlayback(); 
+            renderAyahPage();
+            
+            const scrollContainer = document.getElementById('scrollable-ayah-container');
+            if (scrollContainer) {
+                 scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
         
         function updatePaginationUI() {
-            document.getElementById('prev-ayah-button').disabled = (currentPage === 1);
-            document.getElementById('next-ayah-button').disabled = (currentPage === totalPages);
-            document.getElementById('page-info').textContent = `Halaman ${currentPage}/${totalPages}`;
+            const prevButton = document.getElementById('prev-ayah-button');
+            const nextButton = document.getElementById('next-ayah-button');
+            const pageInfo = document.getElementById('page-info');
+
+            if (!prevButton || !nextButton || !pageInfo) return;
+
+            prevButton.disabled = (currentPage === 1);
+            nextButton.disabled = (currentPage === totalPages);
+            pageInfo.textContent = `Halaman ${currentPage}/${totalPages}`;
         }
         
-        window.toggleTranslation = () => { isTranslationVisible = !isTranslationVisible; document.querySelectorAll('.translation-text').forEach(e => e.classList.toggle('hidden')); updateTranslationButtonUI(); }
+        window.toggleTranslation = () => {
+            isTranslationVisible = !isTranslationVisible;
+
+            if (currentSurahId) {
+                const translations = document.querySelectorAll('.translation-text');
+                translations.forEach(el => {
+                    if (isTranslationVisible) {
+                        el.classList.remove('hidden');
+                    } else {
+                        el.classList.add('hidden');
+                    }
+                });
+            }
+            
+            updateTranslationButtonUI();
+        }
+
         function updateTranslationButtonUI() {
-            const open = document.getElementById('translation-eye-open'); const closed = document.getElementById('translation-eye-closed');
-            if(isTranslationVisible) { open.classList.remove('hidden'); closed.classList.add('hidden'); } else { open.classList.add('hidden'); closed.classList.remove('hidden'); }
+            const eyeOpen = document.getElementById('translation-eye-open');
+            const eyeClosed = document.getElementById('translation-eye-closed');
+
+            if (eyeOpen && eyeClosed) {
+                if (isTranslationVisible) {
+                    eyeOpen.classList.remove('hidden');
+                    eyeClosed.classList.add('hidden');
+                } else {
+                    eyeOpen.classList.add('hidden');
+                    eyeClosed.classList.remove('hidden');
+                }
+            }
         }
 
         function saveBookmark() {
-            if(!currentSurahId) return;
-            const title = document.getElementById('header-surah-title').textContent.match(/(.*) \((.*)\)/);
-            if(!title) return;
-            localStorage.setItem('quranBookmark', JSON.stringify({ surahId: currentSurahId, simpleName: title[1].trim(), arabicName: title[2].trim(), page: currentPage }));
-            bookmarkButton.style.color = '#10b981'; setTimeout(() => bookmarkButton.style.color = '', 1000);
+            if (!currentSurahId) return;
+            
+            const headerTitleEl = document.getElementById('header-surah-title');
+            if (!headerTitleEl) return;
+            
+            const headerText = headerTitleEl.textContent;
+            const match = headerText.match(/(.*) \((.*)\)/);
+            if (!match) return; 
+            
+            const simpleName = match[1].trim();
+            const arabicName = match[2].trim();
+            
+            const bookmarkData = {
+                surahId: currentSurahId,
+                simpleName: simpleName,
+                arabicName: arabicName,
+                page: currentPage
+            };
+            
+            localStorage.setItem('quranBookmark', JSON.stringify(bookmarkData));
+            
+            if (bookmarkButton) {
+                const originalColor = bookmarkButton.style.color;
+                bookmarkButton.style.color = '#10b981'; 
+                setTimeout(() => {
+                    bookmarkButton.style.color = originalColor;
+                }, 1000);
+            }
+            
             checkAndDisplayBookmarkButton();
         }
 
         function checkAndDisplayBookmarkButton() {
-            const c = document.getElementById('load-bookmark-container'); const b = document.getElementById('load-bookmark-button'); const d = localStorage.getItem('quranBookmark');
-            if(d && c && b) { const j = JSON.parse(d); b.textContent = `Lanjut: ${j.simpleName}, Hal. ${j.page}`; c.classList.remove('hidden'); } else if(c) c.classList.add('hidden');
+            const container = document.getElementById('load-bookmark-container');
+            const button = document.getElementById('load-bookmark-button');
+            const bookmarkData = localStorage.getItem('quranBookmark');
+
+            if (bookmarkData && container && button) {
+                try {
+                    const data = JSON.parse(bookmarkData);
+                    button.textContent = `Lanjutkan Baca: ${data.simpleName}, Hal. ${data.page}`;
+                    container.classList.remove('hidden');
+                } catch (e) {
+                    console.error("Gagal parse bookmark:", e);
+                    localStorage.removeItem('quranBookmark');
+                }
+            } else if (container) {
+                container.classList.add('hidden');
+            }
         }
 
-        document.getElementById('load-bookmark-button')?.addEventListener('click', () => {
-            const d = JSON.parse(localStorage.getItem('quranBookmark')); if(d) renderSurahDetails(d.surahId, d.simpleName, d.arabicName, d.page);
-        });
-        window.clearBookmark = (e) => { e.stopPropagation(); localStorage.removeItem('quranBookmark'); document.getElementById('load-bookmark-container').classList.add('hidden'); }
+        function loadBookmark() {
+            const bookmarkData = localStorage.getItem('quranBookmark');
+            if (!bookmarkData) return;
+            
+            try {
+                const data = JSON.parse(bookmarkData);
+                renderSurahDetails(data.surahId, data.simpleName, data.arabicName, data.page);
+            } catch (e) {
+                console.error("Gagal memuat bookmark:", e);
+                localStorage.removeItem('quranBookmark');
+            }
+        }
+
+        window.clearBookmark = (event) => {
+            event.stopPropagation();
+            localStorage.removeItem('quranBookmark');
+            document.getElementById('load-bookmark-container')?.classList.add('hidden');
+        }
 
         function setupDarkMode() {
-            const t = document.getElementById('darkModeToggle'); const s = document.getElementById('sunIcon'); const m = document.getElementById('moonIcon');
-            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) { document.body.classList.add('dark'); m.classList.add('hidden'); s.classList.remove('hidden'); }
-            else { document.body.classList.remove('dark'); s.classList.add('hidden'); m.classList.remove('hidden'); }
-            t.addEventListener('click', () => {
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+            const toggleButton = document.getElementById('darkModeToggle');
+
+            if (!sunIcon || !moonIcon || !toggleButton) return;
+
+            if (localStorage.getItem('theme') === 'dark' || 
+                (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                
+                document.body.classList.add('dark');
+                moonIcon.classList.add('hidden');
+                sunIcon.classList.remove('hidden');
+            } else {
+                document.body.classList.remove('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            }
+
+            toggleButton.addEventListener('click', () => {
                 document.body.classList.toggle('dark');
-                if(document.body.classList.contains('dark')) { m.classList.add('hidden'); s.classList.remove('hidden'); localStorage.setItem('theme','dark'); }
-                else { s.classList.add('hidden'); m.classList.remove('hidden'); localStorage.setItem('theme','light'); }
+
+                if (document.body.classList.contains('dark')) {
+                    moonIcon.classList.add('hidden');
+                    sunIcon.classList.remove('hidden');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    sunIcon.classList.add('hidden');
+                    moonIcon.classList.remove('hidden');
+                    localStorage.setItem('theme', 'light');
+                }
             });
         }
         
-        // --- Checklist Logic ---
         const CHECKLIST_KEY = 'dailyChecklist';
         const OBLIGATORY_PRAYERS = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
-        const SUNNAH_PRAYERS = ['Tahajud', 'Witir', 'Qobliyah Subuh', 'Dhuha', 'Qobliyah Dzuhur', 'Badiyah Dzuhur', 'Qobliyah Ashar', 'Qobliyah Maghrib', 'Badiyah Maghrib', 'Qobliyah Isya', 'Badiyah Isya'];
+        
+        const SUNNAH_PRAYERS = [
+            'Tahajud', 
+            'Witir', 
+            'Qobliyah Subuh', 
+            'Dhuha',
+            'Qobliyah Dzuhur',
+            'Badiyah Dzuhur',
+            'Qobliyah Ashar',
+            'Qobliyah Maghrib',
+            'Badiyah Maghrib',
+            'Qobliyah Isya',
+            'Badiyah Isya'
+        ];
+
 
         function getChecklistState() {
             const today = new Date().toLocaleDateString('id-ID');
-            let data = JSON.parse(localStorage.getItem(CHECKLIST_KEY)) || {};
-            if (data.date !== today || !data.fardu) {
-                data = { date: today, fardu: {}, sunnah: {} };
-                OBLIGATORY_PRAYERS.forEach(p => data.fardu[p] = false); SUNNAH_PRAYERS.forEach(p => data.sunnah[p] = false);
-                localStorage.setItem(CHECKLIST_KEY, JSON.stringify(data));
+            let data;
+            
+            try {
+                data = JSON.parse(localStorage.getItem(CHECKLIST_KEY));
+            } catch (e) {
+                data = null;
             }
-            return data;
+
+            if (data && data.date === today && data.fardu && data.sunnah) {
+                const oldSunnah = data.sunnah;
+                const newSunnah = {};
+                let needsUpdate = false;
+                
+                for (const p of SUNNAH_PRAYERS) {
+                    if (!oldSunnah.hasOwnProperty(p)) {
+                        needsUpdate = true;
+                        break;
+                    }
+                }
+                
+                if (oldSunnah.hasOwnProperty('Rawatib Dzuhur') || oldSunnah.hasOwnProperty('Rawatib Maghrib') || oldSunnah.hasOwnProperty('Rawatib Isya')) {
+                    needsUpdate = true;
+                }
+                
+                if (!needsUpdate) {
+                    return data; 
+                }
+                
+                for (const p of SUNNAH_PRAYERS) {
+                    newSunnah[p] = false;
+                }
+                
+                for (const p in oldSunnah) {
+                    if (newSunnah.hasOwnProperty(p)) { 
+                        newSunnah[p] = oldSunnah[p];
+                    }
+                }
+                
+                if (oldSunnah['Rawatib Dzuhur']) {
+                    newSunnah['Qobliyah Dzuhur'] = oldSunnah['Rawatib Dzuhur'];
+                    newSunnah['Badiyah Dzuhur'] = oldSunnah['Rawatib Dzuhur'];
+                }
+                if (oldSunnah['Rawatib Maghrib']) {
+                    newSunnah['Badiyah Maghrib'] = oldSunnah['Rawatib Maghrib'];
+                }
+                if (oldSunnah['Rawatib Isya']) {
+                    newSunnah['Badiyah Isya'] = oldSunnah['Rawatib Isya'];
+                }
+                
+                data.sunnah = newSunnah;
+                localStorage.setItem(CHECKLIST_KEY, JSON.stringify(data));
+                return data;
+            }
+
+            const newState = {
+                date: today,
+                fardu: {},
+                sunnah: {}
+            };
+            
+            OBLIGATORY_PRAYERS.forEach(p => { newState.fardu[p] = false; });
+            SUNNAH_PRAYERS.forEach(p => { newState.sunnah[p] = false; }); 
+            
+            if (data && data.date === today && data.prayers) {
+                 for (const p in data.prayers) {
+                     if (newState.fardu.hasOwnProperty(p)) {
+                         newState.fardu[p] = data.prayers[p];
+                     }
+                 }
+            }
+            
+            if (data && data.date === today && data.sunnah) {
+                 const oldSunnah = data.sunnah;
+                 for (const p in oldSunnah) {
+                     if (newState.sunnah.hasOwnProperty(p)) {
+                         newState.sunnah[p] = oldSunnah[p];
+                     }
+                 }
+                 if (oldSunnah['Rawatib Dzuhur']) {
+                     newState.sunnah['Qobliyah Dzuhur'] = oldSunnah['Rawatib Dzuhur'];
+                     newState.sunnah['Badiyah Dzuhur'] = oldSunnah['Rawatib Dzuhur'];
+                 }
+                 if (oldSunnah['Rawatib Maghrib']) {
+                     newState.sunnah['Badiyah Maghrib'] = oldSunnah['Rawatib Maghrib'];
+                 }
+                 if (oldSunnah['Rawatib Isya']) {
+                     newState.sunnah['Badiyah Isya'] = oldSunnah['Rawatib Isya'];
+                 }
+            }
+            
+            localStorage.setItem(CHECKLIST_KEY, JSON.stringify(newState));
+            return newState;
         }
 
         function renderChecklist() {
-            const fC = document.getElementById('fardu-checklist'); const sC = document.getElementById('sunnah-checklist');
-            const state = getChecklistState(); document.getElementById('checklist-date').textContent = `Untuk: ${state.date}`;
-            fC.innerHTML = ''; sC.innerHTML = '';
+            const farduContainer = document.getElementById('fardu-checklist');
+            const sunnahContainer = document.getElementById('sunnah-checklist');
+            const dateEl = document.getElementById('checklist-date');
             
-            const makeItem = (p, c, t) => {
-                const pid = p.replace(/\s+/g, '-');
-                return `<label for="check-${pid}" class="flex items-center justify-between w-full p-4 rounded-lg shadow-md cursor-pointer transition-all duration-200 ${c ? 'bg-emerald-50 dark:bg-emerald-900/50 border-l-4 border-emerald-500' : 'bg-white dark:bg-gray-700'}"><span class="text-lg font-semibold text-gray-800 dark:text-gray-100">${p}</span><input type="checkbox" id="check-${pid}" data-prayer="${p}" data-type="${t}" class="checklist-item w-6 h-6 text-emerald-600 rounded focus:ring-emerald-500" ${c ? 'checked' : ''}></label>`;
+            if (!farduContainer || !sunnahContainer || !dateEl) return;
+
+            const state = getChecklistState();
+            dateEl.textContent = `Untuk Hari: ${state.date}`;
+
+            farduContainer.innerHTML = ''; 
+            sunnahContainer.innerHTML = ''; 
+
+            const createItemHtml = (prayer, isChecked, type) => {
+                const prayerId = prayer.replace(/\s+/g, '-'); 
+                
+                return `
+                    <label for="check-${prayerId}" 
+                           class="flex items-center justify-between w-full p-4 rounded-lg shadow-md cursor-pointer transition-all duration-200 
+                                  ${isChecked ? 'bg-emerald-50 dark:bg-emerald-900/50 border-l-4 border-emerald-500' : 'bg-white dark:bg-gray-700'}">
+                        
+                        <span class="text-lg font-semibold text-gray-800 dark:text-gray-100">${prayer}</span>
+                        
+                        <input type="checkbox" id="check-${prayerId}" 
+                               data-prayer="${prayer}" 
+                               data-type="${type}"
+                               class="checklist-item w-6 h-6 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 dark:focus:ring-emerald-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-600 dark:border-gray-500" 
+                               ${isChecked ? 'checked' : ''}>
+                    </label>
+                `;
             };
-            OBLIGATORY_PRAYERS.forEach(p => fC.insertAdjacentHTML('beforeend', makeItem(p, state.fardu[p], 'fardu')));
-            SUNNAH_PRAYERS.forEach(p => sC.insertAdjacentHTML('beforeend', makeItem(p, state.sunnah[p], 'sunnah')));
+
+            OBLIGATORY_PRAYERS.forEach(prayer => {
+                const isChecked = state.fardu[prayer] || false;
+                farduContainer.insertAdjacentHTML('beforeend', createItemHtml(prayer, isChecked, 'fardu'));
+            });
+
+            SUNNAH_PRAYERS.forEach(prayer => {
+                const isChecked = state.sunnah[prayer] || false;
+                sunnahContainer.insertAdjacentHTML('beforeend', createItemHtml(prayer, isChecked, 'sunnah'));
+            });
         }
 
-        document.getElementById('checklist-container')?.addEventListener('change', (e) => {
-            if(e.target.classList.contains('checklist-item')) {
-                const s = getChecklistState(); s[e.target.dataset.type][e.target.dataset.prayer] = e.target.checked;
-                localStorage.setItem(CHECKLIST_KEY, JSON.stringify(s)); renderChecklist();
-            }
-        });
-        document.getElementById('reset-checklist-button')?.addEventListener('click', () => { if(confirm('Reset checklist hari ini?')) { localStorage.removeItem(CHECKLIST_KEY); renderChecklist(); } });
 
-        // --- Navigation ---
-        function toggleView() { stopAudioPlayback();
-            const pV = document.getElementById('prayer-view'); const qV = document.getElementById('quran-view'); const bIcon = document.getElementById('back-to-prayer-icon');
-            if(qV.classList.contains('hidden')) {
-                pV.classList.add('hidden'); qV.classList.remove('hidden'); document.getElementById('checklist-view').classList.add('hidden');
-                document.getElementById('toggle-view-button').classList.add('hidden'); bIcon.classList.remove('hidden'); document.getElementById('checklist-icon-button').classList.add('hidden');
-                if(surahListCache.length === 0) fetchSurahList(); else { document.getElementById('surah-list').classList.remove('hidden'); document.getElementById('ayah-details').classList.add('hidden'); document.getElementById('search-container').classList.remove('hidden'); renderSurahList(surahListCache); }
-                checkAndDisplayBookmarkButton(); history.pushState({ view: 'quranList' }, '', '#quran');
-            } else { history.back(); }
-        }
+        function handleChecklistChange(event) {
+            const checkbox = event.target;
+            const prayerName = checkbox.dataset.prayer;
+            const prayerType = checkbox.dataset.type; 
+            const isChecked = checkbox.checked;
+            
+            const currentState = getChecklistState(); 
 
-        document.getElementById('toggle-view-button')?.addEventListener('click', toggleView);
-        document.getElementById('back-to-prayer-icon')?.addEventListener('click', () => history.back());
-        document.getElementById('checklist-icon-button')?.addEventListener('click', () => {
-            stopAudioPlayback();
-            document.getElementById('prayer-view').classList.add('hidden'); document.getElementById('quran-view').classList.add('hidden'); document.getElementById('checklist-view').classList.remove('hidden');
-            document.getElementById('checklist-icon-button').classList.add('hidden'); document.getElementById('back-to-prayer-icon').classList.remove('hidden'); document.getElementById('toggle-view-button').classList.add('hidden');
-            renderChecklist(); history.pushState({ view: 'checklist' }, '', '#checklist');
-        });
-
-        window.addEventListener('popstate', (e) => {
-            stopAudioPlayback();
-            const view = e.state ? e.state.view : 'prayer';
-            const pV = document.getElementById('prayer-view'), qV = document.getElementById('quran-view'), cV = document.getElementById('checklist-view');
-            const bIcon = document.getElementById('back-to-prayer-icon'), cBtn = document.getElementById('checklist-icon-button'), tBtn = document.getElementById('toggle-view-button');
-            const head = document.getElementById('header-surah-title'), trans = document.getElementById('toggle-translation-button'), book = document.getElementById('bookmark-button');
-
-            [head, trans, book, bIcon, cBtn, pV, qV, cV, tBtn].forEach(el => el?.classList.add('hidden'));
-
-            if(view === 'ayahDetail') {
-                qV.classList.remove('hidden'); document.getElementById('ayah-details').classList.remove('hidden'); document.getElementById('surah-list').classList.add('hidden'); document.getElementById('search-container').classList.add('hidden'); document.getElementById('load-bookmark-container').classList.add('hidden');
-                [bIcon, head, trans, book].forEach(el => el?.classList.remove('hidden'));
-                if(e.state.surahId && (currentSurahId !== e.state.surahId || currentPage !== e.state.page)) renderSurahDetails(e.state.surahId, e.state.simpleName, e.state.arabicName, e.state.page, false);
-            } else if(view === 'quranList') {
-                qV.classList.remove('hidden'); document.getElementById('surah-list').classList.remove('hidden'); document.getElementById('ayah-details').classList.add('hidden'); document.getElementById('search-container').classList.remove('hidden');
-                bIcon.classList.remove('hidden'); checkAndDisplayBookmarkButton();
-                if(surahListCache.length === 0) fetchSurahList(); else renderSurahList(surahListCache);
-            } else if(view === 'checklist') {
-                cV.classList.remove('hidden'); bIcon.classList.remove('hidden'); renderChecklist();
+            if (prayerType === 'fardu' && currentState.fardu.hasOwnProperty(prayerName)) {
+                currentState.fardu[prayerName] = isChecked;
+            } else if (prayerType === 'sunnah' && currentState.sunnah.hasOwnProperty(prayerName)) {
+                currentState.sunnah[prayerName] = isChecked;
             } else {
-                pV.classList.remove('hidden'); tBtn.classList.remove('hidden'); cBtn.classList.remove('hidden');
-                document.getElementById('surah-list').classList.remove('hidden'); document.getElementById('ayah-details').classList.add('hidden');
+                console.warn('Tipe prayer tidak dikenal:', prayerType, prayerName);
+                return;
+            }
+            
+            localStorage.setItem(CHECKLIST_KEY, JSON.stringify(currentState));
+            
+            const label = checkbox.closest('label');
+            if (label) {
+                if (isChecked) {
+                    label.classList.add('bg-emerald-50', 'dark:bg-emerald-900/50', 'border-l-4', 'border-emerald-500');
+                    label.classList.remove('bg-white', 'dark:bg-gray-700');
+                } else {
+                    label.classList.remove('bg-emerald-50', 'dark:bg-emerald-900/50', 'border-l-4', 'border-emerald-500');
+                    label.classList.add('bg-white', 'dark:bg-gray-700');
+                }
+            }
+        }
+        
+        function resetChecklist() {
+             if (confirm('Apakah Anda yakin ingin mereset semua checklist (fardu dan sunnah) untuk hari ini?')) {
+                const today = new Date().toLocaleDateString('id-ID');
+                
+                const newState = {
+                    date: today,
+                    fardu: {},
+                    sunnah: {}
+                };
+                
+                OBLIGATORY_PRAYERS.forEach(p => { newState.fardu[p] = false; });
+                SUNNAH_PRAYERS.forEach(p => { newState.sunnah[p] = false; });
+
+                localStorage.setItem(CHECKLIST_KEY, JSON.stringify(newState));
+                renderChecklist(); 
+             }
+        }
+
+        function showChecklistView() {
+            stopAudioPlayback();
+            document.getElementById('prayer-view')?.classList.add('hidden');
+            document.getElementById('quran-view')?.classList.add('hidden');
+            document.getElementById('checklist-view')?.classList.remove('hidden');
+
+            document.getElementById('checklist-icon-button')?.classList.add('hidden');
+            document.getElementById('back-to-prayer-icon')?.classList.remove('hidden');
+
+            document.getElementById('toggle-view-button')?.classList.add('hidden');
+            document.getElementById('header-surah-title')?.classList.add('hidden');
+            document.getElementById('bookmark-button')?.classList.add('hidden');
+            document.getElementById('toggle-translation-button')?.classList.add('hidden');
+
+            renderChecklist(); 
+            history.pushState({ view: 'checklist' }, 'Checklist Shalat', '#checklist');
+        }
+        
+
+        function toggleView() {
+            stopAudioPlayback();
+            
+            const prayerView = document.getElementById('prayer-view');
+            const quranView = document.getElementById('quran-view');
+            const toggleButton = document.getElementById('toggle-view-button');
+            const backToPrayerIcon = document.getElementById('back-to-prayer-icon');
+            const searchContainerEl = document.getElementById('search-container');
+            const headerSurahTitleEl = document.getElementById('header-surah-title');
+
+            const isQuranVisible = quranView.classList.contains('hidden');
+            
+            if (isQuranVisible) {
+                prayerView.classList.add('hidden');
+                quranView.classList.remove('hidden');
+                document.getElementById('checklist-view')?.classList.add('hidden'); 
+                
+                toggleButton.classList.add('hidden');
+                
+                backToPrayerIcon.classList.remove('hidden'); 
+                document.getElementById('checklist-icon-button')?.classList.add('hidden'); 
+
+                if (translationToggleButton) {
+                    translationToggleButton.classList.add('hidden');
+                }
+                if (bookmarkButton) {
+                    bookmarkButton.classList.add('hidden');
+                }
+                if (headerSurahTitleEl) {
+                    headerSurahTitleEl.classList.add('hidden');
+                    headerSurahTitleEl.textContent = '';
+                }
+
+                if (surahListCache.length === 0) {
+                    fetchSurahList();
+                } else {
+                    document.getElementById('surah-list')?.classList.remove('hidden');
+                    document.getElementById('ayah-details')?.classList.add('hidden');
+                    searchContainerEl.classList.remove('hidden');
+                    renderSurahList(surahListCache);
+                }
+                checkAndDisplayBookmarkButton();
+                
+                history.pushState({ view: 'quranList' }, 'Daftar Surah', '#quran');
+
+            } else {
+                quranView.classList.add('hidden');
+                prayerView.classList.remove('hidden');
+                document.getElementById('checklist-view')?.classList.add('hidden'); 
+
+                toggleButton.classList.remove('hidden');
+
+                backToPrayerIcon.classList.add('hidden'); 
+                document.getElementById('checklist-icon-button')?.classList.remove('hidden'); 
+                
+                if (translationToggleButton) {
+                    translationToggleButton.classList.add('hidden');
+                }
+                if (bookmarkButton) {
+                    bookmarkButton.classList.add('hidden');
+                }
+                if (headerSurahTitleEl) {
+                    headerSurahTitleEl.classList.add('hidden');
+                    headerSurahTitleEl.textContent = '';
+                }
+                
+                document.getElementById('surah-list')?.classList.remove('hidden');
+                searchContainerEl.classList.remove('hidden');
+                document.getElementById('ayah-details')?.classList.add('hidden');
+            }
+        }
+
+
+        function handleHeaderBack() {
+             history.back();
+        }
+
+        function handleHistoryChange(state) {
+            stopAudioPlayback();
+            
+            const prayerView = document.getElementById('prayer-view');
+            const quranView = document.getElementById('quran-view');
+            const checklistView = document.getElementById('checklist-view'); 
+            
+            const toggleButton = document.getElementById('toggle-view-button');
+            const backToPrayerIcon = document.getElementById('back-to-prayer-icon');
+            const checklistButton = document.getElementById('checklist-icon-button'); 
+            
+            const headerSurahTitleEl = document.getElementById('header-surah-title');
+            const translationToggleButton = document.getElementById('toggle-translation-button');
+            const bookmarkButton = document.getElementById('bookmark-button');
+            const searchContainerEl = document.getElementById('search-container');
+
+            backToPrayerIcon?.classList.add('hidden');
+            checklistButton?.classList.add('hidden');
+            headerSurahTitleEl?.classList.add('hidden');
+            translationToggleButton?.classList.add('hidden');
+            bookmarkButton?.classList.add('hidden');
+            
+            prayerView?.classList.add('hidden');
+            quranView?.classList.add('hidden');
+            checklistView?.classList.add('hidden');
+            toggleButton?.classList.add('hidden');
+
+
+            const view = state ? state.view : 'prayer';
+
+            if (view === 'ayahDetail') {
+                quranView?.classList.remove('hidden');
+                
+                document.getElementById('surah-list')?.classList.add('hidden');
+                searchContainerEl?.classList.add('hidden');
+                document.getElementById('load-bookmark-container')?.classList.add('hidden');
+                document.getElementById('ayah-details')?.classList.remove('hidden');
+
+                backToPrayerIcon?.classList.remove('hidden');
+                headerSurahTitleEl?.classList.remove('hidden');
+                translationToggleButton?.classList.remove('hidden');
+                bookmarkButton?.classList.remove('hidden');
+
+                if (state.surahId && (currentSurahId !== state.surahId || currentPage !== state.page)) {
+                    renderSurahDetails(state.surahId, state.simpleName, state.arabicName, state.page, false);
+                }
+
+            } else if (view === 'quranList') {
+                quranView?.classList.remove('hidden');
+
+                document.getElementById('surah-list')?.classList.remove('hidden');
+                searchContainerEl?.classList.remove('hidden');
+                checkAndDisplayBookmarkButton(); 
+                document.getElementById('ayah-details')?.classList.add('hidden');
+
+                backToPrayerIcon?.classList.remove('hidden');
+                if (surahListCache.length === 0) { 
+                    fetchSurahList(); 
+                } else {
+                    renderSurahList(surahListCache); 
+                }
+            
+            } else if (view === 'checklist') { 
+                checklistView?.classList.remove('hidden');
+                backToPrayerIcon?.classList.remove('hidden');
+                renderChecklist(); 
+
+            } else { 
+                prayerView?.classList.remove('hidden');
+                toggleButton?.classList.remove('hidden');
+                checklistButton?.classList.remove('hidden');
+
+                document.getElementById('surah-list')?.classList.remove('hidden');
+                searchContainerEl?.classList.remove('hidden');
+                document.getElementById('ayah-details')?.classList.add('hidden');
                 checkAndDisplayBookmarkButton();
             }
-        });
+        }
 
         async function startApp() {
+            window.addEventListener('popstate', (event) => {
+                handleHistoryChange(event.state);
+            });
+            
             const hash = window.location.hash;
-            let init = { view: 'prayer' };
-            if(hash.startsWith('#surah/')) {
-                const p = hash.split('/'); 
-                init = { view: 'quranList' };
-                if(surahListCache.length === 0) await fetchSurahList();
-                const s = surahListCache.find(x => x.id == p[1]);
-                if(s) { renderSurahDetails(s.id, s.name_simple, s.name_arabic, p[3]?parseInt(p[3]):1, true); return; }
-            } else if(hash === '#quran') init = { view: 'quranList' };
-            else if(hash === '#checklist') init = { view: 'checklist' };
+            let initialState = { view: 'prayer' };
 
-            history.replaceState(init, '', window.location.pathname + window.location.search + hash);
-            // Trigger manual popstate logic without firing event
-            window.dispatchEvent(new PopStateEvent('popstate', { state: init }));
+            if (hash.startsWith('#surah/')) {
+                const parts = hash.split('/');
+                if (parts.length >= 2) {
+                    const surahId = parseInt(parts[1]);
+                    let page = 1;
+                    if (parts.length >= 4 && parts[2] === 'page') {
+                        page = parseInt(parts[3]);
+                    }
+                    
+                    initialState = { view: 'quranList' };
+                    
+                    if (surahListCache.length === 0) {
+                         await fetchSurahList();
+                    }
+                    
+                    const surahInfo = surahListCache.find(s => s.id === surahId);
+                    if (surahInfo) {
+                         renderSurahDetails(surahId, surahInfo.name_simple, surahInfo.name_arabic, page, true); 
+                         return; 
+                    }
+                }
+            } else if (hash === '#quran') {
+                initialState = { view: 'quranList' };
+            } else if (hash === '#checklist') { 
+                initialState = { view: 'checklist' };
+            }
+
+            history.replaceState(initialState, '', window.location.pathname + window.location.search + hash);
+            handleHistoryChange(initialState);
             
             await loadPrayerTimesForLocation();
+            
             prayerInterval = setInterval(updateUI, 1000);
             
+            document.getElementById('toggle-view-button')?.addEventListener('click', toggleView);
+            document.getElementById('back-to-prayer-icon')?.addEventListener('click', handleHeaderBack);
+            
+            document.getElementById('checklist-icon-button')?.addEventListener('click', showChecklistView);
+            document.getElementById('checklist-container')?.addEventListener('change', (event) => {
+                if (event.target.classList.contains('checklist-item')) {
+                    handleChecklistChange(event);
+                }
+            });
+            document.getElementById('reset-checklist-button')?.addEventListener('click', resetChecklist);
+            
+            
+            document.getElementById('location-change-button')?.addEventListener('click', handleChangeLocation);
+            document.getElementById('location-input')?.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    handleChangeLocation();
+                }
+            });
+
+            if (surahListCache.length === 0) {
+            }
+            
+            updateTranslationButtonUI();
+            
             document.getElementById('bookmark-button')?.addEventListener('click', saveBookmark);
+            document.getElementById('load-bookmark-button')?.addEventListener('click', loadBookmark);
+            checkAndDisplayBookmarkButton();
+            
             setupAudioPlayerListeners();
-            if(restoredAudioSrc) {
-                const btn = document.querySelector(`[data-audio-url="${restoredAudioSrc}"]`);
-                if(btn) playAudio(restoredAudioSrc, btn); else { globalAudioPlayer.play().catch(()=>{}); showMiniPlayer("Audio Dipulihkan", " "); if(miniPlayerToggle) miniPlayerToggle.innerHTML = pauseIconSvg; }
+            
+            if (restoredAudioSrc) {
+                const matchingButton = document.querySelector(`[data-audio-url="${restoredAudioSrc}"]`);
+                if (matchingButton) {
+                    playAudio(restoredAudioSrc, matchingButton);
+                } else {
+                     globalAudioPlayer.play().catch(e => { });
+                     showMiniPlayer("Audio Dipulihkan", " ");
+                     if (miniPlayerToggle) miniPlayerToggle.innerHTML = pauseIconSvg;
+                }
             }
         }
 
+
         window.onload = () => {
-            const s = sessionStorage.getItem('lastAudioSrc'); const t = sessionStorage.getItem('lastAudioTime');
-            if(s && t) { restoredAudioSrc = s; restoredAudioTime = parseFloat(t); globalAudioPlayer.src = s; globalAudioPlayer.currentTime = restoredAudioTime; }
-            setupDarkMode(); initializeFirebaseAndAuth();
+             const savedSrc = sessionStorage.getItem('lastAudioSrc');
+             const savedTime = sessionStorage.getItem('lastAudioTime');
+
+             if (savedSrc && savedTime) {
+                restoredAudioSrc = savedSrc;
+                restoredAudioTime = parseFloat(savedTime);
+                
+                globalAudioPlayer.src = restoredAudioSrc;
+                globalAudioPlayer.currentTime = restoredAudioTime;
+
+                sessionStorage.removeItem('lastAudioSrc');
+                sessionStorage.removeItem('lastAudioTime');
+             }
+
+             setupDarkMode(); 
+             initializeFirebaseAndAuth(); 
         }
 
-    // ======================================================
-    // === 100 WAWASAN ISLAM (DATABASE LOKAL) ===
-    // ======================================================
-    const ISLAMIC_FACTS_DB = [
+    // === [TAMBAHAN DARI KODE 1: LOGIKA JAVASCRIPT SPLASH SCREEN] ===
+    const ISLAMIC_BACKUP_FACTS = [
         "Masjid Quba adalah masjid pertama yang dibangun Rasulullah SAW.",
         "Al-Khawarizmi adalah bapak penemu Aljabar dan angka nol.",
         "Universitas Al-Qarawiyyin (Maroko) adalah universitas tertua di dunia (859 M).",
-        "Ibnu Sina (Avicenna) menulis 'Al-Qanun fi al-Tibb', rujukan medis dunia selama berabad-abad.",
-        "Kata 'Kamera' berasal dari bahasa Arab 'Qamara' (ruang gelap) penemuan Ibnu al-Haytham.",
-        "Surah Al-Baqarah adalah surah terpanjang dalam Al-Qur'an dengan 286 ayat.",
-        "Air Zamzam tidak pernah kering sejak zaman Nabi Ismail AS hingga sekarang.",
-        "Nabi Muhammad SAW menerima wahyu pertama di Gua Hira pada usia 40 tahun.",
-        "Khalifah Umar bin Khattab adalah yang pertama kali menetapkan kalender Hijriah.",
-        "Zakat adalah rukun Islam ketiga, berfungsi membersihkan harta dan jiwa.",
-        "Shalat Jenazah tidak memiliki gerakan ruku' dan sujud.",
-        "Ka'bah pernah dibangun ulang oleh Nabi Ibrahim AS dan Nabi Ismail AS.",
-        "Al-Jazari adalah penemu sistem engkol dan robotika awal pada masa kejayaan Islam.",
-        "Kata 'Coffee' (Kopi) berasal dari bahasa Arab 'Qahwa'.",
-        "Wanita pertama yang syahid dalam Islam adalah Sumayyah binti Khayyat.",
-        "Bilal bin Rabah adalah muadzin pertama dalam sejarah Islam.",
-        "Al-Qur'an diturunkan secara bertahap selama kurang lebih 23 tahun.",
-        "Perang Badar terjadi pada bulan Ramadhan tahun ke-2 Hijriah.",
-        "Masjid Al-Aqsa di Palestina adalah kiblat pertama umat Islam.",
-        "Nama 'Muhammad' adalah nama yang paling banyak digunakan di dunia.",
-        "Surah Al-Kautsar adalah surah terpendek dalam Al-Qur'an (3 ayat).",
-        "Idul Fitri dirayakan pada tanggal 1 Syawal.",
-        "Puasa Arafah dapat menghapus dosa setahun yang lalu dan setahun yang akan datang.",
-        "Imam Bukhari mengumpulkan ribuan hadits shahih setelah menyeleksi ratusan ribu riwayat.",
-        "Kata 'Alcohol' berasal dari bahasa Arab 'Al-Kuhl'.",
-        "Jabir bin Hayyan dikenal sebagai bapak Kimia modern.",
-        "Sultan Mehmed II (Al-Fatih) menaklukkan Konstantinopel pada usia 21 tahun.",
-        "Maryam (Ibu Nabi Isa) adalah satu-satunya wanita yang namanya disebut sebagai nama Surah.",
-        "Nabi Idris AS adalah nabi pertama yang pandai menulis dan menjahit.",
-        "Malaikat Jibril bertugas menyampaikan wahyu kepada para nabi.",
-        "Al-Zahrawi adalah bapak ilmu bedah modern yang menemukan banyak alat bedah.",
-        "Hajar Aswad dipercaya berasal dari surga.",
-        "Shalat lima waktu diwajibkan pada peristiwa Isra Mi'raj.",
-        "Nabi Sulaiman AS memiliki kemampuan berbicara dengan hewan dan mengendalikan angin.",
-        "Kota Madinah dulunya bernama Yatsrib sebelum hijrah Nabi.",
-        "Sahabat Abu Bakar As-Siddiq adalah khalifah pertama setelah wafatnya Rasulullah.",
-        "Surah Al-Fatihah disebut juga Ummul Kitab (Induk Al-Qur'an).",
-        "Thawaf dilakukan dengan mengelilingi Ka'bah sebanyak 7 kali putaran.",
-        "Sa'i adalah lari-lari kecil antara bukit Shafa dan Marwah.",
-        "Nabi Yunus AS pernah ditelan oleh ikan paus (Nun) dan selamat.",
-        "Abbas ibn Firnas adalah orang pertama yang mencoba terbang dengan alat buatan sendiri (parasut).",
-        "Rumah sakit jiwa pertama di dunia didirikan di Baghdad pada abad ke-8.",
-        "Perpustakaan 'Bayt al-Hikmah' di Baghdad adalah pusat ilmu pengetahuan dunia pada masanya.",
-        "Ibnu Batutah adalah penjelajah muslim yang berkeliling dunia lebih jauh dari Marco Polo.",
-        "Shalat Tahajud adalah shalat sunnah yang paling utama setelah shalat fardu.",
-        "Asmaul Husna berjumlah 99 nama baik Allah SWT.",
-        "Nabi Yusuf AS memiliki ketampanan separuh dari ketampanan seluruh manusia.",
-        "Surah Yasin sering disebut sebagai jantungnya Al-Qur'an.",
-        "Ayat Kursi terdapat dalam Surah Al-Baqarah ayat 255.",
-        "Utsman bin Affan adalah sahabat yang menikahi dua putri Rasulullah (Dzun Nurain).",
-        "Ali bin Abi Thalib adalah sepupu sekaligus menantu Rasulullah SAW.",
-        "Nabi Daud AS memiliki suara yang sangat merdu dan mukjizat melunakkan besi.",
-        "Masjid Nabawi di Madinah memiliki makam Rasulullah SAW.",
-        "Ar-Razi (Rhazes) adalah dokter muslim pertama yang membedakan cacar dan campak.",
-        "Laksamana Cheng Ho adalah penjelajah muslim China yang menyebarkan Islam di Nusantara.",
-        "Islam masuk ke Indonesia diperkirakan sejak abad ke-7 Masehi.",
-        "Wali Songo berperan besar dalam penyebaran Islam di tanah Jawa.",
-        "Shalat Dhuha adalah sedekah bagi setiap persendian tubuh manusia.",
-        "Malam Lailatul Qadar lebih baik dari seribu bulan.",
-        "Puasa Senin-Kamis adalah kebiasaan Rasulullah SAW.",
-        "Nabi Nuh AS berdakwah selama 950 tahun namun hanya sedikit yang beriman.",
-        "Firaun tenggelam di Laut Merah saat mengejar Nabi Musa AS.",
-        "Gunung Uhud adalah gunung yang ada di surga, menurut sabda Nabi.",
-        "Sumur Utsman (Bi'ru Rumah) di Madinah masih ada dan diwakafkan hingga hari ini.",
-        "Imam Syafi'i hafal Al-Qur'an pada usia 7 tahun.",
-        "Salahuddin Al-Ayyubi dikenal karena kemuliaan hatinya bahkan terhadap musuh Perang Salib.",
-        "Ibnu Khaldun dianggap sebagai bapak Sosiologi dan Historiografi.",
-        "Pencipta peta dunia globe pertama yang akurat adalah Al-Idrisi.",
-        "Sikat gigi modern berevolusi dari konsep Siwak (Miswak) yang digunakan Nabi.",
-        "Nabi Ayyub AS diuji dengan penyakit kulit parah dan kehilangan harta namun tetap sabar.",
-        "Khadijah binti Khuwailid adalah orang pertama yang masuk Islam.",
-        "Aisyah binti Abu Bakar adalah perawi hadits wanita terbanyak.",
-        "Nabi Isa AS akan turun kembali ke bumi menjelang hari kiamat.",
-        "Dajjal akan muncul dari arah timur (Khurasan/Isfahan).",
-        "Yajuj dan Majuj terkurung oleh tembok yang dibangun Zulkarnain.",
-        "Malaikat Israfil bertugas meniup sangkakala pada hari kiamat.",
-        "Neraka paling ringan siksanya diperuntukkan bagi paman Nabi, Abu Thalib.",
-        "Surga memiliki 8 pintu, salah satunya pintu Ar-Rayyan khusus orang yang berpuasa.",
-        "Air wudhu dapat menggugurkan dosa-dosa kecil dari anggota tubuh yang dibasuh.",
-        "Senyum kepada saudara sesama muslim adalah sedekah.",
-        "Kebersihan adalah sebagian dari iman.",
-        "Nabi Ibrahim AS disebut Khalilullah (Kekasih Allah).",
-        "Nabi Musa AS disebut Kalimullah (Orang yang diajak bicara Allah).",
-        "Al-Fatihah wajib dibaca dalam setiap rakaat shalat.",
-        "Gerakan shalat diakhiri dengan salam ke kanan dan ke kiri.",
-        "Masjidil Haram di Mekkah adalah masjid terbesar di dunia.",
-        "Hukum menuntut ilmu adalah wajib bagi setiap muslim laki-laki dan perempuan.",
-        "Riba sangat dilarang keras dalam Islam karena merugikan.",
-        "Daging babi dan darah haram dikonsumsi umat Islam.",
-        "Hewan yang disembelih harus menyebut nama Allah (Bismillah).",
-        "Jumat adalah hari raya pekanan bagi umat Islam.",
-        "Adzan adalah panggilan shalat yang dikumandangkan 5 kali sehari.",
-        "Iqamah adalah tanda shalat akan segera dimulai.",
-        "Imam adalah pemimpin dalam shalat berjamaah.",
-        "Makmum Masbuq adalah makmum yang tertinggal rakaat shalat.",
-        "Sujud Tilawah dilakukan saat mendengar atau membaca ayat Sajdah.",
-        "Zakat Fitrah wajib dikeluarkan sebelum shalat Idul Fitri.",
-        "Ibadah Haji wajib bagi yang mampu sekali seumur hidup.",
-        "Padang Mahsyar adalah tempat berkumpulnya manusia setelah dibangkitkan.",
-        "Syafaat terbesar di hari kiamat adalah milik Nabi Muhammad SAW."
+        "Ibnu Sina (Avicenna) menulis 'Al-Qanun fi al-Tibb', rujukan medis dunia.",
+        "Kata 'Kamera' berasal dari bahasa Arab 'Qamara' (ruang gelap).",
+        "Surah Al-Baqarah adalah surah terpanjang dengan 286 ayat.",
+        "Air Zamzam tidak pernah kering sejak zaman Nabi Ismail AS."
     ];
-    
+    const ISLAMIC_KEYWORDS = ["islam", "muslim", "nabi", "rasulullah", "muhammad saw", "allah", "khalifah", "masjid", "mekkah", "madinah", "quran", "hadits", "ulama", "sultan"];
     const INDONESIAN_MONTHS = ["Muharram", "Shafar", "Rabiul Awal", "Rabiul Akhir", "Jumadil Awal", "Jumadil Akhir", "Rajab", "Sya'ban", "Ramadhan", "Syawal", "Dzulqa'dah", "Dzulhijjah"];
 
     async function loadIslamicHistory() {
+        const today = new Date();
         const displayEl = document.getElementById('islamic-history-text');
         const dateEl = document.getElementById('hijri-date-display');
         
-        displayEl.innerHTML = `<span class="animate-pulse text-gray-300 italic">Memuat wawasan...</span>`;
+        displayEl.innerHTML = `<span class="animate-pulse text-gray-300 italic">Mencari sejarah Islam hari ini...</span>`;
 
         try {
-            // 1. Get Hijri Date
-            const today = new Date();
             const dd = String(today.getDate()).padStart(2, '0');
             const mm = String(today.getMonth() + 1).padStart(2, '0');
             const yyyy = today.getFullYear();
@@ -990,23 +1805,33 @@
             const hYear = hijriData.data.hijri.year;
             const hMonthName = INDONESIAN_MONTHS[hMonthIndex] || hijriData.data.hijri.month.en;
 
-            dateEl.textContent = `${hDay} ${hMonthName} ${hYear} H`;
+            dateEl.textContent = ` ${hDay} ${hMonthName} ${hYear} H`;
 
-            // 2. [PERUBAHAN] Get Random Fact from Local DB (No Wikipedia Fetch)
-            const randomIndex = Math.floor(Math.random() * ISLAMIC_FACTS_DB.length);
-            const selectedFact = ISLAMIC_FACTS_DB[randomIndex];
+            const url = `https://id.wikipedia.org/api/rest_v1/feed/onthisday/events/${today.getMonth()+1}/${today.getDate()}`;
+            const res = await fetch(url);
+            if(!res.ok) throw new Error("Wiki Fail");
+            const data = await res.json();
+            
+            let found = [];
+            if(data.events) {
+                found = data.events.filter(e => {
+                    const txt = e.text.toLowerCase();
+                    return ISLAMIC_KEYWORDS.some(k => txt.includes(k));
+                });
+            }
 
-            displayEl.innerHTML = `<span class="text-emerald-300 font-bold text-xs uppercase tracking-wider mb-1 block">Tahukah Anda?</span><span class="italic text-white">"${selectedFact}"</span>`;
+            if(found.length > 0) {
+                const ev = found[Math.floor(Math.random() * found.length)];
+                displayEl.innerHTML = `<span class="text-emerald-300 font-bold text-xs uppercase tracking-wider mb-1 block">Sejarah Hari Ini (${ev.year}):</span><span class="italic text-white">"${ev.text.replace(/\[.*?\]/g, "")}"</span>`;
+            } else { throw new Error("No event"); }
 
         } catch(e) {
-            // Fallback total
-            const randomIndex = Math.floor(Math.random() * ISLAMIC_FACTS_DB.length);
-            displayEl.innerHTML = `<span class="text-emerald-300 font-bold text-xs uppercase tracking-wider mb-1 block">Wawasan Islam</span><span class="italic text-white">"${ISLAMIC_FACTS_DB[randomIndex]}"</span>`;
+            const fact = ISLAMIC_BACKUP_FACTS[today.getDate() % ISLAMIC_BACKUP_FACTS.length];
+            displayEl.innerHTML = `<span class="text-emerald-300 font-bold text-xs uppercase tracking-wider mb-1 block">Tahukah Anda?</span><span class="italic text-white">"${fact}"</span>`;
             if(dateEl.textContent === '-') dateEl.textContent = "Kalender Hijriah";
         }
     }
 
-    // --- FUNGSI COUNTDOWN & LOAD ---
     (function() {
         const targetDate = new Date("Feb 18, 2026 00:00:00").getTime();
         const timerEl = document.getElementById("ramadhan-timer");
@@ -1035,15 +1860,34 @@
     window.enterFullScreenApp = function() {
         const elem = document.documentElement;
         const overlay = document.getElementById('fullscreen-overlay');
+        
         if (elem.requestFullscreen) { elem.requestFullscreen().catch(e => console.log(e)); } 
         else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+        
         overlay.style.opacity = '0';
         overlay.style.pointerEvents = 'none';
-        setTimeout(() => { overlay.remove(); document.body.classList.remove('overflow-hidden'); }, 700);
+        setTimeout(() => { 
+            overlay.remove(); 
+            document.body.classList.remove('overflow-hidden'); 
+        }, 700);
     };
-    </script>
+    // === [AKHIR TAMBAHAN JAVASCRIPT] ===
 
+    </script>
+    
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker berhasil didaftarkan. Scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Registrasi Service Worker gagal:', error);
+                    });
+            });
+        }
+    </script>
     </body>
 </html>
-
 
