@@ -1805,7 +1805,7 @@
             const hYear = hijriData.data.hijri.year;
             const hMonthName = INDONESIAN_MONTHS[hMonthIndex] || hijriData.data.hijri.month.en;
 
-            dateEl.textContent = `?? ${hDay} ${hMonthName} ${hYear} H`;
+            dateEl.textContent = ` ${hDay} ${hMonthName} ${hYear} H`;
 
             const url = `https://id.wikipedia.org/api/rest_v1/feed/onthisday/events/${today.getMonth()+1}/${today.getDate()}`;
             const res = await fetch(url);
@@ -1890,3 +1890,4 @@
     </script>
     </body>
 </html>
+
