@@ -8,69 +8,65 @@
     <meta name="theme-color" content="#10b981">
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
         /* Menggunakan font Inter */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
+        
+        /* === [TAMBAHAN DARI KODE 1: FONT UNTUK SPLASH SCREEN] === */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Amiri&display=swap'); 
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6; /* Warna latar terang */
+            background-color: #f3f4f6; 
             color: #1f2937;
             transition: background-color 0.3s, color 0.3s;
-            
-            /* [PERUBAHAN] Hapus 'height: 100vh;' (sudah ada min-h-screen di class body) */
-            /* height: 100vh; */ 
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* Dark Mode Styles: Kontras Ditingkatkan */
+        /* Dark Mode Styles */
         body.dark {
-            background-color: #111827; /* Gray 900 - Latar gelap lebih dalam */
+            background-color: #111827; 
             color: #f3f4f6;
         }
         body.dark #app-container {
-            background-color: #1f2937; /* Gray 800 - Kartu utama lebih terang sedikit untuk kontras*/
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.7), 0 4px 6px -2px rgba(0, 0, 0, 0.3); /* Bayangan lebih gelap */
+            background-color: #1f2937; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.7), 0 4px 6px -2px rgba(0, 0, 0, 0.3); 
         }
         
-        /* [PERUBAHAN] Kontainer utama dibuat 100% tinggi viewport */
         #app-container {
             display: flex;
             flex-direction: column;
-            /* [PERUBAHAN] Hapus flex-grow dan set tinggi 100vh */
-            /* flex-grow: 1; */ 
             height: 100vh;
         }
         
-        /* Style untuk waktu sholat yang sedang berlangsung/berikutnya di daftar 2 kolom */
         .is-next-prayer {
-            /* Warna Amber/Emas Muda untuk Light Mode */
-            background-color: #fffbeb; /* Amber 50 */
-            border-left: 5px solid #f59e0b; /* Amber 500 */
+            background-color: #fffbeb; 
+            border-left: 5px solid #f59e0b; 
             font-weight: 700;
             transform: scale(1.02);
             transition: all 0.3s ease;
         }
 
-        /* PERBAIKAN FONT UNTUK KETERBACAAN DI MODE TERANG */
         .is-next-prayer .prayer-name,
         .is-next-prayer .prayer-time {
-            color: #1f2937 !important; /* Warna teks gelap (hampir hitam) untuk kontras di latar Amber 50 */
+            color: #1f2937 !important; 
         }
 
         body.dark .is-next-prayer {
-            /* Warna Amber Transparan untuk Dark Mode */
-            background-color: #fbbf2430; /* Amber 400 dengan transparansi */
-            border-left: 5px solid #fbbf24; /* Amber 400 */
+            background-color: #fbbf2430; 
+            border-left: 5px solid #fbbf24; 
         }
-        /* Memastikan teks tetap terlihat dengan warna light di Dark Mode saat disorot */
         body.dark .is-next-prayer .prayer-name,
         body.dark .is-next-prayer .prayer-time {
-            color: #fef3c7 !important; /* Teks kuning sangat muda/putih untuk kontras di latar gelap */
+            color: #fef3c7 !important; 
         }
         
-        /* Hover pada item daftar */
         .prayer-list-item {
             transition: all 0.3s ease;
         }
@@ -82,19 +78,16 @@
              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
         }
 
-        /* Style untuk tombol Toggle */
         #darkModeToggle {
              transition: background-color 0.15s, color 0.15s, transform 0.15s;
         }
         
-        /* Warna Khusus untuk Display Waktu Sholat Berikutnya (Maghrib/Senja - Kuning Keemasan) */
         .next-prayer-highlight {
-            background-color: #f59e0b; /* Amber 500 */
-            color: #fff; /* Teks putih untuk kontras maksimal di kartu utama */
+            background-color: #f59e0b; 
+            color: #fff; 
             box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.5), 0 2px 4px -2px rgba(245, 158, 11, 0.3);
         }
 
-        /* Gaya Khusus untuk Teks Arab */
         .ayah-arabic {
             font-family: 'Traditional Arabic', 'Amiri', serif;
             font-size: 1.5rem; 
@@ -102,7 +95,6 @@
             text-align: right;
         }
 
-        /* Styling Tombol Surah */
         .surah-button {
             transition: background-color 0.2s;
             border-radius: 0.5rem;
@@ -114,16 +106,15 @@
             align-items: center;
         }
         .surah-button:hover {
-            background-color: #f9fafb; /* Gray 50 */
+            background-color: #f9fafb; 
         }
         body.dark .surah-button:hover {
-            background-color: #374151; /* Gray 700 */
+            background-color: #374151; 
         }
         
-        /* Gaya untuk elemen terjemahan */
         .translation-text {
             transition: opacity 0.3s ease;
-            max-height: 1000px; /* Nilai besar agar terlihat transisi */
+            max-height: 1000px; 
         }
         .translation-text.hidden {
             opacity: 0;
@@ -131,11 +122,61 @@
             padding-top: 0 !important;
             padding-bottom: 0 !important;
         }
+
+        /* === [TAMBAHAN DARI KODE 1: CSS UNTUK SPLASH SCREEN] === */
+        .font-serif-display { font-family: 'Playfair Display', serif; }
+        
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slide-down { animation: slideDown 0.8s ease-out forwards; }
+
+        #fullscreen-overlay {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2310b981' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center">
 
-    <div id="app-container" class="w-full max-w-md mx-auto bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl transition-colors duration-300 flex flex-col">
+<div id="fullscreen-overlay" onclick="enterFullScreenApp()" class="fixed inset-0 z-[9999] bg-slate-900 flex flex-col justify-between items-center text-white cursor-pointer transition-opacity duration-700 select-none overflow-hidden py-12 md:py-16">
+    
+    <div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-emerald-900/40 to-transparent pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-slate-950/90 to-transparent pointer-events-none"></div>
+
+    <div class="text-center relative z-20 w-full px-4 animate-slide-down flex-shrink-0">
+        <p class="text-xs md:text-sm text-emerald-400 mb-2 uppercase tracking-[0.3em] font-semibold opacity-80">Menuju Bulan Suci</p>
+        <h1 class="text-4xl md:text-6xl font-black font-serif-display text-transparent bg-clip-text bg-gradient-to-r from-white via-emerald-100 to-white mb-2 drop-shadow-xl">RAMADHAN 1447 H</h1>
+        <p class="text-[10px] md:text-xs text-slate-300 mb-6 font-mono tracking-widest opacity-60">Estimasi: 18 Februari 2026</p>
+        <div id="ramadhan-timer" class="flex flex-wrap justify-center items-center gap-3 md:gap-6">
+            <div class="animate-pulse text-gray-400 text-sm font-mono">Memuat waktu...</div>
+        </div>
+    </div>
+
+    <div class="flex-grow flex flex-col items-center justify-center w-full z-20 group my-4">
+        
+        <div class="mb-6 relative inline-flex items-center justify-center animate-bounce">
+             <div class="absolute -inset-8 bg-emerald-500/20 rounded-full blur-2xl opacity-70 group-hover:opacity-100 transition-opacity duration-500"></div>
+             <i class="fas fa-fingerprint text-7xl md:text-8xl text-emerald-400 relative z-10 drop-shadow-[0_0_25px_rgba(52,211,153,0.6)]"></i>
+        </div>
+
+        <h2 class="text-2xl md:text-4xl font-black text-white uppercase tracking-[0.15em] mb-2 drop-shadow-lg leading-none">KETUK LAYAR</h2>
+        <p class="text-xs md:text-sm text-emerald-200/80 font-medium tracking-wider uppercase">untuk masuk aplikasi</p>
+    </div>
+
+    <div class="relative z-30 w-full px-6 flex justify-center max-w-lg mx-auto flex-shrink-0">
+        <div class="w-full group relative">
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-emerald-600 to-teal-900 rounded-xl blur opacity-20 transition duration-200"></div>
+            <div class="relative bg-slate-900/80 backdrop-blur-md border-t border-emerald-500/30 p-4 text-center rounded-xl">
+                <div class="flex items-center justify-center gap-2 mb-2">
+                    <i class="fas fa-history text-emerald-400 text-xs"></i>
+                    <span class="text-[10px] font-bold tracking-widest uppercase text-emerald-400">Wawasan Islam Hari Ini</span>
+                    <span class="text-gray-600 text-[10px]">|</span>
+                    <span id="hijri-date-display" class="text-emerald-200 text-[10px] font-mono tracking-wider font-bold">-</span>
+                </div>
+                <p id="islamic-history-text" class="text-xs md:text-sm text-gray-200 font-serif italic leading-relaxed">"Memuat wawasan sejarah..."</p>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="app-container" class="w-full max-w-md mx-auto bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl transition-colors duration-300 flex flex-col">
         
         <header class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-4">
             
@@ -345,9 +386,9 @@
 
         // --- State Audio Global ---
         let globalAudioPlayer = new Audio();
-        let currentPlayingButton = null; // Melacak tombol yang sedang memutar audio
+        let currentPlayingButton = null; 
         
-        // [BARU] Mini Player Elements
+        // Mini Player Elements
         let miniPlayer = null;
         let miniPlayerTitle = null;
         let miniPlayerSubtitle = null;
@@ -358,26 +399,18 @@
         let restoredAudioSrc = null;
         let restoredAudioTime = 0;
 
-        // Simpan state audio saat meninggalkan halaman
         window.addEventListener('beforeunload', () => {
-            // Simpan state HANYA jika audio sedang aktif diputar
             if (globalAudioPlayer && !globalAudioPlayer.paused && globalAudioPlayer.currentTime > 0) {
                 sessionStorage.setItem('lastAudioSrc', globalAudioPlayer.src);
                 sessionStorage.setItem('lastAudioTime', globalAudioPlayer.currentTime);
             }
         });
 
-
         // --- SVG Ikon untuk Tombol Audio ---
         const playIconSvg = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>`;
         const pauseIconSvg = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 00-1 1v2a1 1 0 001 1h1a1 1 0 001-1V9a1 1 0 00-1-1H7zm5 0a1 1 0 00-1 1v2a1 1 0 001 1h1a1 1 0 001-1V9a1 1 0 00-1-1h-1z" clip-rule="evenodd"></path></svg>`;
         const loadingIconSvg = `<svg class="w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
-        // --- END State Audio ---
-
-
-        /**
-         * Menginisialisasi Firebase dan melakukan otentikasi.
-         */
+        
         async function initializeFirebaseAndAuth() {
             try {
                 if (Object.keys(firebaseConfig).length > 0) {
@@ -418,19 +451,10 @@
             }
         }
         
-        // ====================================================================
-        // === [PERUBAHAN UTAMA: JADWAL SHOLAT DINAMIS] ===
-        // ====================================================================
+        let PRAYER_TIMES = []; 
+        let LOKASI_KOTA = "Makassar"; 
+        let prayerInterval; 
 
-        // --- Data Waktu Sholat Dinamis (dari API) ---
-        let PRAYER_TIMES = []; // Akan diisi oleh API
-        let LOKASI_KOTA = "Makassar"; // Lokasi default
-        let prayerInterval; // Variabel untuk menyimpan interval timer
-
-        /**
-         * [PERBAIKAN] Mengambil jadwal sholat dari API myQuran.com (sumber Kemenag)
-         * @param {HTMLElement} loadingEl - Elemen DOM untuk menampilkan status loading/error
-         */
         async function fetchPrayerTimes(loadingEl) {
             try {
                 const now = new Date();
@@ -438,7 +462,6 @@
                 const bulan = (now.getMonth() + 1).toString().padStart(2, '0');
                 const tanggal = now.getDate().toString().padStart(2, '0');
 
-                // 1. Cari ID Kota
                 const cityResponse = await fetch(`https://api.myquran.com/v2/sholat/kota/cari/${LOKASI_KOTA}`);
                 if (!cityResponse.ok) throw new Error(`Gagal mencari ID kota (status: ${cityResponse.status})`);
                 
@@ -448,10 +471,9 @@
                 }
                 const idKota = cityData.data[0].id;
                 
-                LOKASI_KOTA = cityData.data[0].lokasi; // Update nama lokasi (e.g., "KOTA MAKASSAR")
+                LOKASI_KOTA = cityData.data[0].lokasi; 
                 document.getElementById('location-display').textContent = LOKASI_KOTA;
 
-                // 2. Ambil Jadwal Sholat
                 const scheduleResponse = await fetch(`https://api.myquran.com/v2/sholat/jadwal/${idKota}/${tahun}/${bulan}/${tanggal}`);
                 if (!scheduleResponse.ok) throw new Error(`Gagal mengambil jadwal (status: ${scheduleResponse.status})`);
                 
@@ -462,11 +484,10 @@
                 
                 const jadwal = scheduleData.data.jadwal;
                 
-                // 3. Format data
                 PRAYER_TIMES = [
                     { name: "Imsak", time: jadwal.imsak },
                     { name: "Subuh", time: jadwal.subuh },
-                    { name: "Syuruk", time: jadwal.terbit }, // Menggunakan 'terbit' (sunrise) untuk Syuruk
+                    { name: "Syuruk", time: jadwal.terbit }, 
                     { name: "Dhuha", time: jadwal.dhuha },
                     { name: "Dzuhur", time: jadwal.dzuhur },
                     { name: "Ashar", time: jadwal.ashar },
@@ -475,9 +496,9 @@
                 ];
 
                 if (loadingEl) {
-                    loadingEl.textContent = 'Memuat jadwal...'; // Hapus pesan loading setelah sukses
+                    loadingEl.textContent = 'Memuat jadwal...'; 
                 }
-                return true; // Sukses
+                return true; 
 
             } catch (error) {
                 console.error("Kesalahan API Jadwal Sholat:", error);
@@ -485,66 +506,45 @@
                     loadingEl.textContent = `Gagal memuat: ${error.message}`;
                     loadingEl.classList.add('text-red-500');
                 }
-                // Tampilkan pesan error di kartu utama jika elemen loading tidak spesifik
                 if (!loadingEl) {
                      document.getElementById('next-prayer-display').innerHTML = `Gagal: ${error.message}`;
                 }
-                return false; // Gagal
+                return false; 
             }
         }
         
-        /**
-         * [BARU] Memuat ulang jadwal sholat untuk lokasi yang baru.
-         * Dipanggil saat startApp() pertama kali atau saat handleChangeLocation().
-         */
         async function loadPrayerTimesForLocation() {
-            // 1. Tampilkan placeholder loading
             const listContainer = document.getElementById('prayer-times-list');
             listContainer.innerHTML = `<div id="loading" class="col-span-2 text-center p-6 text-gray-500 dark:text-gray-400"></div>`;
 
-            // Ambil elemen 'loading' yang BARU saja kita buat
             const loadingEl = document.getElementById('loading');
             loadingEl.textContent = `Memuat jadwal sholat untuk ${LOKASI_KOTA}...`;
             
             document.getElementById('location-display').textContent = LOKASI_KOTA;
             document.getElementById('next-prayer-display').innerHTML = `Menunggu data jadwal sholat...`;
 
-            // 2. Panggil API dan kirimkan 'loadingEl' yang baru untuk penanganan error
             const success = await fetchPrayerTimes(loadingEl);
             
             if (success) {
-                updateUI(); // Lakukan render pertama kali dengan data baru
+                updateUI(); 
             }
         }
 
-        /**
-         * [BARU] Fungsi yang dipanggil saat tombol "Ubah" lokasi diklik
-         */
         async function handleChangeLocation() {
             const inputEl = document.getElementById('location-input');
             const newLocation = inputEl.value.trim();
             
             if (newLocation && newLocation.toLowerCase() !== LOKASI_KOTA.toLowerCase()) {
-                LOKASI_KOTA = newLocation; // Update variabel global
-                inputEl.value = ''; // Kosongkan input field
-                stopAudioPlayback(); // Hentikan audio jika sedang diputar
+                LOKASI_KOTA = newLocation; 
+                inputEl.value = ''; 
+                stopAudioPlayback(); 
                 
                 if (prayerInterval) clearInterval(prayerInterval);
-                await loadPrayerTimesForLocation(); // Muat ulang jadwal
+                await loadPrayerTimesForLocation(); 
                 prayerInterval = setInterval(updateUI, 1000);
             }
         }
         
-        // ====================================================================
-        // === [AKHIR PERUBAHAN UTAMA] ===
-        // ====================================================================
-
-
-        /**
-         * Menghitung waktu sholat berikutnya dan sisa waktunya.
-         * @param {Date} now Waktu saat ini.
-         * @returns {object} Objek berisi { nextPrayer, timeRemainingMs }.
-         */
         function getNextPrayerTime(now) {
             if (PRAYER_TIMES.length === 0) {
                  return { nextPrayer: null, timeRemainingMs: 0 };
@@ -570,7 +570,6 @@
                 }
             }
 
-            // Jika tidak ada (misalnya tengah malam), ambil yang pertama (Imsak/Subuh)
             if (nextPrayer === null && PRAYER_TIMES.length > 0) {
                  nextPrayer = PRAYER_TIMES[0];
                  const [h, m] = nextPrayer.time.split(':').map(Number);
@@ -583,11 +582,6 @@
             return { nextPrayer, timeRemainingMs };
         }
 
-        /**
-         * Memformat milidetik menjadi string "JJ:MM:SS".
-         * @param {number} ms - Jumlah milidetik.
-         * @returns {string} String waktu yang diformat.
-         */
         function formatCountdown(ms) {
             const totalSeconds = Math.max(0, Math.floor(ms / 1000));
             const hours = Math.floor(totalSeconds / 3600);
@@ -599,26 +593,20 @@
                 .join(':');
         }
 
-        /**
-         * Memperbarui daftar waktu sholat (2 kolom) di UI.
-         * @param {string} nextPrayerName - Nama waktu sholat berikutnya (untuk highlight).
-         */
         function updatePrayerListUI(nextPrayerName) {
             const listContainer = document.getElementById('prayer-times-list');
             if (!listContainer) return;
             if (PRAYER_TIMES.length === 0) return;
 
-            // Hapus 'loading' jika ada (setelah pemuatan pertama)
             const loadingEl = document.getElementById('loading');
             if (loadingEl) {
                 listContainer.innerHTML = '';
             }
 
-            // Cek apakah item pertama sudah dirender
             const existingPrayerItem = document.getElementById(`prayer-${PRAYER_TIMES[0].name}`);
 
             if (!existingPrayerItem) {
-                 listContainer.innerHTML = ''; // Hanya hapus jika daftar belum di-render
+                 listContainer.innerHTML = ''; 
             }
             
             PRAYER_TIMES.forEach(prayer => {
@@ -628,7 +616,6 @@
                 let itemEl = document.getElementById(`prayer-${prayer.name}`);
 
                 if (!itemEl) {
-                    // Buat elemen jika belum ada
                     const itemHtml = `
                         <div id="prayer-${prayer.name}" class="prayer-list-item p-2 rounded-xl shadow-md flex flex-col items-center justify-center text-center">
                             <span class="prayer-name text-sm font-medium text-gray-900 dark:text-gray-200">${prayer.name}</span>
@@ -636,22 +623,16 @@
                         </div>
                     `;
                     listContainer.insertAdjacentHTML('beforeend', itemHtml);
-                    itemEl = document.getElementById(`prayer-${prayer.name}`); // Ambil lagi setelah dibuat
+                    itemEl = document.getElementById(`prayer-${prayer.name}`); 
                 }
 
-                // Update kelas (untuk highlight)
                 itemEl.className = `prayer-list-item p-2 rounded-xl shadow-md flex flex-col items-center justify-center text-center ${nextClass}`;
             });
         }
 
-        /**
-         * Fungsi utama yang memperbarui UI jam, tanggal, dan waktu sholat.
-         * Dijalankan setiap detik.
-         */
         function updateUI() {
             const now = new Date();
 
-            // 1. Perbarui Jam dan Tanggal
             const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
             const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
 
@@ -661,7 +642,6 @@
             if (currentTimeEl) currentTimeEl.textContent = now.toLocaleTimeString('id-ID', timeOptions);
             if (currentDateEl) currentDateEl.textContent = now.toLocaleDateString('id-ID', dateOptions);
 
-            // 2. Perbarui Waktu Sholat Berikutnya (jika data sudah ada)
             if (PRAYER_TIMES.length > 0) {
                 const { nextPrayer, timeRemainingMs } = getNextPrayerTime(now);
                 const nextPrayerDisplayEl = document.getElementById('next-prayer-display');
@@ -674,40 +654,22 @@
                         <span class="font-mono">${countdownStr}</span>
                     `;
 
-                    // 3. Perbarui Daftar Waktu Sholat (Highlight)
                     updatePrayerListUI(nextPrayer.name);
                 }
             }
         }
         
-        // ====================================================================
-        // === FUNGSI QUR'AN ===
-        // ====================================================================
-
         const BASE_QURAN_API = 'https://api.quran.com/api/v4';
-        let surahListCache = []; // Cache untuk daftar surah
+        let surahListCache = []; 
         
-        // State untuk Detail Surah
         let currentSurahId = null;
         let currentPage = 1;
         let totalPages = 1;
-        let allVerses = []; // Cache ayat-ayat dari surah yang sedang dibuka
+        let allVerses = []; 
         const VERSES_PER_PAGE = 10;
-        let isTranslationVisible = true; // Default terjemahan terlihat
+        let isTranslationVisible = true; 
 
-        
-        // ====================================================================
-        // === FUNGSI AUDIO PLAYER GLOBAL ===
-        // ====================================================================
-
-        /**
-         * [MODIFIKASI] Memainkan atau menjeda audio.
-         * @param {string} audioUrl URL file audio.
-         * @param {HTMLElement} buttonElement Tombol yang diklik.
-         */
         function playAudio(audioUrl, buttonElement) {
-            
-            // [BARU] Dapatkan Teks untuk Mini Player
             let trackTitle = "Audio";
             let trackSubtitle = "Sedang memutar...";
             
@@ -718,19 +680,16 @@
                 } else if (buttonElement.ariaLabel.startsWith("Putar Ayat")) {
                     const surahTitle = document.getElementById('header-surah-title')?.textContent;
                     if (surahTitle) {
-                         trackTitle = surahTitle.split('(')[0].trim(); // e.g., "Al-Baqarah"
-                         trackSubtitle = buttonElement.ariaLabel.replace("Putar ", ""); // e.g., "Ayat 1"
+                         trackTitle = surahTitle.split('(')[0].trim(); 
+                         trackSubtitle = buttonElement.ariaLabel.replace("Putar ", ""); 
                     } else {
-                         trackTitle = buttonElement.ariaLabel.replace("Putar ", ""); // Fallback
+                         trackTitle = buttonElement.ariaLabel.replace("Putar ", ""); 
                          trackSubtitle = "Ayat";
                     }
                 }
             }
-            // [AKHIR BARU]
-            
 
             if (restoredAudioSrc === audioUrl && globalAudioPlayer.src === restoredAudioSrc) {
-                // --- Logika restore audio ---
                 restoredAudioSrc = null; 
                 restoredAudioTime = 0;
 
@@ -742,34 +701,30 @@
                 buttonElement.innerHTML = loadingIconSvg;
                 buttonElement.disabled = true;
 
-                // [BARU] Tampilkan dan update mini player
                 showMiniPlayer(trackTitle, trackSubtitle);
                 if (miniPlayerToggle) miniPlayerToggle.innerHTML = loadingIconSvg;
                 
                 globalAudioPlayer.play().then(() => {
                     buttonElement.innerHTML = pauseIconSvg;
                     buttonElement.disabled = false;
-                    if (miniPlayerToggle) miniPlayerToggle.innerHTML = pauseIconSvg; // [BARU]
+                    if (miniPlayerToggle) miniPlayerToggle.innerHTML = pauseIconSvg; 
                 }).catch(error => {
                     console.error("Error playing restored audio:", error);
                     buttonElement.innerHTML = playIconSvg;
                     buttonElement.disabled = false;
-                    if (miniPlayerToggle) miniPlayerToggle.innerHTML = playIconSvg; // [BARU]
+                    if (miniPlayerToggle) miniPlayerToggle.innerHTML = playIconSvg; 
                 });
                 
                 currentPlayingButton = buttonElement;
                 return;
             }
 
-
             if (globalAudioPlayer.src === audioUrl && !globalAudioPlayer.paused) {
-                // --- Menjeda Audio ---
                 globalAudioPlayer.pause();
                 buttonElement.innerHTML = playIconSvg;
                 currentPlayingButton = null;
                 
-                if (miniPlayerToggle) miniPlayerToggle.innerHTML = playIconSvg; // [BARU]
-                // Jangan sembunyikan player, biarkan dalam status jeda
+                if (miniPlayerToggle) miniPlayerToggle.innerHTML = playIconSvg; 
                 
                 if (globalAudioPlayer.currentTime > 0 && !globalAudioPlayer.ended) {
                      sessionStorage.setItem('lastAudioSrc', globalAudioPlayer.src);
@@ -777,7 +732,6 @@
                 }
 
             } else {
-                // --- Memutar Audio Baru (atau yang dijeda) ---
                 if (currentPlayingButton) {
                     currentPlayingButton.innerHTML = playIconSvg;
                     currentPlayingButton.disabled = false;
@@ -793,31 +747,25 @@
                 buttonElement.innerHTML = loadingIconSvg;
                 buttonElement.disabled = true;
                 
-                // [BARU] Tampilkan dan update mini player
                 showMiniPlayer(trackTitle, trackSubtitle);
                 if (miniPlayerToggle) miniPlayerToggle.innerHTML = loadingIconSvg;
 
                 globalAudioPlayer.play().then(() => {
                     buttonElement.innerHTML = pauseIconSvg;
                     buttonElement.disabled = false;
-                    if (miniPlayerToggle) miniPlayerToggle.innerHTML = pauseIconSvg; // [BARU]
+                    if (miniPlayerToggle) miniPlayerToggle.innerHTML = pauseIconSvg; 
                 }).catch(error => {
                     console.error("Error playing audio:", error);
                     buttonElement.innerHTML = playIconSvg;
                     buttonElement.disabled = false;
-                    hideMiniPlayer(); // [BARU] Sembunyikan jika gagal
+                    hideMiniPlayer(); 
                 });
 
                 currentPlayingButton = buttonElement;
             }
         }
         
-        
-        /**
-         * [MODIFIKASI] Menyiapkan event listener untuk audio player global
-         */
         function setupAudioPlayerListeners() {
-            // [BARU] Dapatkan elemen mini player
             miniPlayer = document.getElementById('mini-player');
             miniPlayerTitle = document.getElementById('mini-player-title');
             miniPlayerSubtitle = document.getElementById('mini-player-subtitle');
@@ -826,7 +774,6 @@
 
             if (!miniPlayer || !miniPlayerToggle || !miniPlayerClose) return;
 
-            // [BARU] Event listener untuk tombol mini player
             miniPlayerToggle.addEventListener('click', () => {
                 if (globalAudioPlayer.paused) {
                     globalAudioPlayer.play().catch(e => console.error("Mini player play error:", e));
@@ -837,26 +784,19 @@
 
             miniPlayerClose.addEventListener('click', stopAudioPlayback);
 
-
-            // Event listener global player
             globalAudioPlayer.onended = () => {
                 if (currentPlayingButton) {
                     currentPlayingButton.innerHTML = playIconSvg;
                     currentPlayingButton.disabled = false;
                     currentPlayingButton = null;
                 }
-                hideMiniPlayer(); // [BARU] Sembunyikan saat selesai
-                
-                // Hapus dari session storage jika selesai
+                hideMiniPlayer(); 
                 sessionStorage.removeItem('lastAudioSrc');
                 sessionStorage.removeItem('lastAudioTime');
             };
             
-            // [MODIFIKASI] Update ikon mini player berdasarkan state audio
             globalAudioPlayer.onpause = () => {
-                // Simpan state HANYA jika dijeda manual (bukan di akhir)
                 if (globalAudioPlayer.currentTime > 0 && !globalAudioPlayer.ended) {
-                    // (logika dipindahkan ke dalam playAudio())
                 }
                  if (miniPlayerToggle && globalAudioPlayer.src) {
                     miniPlayerToggle.innerHTML = playIconSvg;
@@ -888,37 +828,29 @@
                      }
                 }
             };
-            // [AKHIR MODIFIKASI]
         }
         
-        /**
-         * [BARU] Menampilkan mini player dengan info trek
-         */
         function showMiniPlayer(title, subtitle) {
             if (!miniPlayer || !miniPlayerTitle || !miniPlayerSubtitle) return;
             
             miniPlayerTitle.textContent = title;
             miniPlayerSubtitle.textContent = subtitle;
             
-            miniPlayer.style.display = 'flex'; // Hapus 'display: none'
+            miniPlayer.style.display = 'flex'; 
             setTimeout(() => {
                 miniPlayer.classList.remove('translate-y-24', 'opacity-0');
             }, 10); 
         }
 
-        /**
-         * [BARU] Menyembunyikan mini player
-         */
         function hideMiniPlayer() {
             if (!miniPlayer) return;
             miniPlayer.classList.add('translate-y-24', 'opacity-0');
             
             setTimeout(() => {
                  miniPlayer.style.display = 'none';
-            }, 300); // duration-300
+            }, 300); 
         }
 
-        // [MODIFIKASI] Fungsi untuk menghentikan audio secara paksa (saat navigasi)
         function stopAudioPlayback() {
             if (!globalAudioPlayer.paused) {
                 globalAudioPlayer.pause();
@@ -933,12 +865,9 @@
                 currentPlayingButton.disabled = false;
                 currentPlayingButton = null;
             }
-            hideMiniPlayer(); // [BARU] Sembunyikan mini-player
+            hideMiniPlayer(); 
         }
 
-        /**
-         * Mengambil daftar semua 114 surah dari API Quran.com
-         */
         async function fetchSurahList() {
             const quranLoadingEl = document.getElementById('quran-loading');
             const surahListEl = document.getElementById('surah-list');
@@ -963,10 +892,6 @@
             }
         }
         
-        /**
-         * Menggambar daftar surah ke UI dari data cache.
-         * @param {Array} surahList Daftar surah (dari cache).
-         */
         function renderSurahList(surahList) {
             const surahListEl = document.getElementById('surah-list');
             const noResultsEl = document.getElementById('search-no-results');
@@ -987,7 +912,6 @@
                 
                 const revelationType = surah.revelation_place === 'makkah' ? 'Makkiyah' : 'Madaniyah';
                 
-                // URL Audio Surah Penuh (Alafasy)
                 const surahAudioUrl = `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${surah.id}.mp3`;
                 
                 let playButtonClass = "surah-play-button p-2 rounded-full text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-gray-600 transition";
@@ -1015,17 +939,15 @@
                     </div>
                 `;
 
-                // Event listener untuk klik tombol surah (membuka detail)
                 button.addEventListener('click', () => {
-                    stopAudioPlayback(); // Hentikan audio surah jika sedang diputar
+                    stopAudioPlayback(); 
                     renderSurahDetails(surah.id, surah.name_simple, surah.name_arabic);
                 });
 
-                // Event listener untuk tombol play (hanya memutar audio)
                 const playButton = button.querySelector('.surah-play-button');
                 if (playButton) {
                     playButton.addEventListener('click', (e) => {
-                        e.stopPropagation(); // Mencegah klik tombol surah utama
+                        e.stopPropagation(); 
                         playAudio(surahAudioUrl, playButton);
                     });
                 }
@@ -1036,15 +958,11 @@
             surahListEl.scrollTop = 0;
         }
 
-
-        /**
-         * Fungsi untuk memfilter daftar surah berdasarkan input pencarian.
-         */
         window.searchSurah = (query) => {
             const normalizedQuery = query.toLowerCase().trim();
             
             if (normalizedQuery === "") {
-                renderSurahList(surahListCache); // Tampilkan semua jika query kosong
+                renderSurahList(surahListCache); 
                 return;
             }
 
@@ -1057,17 +975,8 @@
             renderSurahList(filteredList);
         }
 
-        /**
-         * [MODIFIKASI] Mengambil dan menampilkan detail ayat untuk surah tertentu.
-         * @param {number} surahId ID Surah (e.g., 1)
-         * @param {string} simpleName Nama surah (e.g., "Al-Fatihah")
-         * @param {string} arabicName Nama surah dalam Arab
-         * @param {number} [page=1] Halaman yang ingin ditampilkan
-         * @param {boolean} [pushState=true] Apakah akan mendorong state ke History API
-         */
         async function renderSurahDetails(surahId, simpleName, arabicName, page = 1, pushState = true) {
             
-            // Sembunyikan daftar surah, tampilkan view detail
             document.getElementById('surah-list')?.classList.add('hidden');
             document.getElementById('search-container')?.classList.add('hidden');
             document.getElementById('load-bookmark-container')?.classList.add('hidden');
@@ -1081,23 +990,19 @@
             ayahDetailsEl.classList.remove('hidden');
             ayahContentEl.innerHTML = `<p class="text-center p-6 text-gray-500 dark:text-gray-400">Memuat ayat-ayat ${simpleName}...</p>`;
 
-            // Update Header
             headerSurahTitleEl.textContent = `${simpleName} (${arabicName})`;
             headerSurahTitleEl.classList.remove('hidden');
 
-            // [MODIFIKASI] Sembunyikan tombol checklist dan tampilkan tombol kembali
             document.getElementById('back-to-prayer-icon')?.classList.remove('hidden');
-            document.getElementById('checklist-icon-button')?.classList.add('hidden'); // <-- BARIS DIMODIFIKASI
+            document.getElementById('checklist-icon-button')?.classList.add('hidden'); 
             
             translationToggleButton?.classList.remove('hidden');
             bookmarkButton?.classList.remove('hidden');
             updateTranslationButtonUI();
             
-            // Update state global
             currentSurahId = surahId;
             currentPage = page;
 
-            // --- [MODIFIKASI HISTORY API] ---
             if (pushState) {
                 history.pushState({ 
                     view: 'ayahDetail', 
@@ -1107,11 +1012,8 @@
                     page: page
                 }, `${simpleName} - Halaman ${page}`, `#surah/${surahId}/page/${page}`);
             }
-            // --- AKHIR MODIFIKASI ---
 
-            // Ambil data ayat (gunakan cache jika ID surah sama)
             try {
-                // Jika cache `allVerses` kosong atau ID surah berbeda, fetch baru
                 if (allVerses.length === 0 || (allVerses.length > 0 && allVerses[0].verse_key.startsWith(surahId + ':') === false)) {
                     
                     const response = await fetch(`${BASE_QURAN_API}/verses/by_chapter/${surahId}?language=id&words=false&translations=33&fields=text_uthmani,verse_key,verse_number`);
@@ -1128,10 +1030,8 @@
                     totalPages = Math.ceil(allVerses.length / VERSES_PER_PAGE);
                 }
                 
-                // Render halaman yang diminta
                 renderAyahPage();
                 
-                // Scroll ke atas
                 const scrollContainer = document.getElementById('scrollable-ayah-container');
                 if (scrollContainer) {
                     scrollContainer.scrollTo({ top: 0, behavior: 'instant' });
@@ -1144,9 +1044,6 @@
         }
 
 
-        /**
-         * Menggambar ayat untuk halaman saat ini.
-         */
         function renderAyahPage() {
             const ayahContentEl = document.getElementById('ayah-content');
             if (!ayahContentEl) return;
@@ -1157,7 +1054,6 @@
             const endIndex = startIndex + VERSES_PER_PAGE;
             const versesToShow = allVerses.slice(startIndex, endIndex);
 
-            // Tambahkan Basmalah (kecuali Al-Fatihah dan At-Taubah)
             if (currentPage === 1 && currentSurahId !== 1 && currentSurahId !== 9) {
                  ayahContentEl.innerHTML += `<p class="ayah-arabic text-center mb-4 text-2xl font-light text-gray-900 dark:text-gray-100">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>`;
             }
@@ -1166,7 +1062,6 @@
                 const arabicText = verse.text_uthmani;
                 const translationText = verse.translations ? verse.translations[0].text : 'Terjemahan tidak tersedia.';
                 
-                // URL Audio per Ayat (Alafasy)
                 const surahPad = currentSurahId.toString().padStart(3, '0');
                 const ayahPad = verse.verse_number.toString().padStart(3, '0');
                 const ayahAudioUrl = `https://everyayah.com/data/Alafasy_128kbps/${surahPad}${ayahPad}.mp3`;
@@ -1193,7 +1088,6 @@
                     <p class="${translationClass} text-sm text-gray-700 dark:text-gray-300 italic pt-3 border-t border-gray-200 dark:border-gray-600">${translationText}</p>
                 `;
                 
-                // Tambahkan event listener ke tombol play ayat
                 const playButton = ayahDiv.querySelector('.ayah-play-button');
                 if (playButton) {
                     playButton.addEventListener('click', (e) => {
@@ -1205,23 +1099,17 @@
                 ayahContentEl.appendChild(ayahDiv);
             });
 
-            // Update UI Paginasi
             updatePaginationUI();
         }
 
-        /**
-         * Mengganti halaman (paginasi) ayat.
-         * @param {number} direction -1 untuk sebelumnya, 1 untuk selanjutnya.
-         */
         window.changePage = (direction) => {
             const newPage = currentPage + direction;
             if (newPage < 1 || newPage > totalPages) {
-                return; // Batas halaman
+                return; 
             }
             
             currentPage = newPage;
             
-            // Ambil data nama dari header (agak hacky, tapi perlu untuk pushState)
             const headerTitleEl = document.getElementById('header-surah-title');
             const headerText = headerTitleEl.textContent;
             const match = headerText.match(/(.*) \((.*)\)/);
@@ -1230,7 +1118,6 @@
                  const simpleName = match[1].trim();
                  const arabicName = match[2].trim();
                  
-                 // --- [MODIFIKASI HISTORY API] ---
                  history.pushState({ 
                     view: 'ayahDetail', 
                     surahId: currentSurahId, 
@@ -1238,22 +1125,17 @@
                     arabicName: arabicName,
                     page: currentPage
                 }, `${simpleName} - Halaman ${currentPage}`, `#surah/${currentSurahId}/page/${currentPage}`);
-                // --- AKHIR MODIFIKASI ---
             }
             
-            stopAudioPlayback(); // Hentikan audio saat ganti halaman
+            stopAudioPlayback(); 
             renderAyahPage();
             
-            // Scroll ke atas
             const scrollContainer = document.getElementById('scrollable-ayah-container');
             if (scrollContainer) {
                  scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
         
-        /**
-         * Memperbarui tombol dan teks paginasi.
-         */
         function updatePaginationUI() {
             const prevButton = document.getElementById('prev-ayah-button');
             const nextButton = document.getElementById('next-ayah-button');
@@ -1266,14 +1148,10 @@
             pageInfo.textContent = `Halaman ${currentPage}/${totalPages}`;
         }
         
-        /**
-         * Logika untuk mengalihkan visibilitas terjemahan.
-         */
         window.toggleTranslation = () => {
             isTranslationVisible = !isTranslationVisible;
 
             if (currentSurahId) {
-                // Terapkan ke ayat yang sedang ditampilkan
                 const translations = document.querySelectorAll('.translation-text');
                 translations.forEach(el => {
                     if (isTranslationVisible) {
@@ -1287,9 +1165,6 @@
             updateTranslationButtonUI();
         }
 
-        /**
-         * Memperbarui teks dan ikon pada tombol toggle terjemahan di header.
-         */
         function updateTranslationButtonUI() {
             const eyeOpen = document.getElementById('translation-eye-open');
             const eyeClosed = document.getElementById('translation-eye-closed');
@@ -1305,10 +1180,6 @@
             }
         }
 
-        // ====================================================================
-        // === FUNGSI BOOKMARK ===
-        // ====================================================================
-
         function saveBookmark() {
             if (!currentSurahId) return;
             
@@ -1317,7 +1188,7 @@
             
             const headerText = headerTitleEl.textContent;
             const match = headerText.match(/(.*) \((.*)\)/);
-            if (!match) return; // Gagal parse nama
+            if (!match) return; 
             
             const simpleName = match[1].trim();
             const arabicName = match[2].trim();
@@ -1333,7 +1204,7 @@
             
             if (bookmarkButton) {
                 const originalColor = bookmarkButton.style.color;
-                bookmarkButton.style.color = '#10b981'; // Emerald 500
+                bookmarkButton.style.color = '#10b981'; 
                 setTimeout(() => {
                     bookmarkButton.style.color = originalColor;
                 }, 1000);
@@ -1380,13 +1251,6 @@
             document.getElementById('load-bookmark-container')?.classList.add('hidden');
         }
 
-        // ====================================================================
-        // === FUNGSI DARK MODE ===
-        // ====================================================================
-
-        /**
-         * Mengatur Dark Mode berdasarkan preferensi sistem atau localStorage.
-         */
         function setupDarkMode() {
             const sunIcon = document.getElementById('sunIcon');
             const moonIcon = document.getElementById('moonIcon');
@@ -1394,9 +1258,7 @@
 
             if (!sunIcon || !moonIcon || !toggleButton) return;
 
-            // Cek localStorage dulu
             if (localStorage.getItem('theme') === 'dark' || 
-                // Jika tidak ada di localStorage, cek preferensi sistem
                 (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 
                 document.body.classList.add('dark');
@@ -1408,12 +1270,9 @@
                 moonIcon.classList.remove('hidden');
             }
 
-            // Tambahkan event listener ke tombol
             toggleButton.addEventListener('click', () => {
-                // Toggle kelas 'dark' pada body
                 document.body.classList.toggle('dark');
 
-                // Update ikon dan simpan ke localStorage
                 if (document.body.classList.contains('dark')) {
                     moonIcon.classList.add('hidden');
                     sunIcon.classList.remove('hidden');
@@ -1426,14 +1285,9 @@
             });
         }
         
-        // ====================================================================
-        // === [MODIFIKASI TERBARU] FUNGSI CHECKLIST SHALAT (Qobliyah/Badiyah) ===
-        // ====================================================================
-        
         const CHECKLIST_KEY = 'dailyChecklist';
         const OBLIGATORY_PRAYERS = ['Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya'];
         
-        // [MODIFIKASI] Daftar shalat sunnah didetailkan
         const SUNNAH_PRAYERS = [
             'Tahajud', 
             'Witir', 
@@ -1449,10 +1303,6 @@
         ];
 
 
-        /**
-         * [MODIFIKASI] Mendapatkan state (Fardu & Sunnah) untuk hari ini.
-         * Menangani migrasi dari daftar 'Rawatib...' ke 'Qobliyah/Badiyah...'
-         */
         function getChecklistState() {
             const today = new Date().toLocaleDateString('id-ID');
             let data;
@@ -1463,13 +1313,11 @@
                 data = null;
             }
 
-            // Check 1: Data ada, tanggal sama, struktur fardu/sunnah ada
             if (data && data.date === today && data.fardu && data.sunnah) {
                 const oldSunnah = data.sunnah;
                 const newSunnah = {};
                 let needsUpdate = false;
                 
-                // Cek jika ada list sunnah baru (dari const) yang belum ada di data tersimpan
                 for (const p of SUNNAH_PRAYERS) {
                     if (!oldSunnah.hasOwnProperty(p)) {
                         needsUpdate = true;
@@ -1477,52 +1325,40 @@
                     }
                 }
                 
-                // Cek jika masih ada list sunnah LAMA (yang ambigu, misal 'Rawatib Dzuhur')
                 if (oldSunnah.hasOwnProperty('Rawatib Dzuhur') || oldSunnah.hasOwnProperty('Rawatib Maghrib') || oldSunnah.hasOwnProperty('Rawatib Isya')) {
                     needsUpdate = true;
                 }
                 
-                // Jika tidak perlu update (happy path), langsung kembalikan
                 if (!needsUpdate) {
                     return data; 
                 }
                 
-                // --- Jika Perlu Update/Migrasi ---
-                
-                // 1. Inisialisasi semua prayer BARU ke false
                 for (const p of SUNNAH_PRAYERS) {
                     newSunnah[p] = false;
                 }
                 
-                // 2. Salin data lama ke data baru jika namanya masih sama (misal 'Tahajud', 'Dhuha')
                 for (const p in oldSunnah) {
-                    if (newSunnah.hasOwnProperty(p)) { // Jika prayer lama ada di list baru
+                    if (newSunnah.hasOwnProperty(p)) { 
                         newSunnah[p] = oldSunnah[p];
                     }
                 }
                 
-                // 3. Migrasi data ambigu (jika ada)
-                // Asumsi: jika 'Rawatib Dzuhur' dicentang, maka Qobliyah & Badiyah ikut tercentang
                 if (oldSunnah['Rawatib Dzuhur']) {
                     newSunnah['Qobliyah Dzuhur'] = oldSunnah['Rawatib Dzuhur'];
                     newSunnah['Badiyah Dzuhur'] = oldSunnah['Rawatib Dzuhur'];
                 }
-                // Asumsi: 'Rawatib Maghrib' adalah Badiyah
                 if (oldSunnah['Rawatib Maghrib']) {
                     newSunnah['Badiyah Maghrib'] = oldSunnah['Rawatib Maghrib'];
                 }
-                // Asumsi: 'Rawatib Isya' adalah Badiyah
                 if (oldSunnah['Rawatib Isya']) {
                     newSunnah['Badiyah Isya'] = oldSunnah['Rawatib Isya'];
                 }
                 
-                // 4. Ganti objek sunnah lama dengan yang baru
                 data.sunnah = newSunnah;
                 localStorage.setItem(CHECKLIST_KEY, JSON.stringify(data));
                 return data;
             }
 
-            // Check 2: Buat state baru jika tidak ada data/tanggal beda
             const newState = {
                 date: today,
                 fardu: {},
@@ -1530,9 +1366,8 @@
             };
             
             OBLIGATORY_PRAYERS.forEach(p => { newState.fardu[p] = false; });
-            SUNNAH_PRAYERS.forEach(p => { newState.sunnah[p] = false; }); // Pakai list BARU
+            SUNNAH_PRAYERS.forEach(p => { newState.sunnah[p] = false; }); 
             
-            // Migrasi dari struktur 'prayers' (sangat lama)
             if (data && data.date === today && data.prayers) {
                  for (const p in data.prayers) {
                      if (newState.fardu.hasOwnProperty(p)) {
@@ -1541,7 +1376,6 @@
                  }
             }
             
-            // Migrasi dari 'sunnah' lama jika buat state baru (misal beda hari tapi struktur lama)
             if (data && data.date === today && data.sunnah) {
                  const oldSunnah = data.sunnah;
                  for (const p in oldSunnah) {
@@ -1549,7 +1383,6 @@
                          newState.sunnah[p] = oldSunnah[p];
                      }
                  }
-                 // Migrasi data ambigu
                  if (oldSunnah['Rawatib Dzuhur']) {
                      newState.sunnah['Qobliyah Dzuhur'] = oldSunnah['Rawatib Dzuhur'];
                      newState.sunnah['Badiyah Dzuhur'] = oldSunnah['Rawatib Dzuhur'];
@@ -1566,10 +1399,6 @@
             return newState;
         }
 
-        /**
-         * [MODIFIKASI] Me-render item checklist ke DUA container (fardu & sunnah)
-         * (Tidak perlu diubah, fungsi ini sudah dinamis membaca const SUNNAH_PRAYERS)
-         */
         function renderChecklist() {
             const farduContainer = document.getElementById('fardu-checklist');
             const sunnahContainer = document.getElementById('sunnah-checklist');
@@ -1580,12 +1409,10 @@
             const state = getChecklistState();
             dateEl.textContent = `Untuk Hari: ${state.date}`;
 
-            farduContainer.innerHTML = ''; // Kosongkan container Fardu
-            sunnahContainer.innerHTML = ''; // Kosongkan container Sunnah
+            farduContainer.innerHTML = ''; 
+            sunnahContainer.innerHTML = ''; 
 
-            // Helper function untuk membuat HTML item
             const createItemHtml = (prayer, isChecked, type) => {
-                // Ganti spasi dengan strip untuk ID HTML yang valid
                 const prayerId = prayer.replace(/\s+/g, '-'); 
                 
                 return `
@@ -1604,13 +1431,11 @@
                 `;
             };
 
-            // 1. Render Fardu
             OBLIGATORY_PRAYERS.forEach(prayer => {
                 const isChecked = state.fardu[prayer] || false;
                 farduContainer.insertAdjacentHTML('beforeend', createItemHtml(prayer, isChecked, 'fardu'));
             });
 
-            // 2. Render Sunnah
             SUNNAH_PRAYERS.forEach(prayer => {
                 const isChecked = state.sunnah[prayer] || false;
                 sunnahContainer.insertAdjacentHTML('beforeend', createItemHtml(prayer, isChecked, 'sunnah'));
@@ -1618,14 +1443,10 @@
         }
 
 
-        /**
-         * [MODIFIKASI] Menangani perubahan pada checkbox (fardu atau sunnah)
-         * (Tidak perlu diubah, fungsi ini sudah dinamis)
-         */
         function handleChecklistChange(event) {
             const checkbox = event.target;
             const prayerName = checkbox.dataset.prayer;
-            const prayerType = checkbox.dataset.type; // 'fardu' atau 'sunnah'
+            const prayerType = checkbox.dataset.type; 
             const isChecked = checkbox.checked;
             
             const currentState = getChecklistState(); 
@@ -1641,7 +1462,6 @@
             
             localStorage.setItem(CHECKLIST_KEY, JSON.stringify(currentState));
             
-            // Update style item
             const label = checkbox.closest('label');
             if (label) {
                 if (isChecked) {
@@ -1654,10 +1474,6 @@
             }
         }
         
-        /**
-         * [MODIFIKASI] Mereset data checklist (fardu dan sunnah) untuk hari ini
-         * (Tidak perlu diubah, fungsi ini sudah dinamis)
-         */
         function resetChecklist() {
              if (confirm('Apakah Anda yakin ingin mereset semua checklist (fardu dan sunnah) untuk hari ini?')) {
                 const today = new Date().toLocaleDateString('id-ID');
@@ -1672,45 +1488,29 @@
                 SUNNAH_PRAYERS.forEach(p => { newState.sunnah[p] = false; });
 
                 localStorage.setItem(CHECKLIST_KEY, JSON.stringify(newState));
-                renderChecklist(); // Render ulang UI
+                renderChecklist(); 
              }
         }
 
-        /**
-         * Menampilkan tampilan checklist shalat
-         */
         function showChecklistView() {
             stopAudioPlayback();
             document.getElementById('prayer-view')?.classList.add('hidden');
             document.getElementById('quran-view')?.classList.add('hidden');
             document.getElementById('checklist-view')?.classList.remove('hidden');
 
-            // Atur tombol header
             document.getElementById('checklist-icon-button')?.classList.add('hidden');
             document.getElementById('back-to-prayer-icon')?.classList.remove('hidden');
 
-            // Sembunyikan tombol aksi lain
             document.getElementById('toggle-view-button')?.classList.add('hidden');
             document.getElementById('header-surah-title')?.classList.add('hidden');
             document.getElementById('bookmark-button')?.classList.add('hidden');
             document.getElementById('toggle-translation-button')?.classList.add('hidden');
 
-            renderChecklist(); // Render item checklist
+            renderChecklist(); 
             history.pushState({ view: 'checklist' }, 'Checklist Shalat', '#checklist');
         }
         
-        // ====================================================================
-        // === AKHIR [MODIFIKASI TERBARU] FUNGSI CHECKLIST ===
-        // ====================================================================
 
-
-        // ====================================================================
-        // === FUNGSI NAVIGASI & INISIALISASI ===
-        // ====================================================================
-
-        /**
-         * [MODIFIKASI] Beralih antara tampilan Waktu Sholat dan Qur'an.
-         */
         function toggleView() {
             stopAudioPlayback();
             
@@ -1724,16 +1524,14 @@
             const isQuranVisible = quranView.classList.contains('hidden');
             
             if (isQuranVisible) {
-                // Pindah ke tampilan Qur'an
                 prayerView.classList.add('hidden');
                 quranView.classList.remove('hidden');
-                document.getElementById('checklist-view')?.classList.add('hidden'); // [BARU]
+                document.getElementById('checklist-view')?.classList.add('hidden'); 
                 
                 toggleButton.classList.add('hidden');
                 
-                // [MODIFIKASI] Tampilkan tombol kembali, sembunyikan checklist
-                backToPrayerIcon.classList.remove('hidden'); // <-- UBAH DARI 'invisible'
-                document.getElementById('checklist-icon-button')?.classList.add('hidden'); // [BARU]
+                backToPrayerIcon.classList.remove('hidden'); 
+                document.getElementById('checklist-icon-button')?.classList.add('hidden'); 
 
                 if (translationToggleButton) {
                     translationToggleButton.classList.add('hidden');
@@ -1756,21 +1554,17 @@
                 }
                 checkAndDisplayBookmarkButton();
                 
-                // --- [MODIFIKASI HISTORY API] ---
                 history.pushState({ view: 'quranList' }, 'Daftar Surah', '#quran');
-                // --- AKHIR MODIFIKASI ---
 
             } else {
-                // Pindah ke tampilan Waktu Sholat (sekarang ditangani oleh history.back())
                 quranView.classList.add('hidden');
                 prayerView.classList.remove('hidden');
-                document.getElementById('checklist-view')?.classList.add('hidden'); // [BARU]
+                document.getElementById('checklist-view')?.classList.add('hidden'); 
 
                 toggleButton.classList.remove('hidden');
 
-                // [MODIFIKASI] Sembunyikan tombol kembali, tampilkan checklist
-                backToPrayerIcon.classList.add('hidden'); // <-- UBAH DARI 'invisible'
-                document.getElementById('checklist-icon-button')?.classList.remove('hidden'); // [BARU]
+                backToPrayerIcon.classList.add('hidden'); 
+                document.getElementById('checklist-icon-button')?.classList.remove('hidden'); 
                 
                 if (translationToggleButton) {
                     translationToggleButton.classList.add('hidden');
@@ -1790,43 +1584,32 @@
         }
 
 
-        // --- [MODIFIKASI HISTORY API] ---
-
-        /**
-         * Mengelola fungsi tombol kembali di header (panah kiri).
-         */
         function handleHeaderBack() {
              history.back();
         }
 
-        /**
-         * [MODIFIKASI] Menangani perubahan UI berdasarkan state history (dipanggil oleh popstate)
-         */
         function handleHistoryChange(state) {
             stopAudioPlayback();
             
-            // Dapatkan semua elemen view dan tombol
             const prayerView = document.getElementById('prayer-view');
             const quranView = document.getElementById('quran-view');
-            const checklistView = document.getElementById('checklist-view'); // [BARU]
+            const checklistView = document.getElementById('checklist-view'); 
             
             const toggleButton = document.getElementById('toggle-view-button');
             const backToPrayerIcon = document.getElementById('back-to-prayer-icon');
-            const checklistButton = document.getElementById('checklist-icon-button'); // [BARU]
+            const checklistButton = document.getElementById('checklist-icon-button'); 
             
             const headerSurahTitleEl = document.getElementById('header-surah-title');
             const translationToggleButton = document.getElementById('toggle-translation-button');
             const bookmarkButton = document.getElementById('bookmark-button');
             const searchContainerEl = document.getElementById('search-container');
 
-            // Sembunyikan semua elemen opsional terlebih dahulu
             backToPrayerIcon?.classList.add('hidden');
             checklistButton?.classList.add('hidden');
             headerSurahTitleEl?.classList.add('hidden');
             translationToggleButton?.classList.add('hidden');
             bookmarkButton?.classList.add('hidden');
             
-            // Sembunyikan semua view utama
             prayerView?.classList.add('hidden');
             quranView?.classList.add('hidden');
             checklistView?.classList.add('hidden');
@@ -1836,7 +1619,6 @@
             const view = state ? state.view : 'prayer';
 
             if (view === 'ayahDetail') {
-                // === Tampilkan Tampilan Ayat ===
                 quranView?.classList.remove('hidden');
                 
                 document.getElementById('surah-list')?.classList.add('hidden');
@@ -1844,7 +1626,6 @@
                 document.getElementById('load-bookmark-container')?.classList.add('hidden');
                 document.getElementById('ayah-details')?.classList.remove('hidden');
 
-                // Tampilkan tombol header yang relevan
                 backToPrayerIcon?.classList.remove('hidden');
                 headerSurahTitleEl?.classList.remove('hidden');
                 translationToggleButton?.classList.remove('hidden');
@@ -1855,34 +1636,30 @@
                 }
 
             } else if (view === 'quranList') {
-                // === Tampilkan Daftar Surah ===
                 quranView?.classList.remove('hidden');
 
                 document.getElementById('surah-list')?.classList.remove('hidden');
                 searchContainerEl?.classList.remove('hidden');
-                checkAndDisplayBookmarkButton(); // Tampilkan bookmark jika ada
+                checkAndDisplayBookmarkButton(); 
                 document.getElementById('ayah-details')?.classList.add('hidden');
 
                 backToPrayerIcon?.classList.remove('hidden');
                 if (surahListCache.length === 0) { 
                     fetchSurahList(); 
                 } else {
-                    renderSurahList(surahListCache); // Pastikan daftar dirender
+                    renderSurahList(surahListCache); 
                 }
             
-            } else if (view === 'checklist') { // [CASE BARU]
-                // === Tampilkan Tampilan Checklist ===
+            } else if (view === 'checklist') { 
                 checklistView?.classList.remove('hidden');
                 backToPrayerIcon?.classList.remove('hidden');
-                renderChecklist(); // Muat data checklist
+                renderChecklist(); 
 
             } else { 
-                // === Default: Tampilkan Tampilan Waktu Sholat ===
                 prayerView?.classList.remove('hidden');
                 toggleButton?.classList.remove('hidden');
                 checklistButton?.classList.remove('hidden');
 
-                // Pastikan state quran-view di-reset
                 document.getElementById('surah-list')?.classList.remove('hidden');
                 searchContainerEl?.classList.remove('hidden');
                 document.getElementById('ayah-details')?.classList.add('hidden');
@@ -1890,23 +1667,15 @@
             }
         }
 
-        // --- AKHIR MODIFIKASI HISTORY API ---
-
-        /**
-         * [MODIFIKASI] Memulai aplikasi setelah Firebase siap.
-         */
         async function startApp() {
-            // Setup listener untuk tombol back/forward browser
             window.addEventListener('popstate', (event) => {
                 handleHistoryChange(event.state);
             });
             
-            // Tangani pemuatan halaman awal berdasarkan URL hash
             const hash = window.location.hash;
             let initialState = { view: 'prayer' };
 
             if (hash.startsWith('#surah/')) {
-                 // Format: #surah/1/page/1
                 const parts = hash.split('/');
                 if (parts.length >= 2) {
                     const surahId = parseInt(parts[1]);
@@ -1915,47 +1684,35 @@
                         page = parseInt(parts[3]);
                     }
                     
-                    // Kita perlu mengambil info surah (nama) sebelum bisa set state
-                    // Untuk sementara, set view ke 'quranList' lalu panggil 'renderSurahDetails'
                     initialState = { view: 'quranList' };
                     
-                    // Ambil daftar surah jika belum ada
                     if (surahListCache.length === 0) {
                          await fetchSurahList();
                     }
                     
                     const surahInfo = surahListCache.find(s => s.id === surahId);
                     if (surahInfo) {
-                         // Panggil renderSurahDetails SECARA MANUAL untuk pemuatan pertama
-                         // Ini akan mengatur state history yang benar
                          renderSurahDetails(surahId, surahInfo.name_simple, surahInfo.name_arabic, page, true); 
-                         // Kita set 'pushState' ke true agar state awal terganti dengan state detail ayat
-                         return; // Hentikan eksekusi startApp lebih lanjut di sini
+                         return; 
                     }
                 }
             } else if (hash === '#quran') {
                 initialState = { view: 'quranList' };
-            } else if (hash === '#checklist') { // [BARU]
+            } else if (hash === '#checklist') { 
                 initialState = { view: 'checklist' };
             }
 
-            // Terapkan state awal (default atau dari hash)
             history.replaceState(initialState, '', window.location.pathname + window.location.search + hash);
             handleHistoryChange(initialState);
             
-            // Muat jadwal sholat (default)
             await loadPrayerTimesForLocation();
             
-            // Mulai timer jam SETELAH load pertama selesai
             prayerInterval = setInterval(updateUI, 1000);
             
-            // Setup Event Listeners
             document.getElementById('toggle-view-button')?.addEventListener('click', toggleView);
             document.getElementById('back-to-prayer-icon')?.addEventListener('click', handleHeaderBack);
             
-            // [BARU] Event Listener untuk Checklist
             document.getElementById('checklist-icon-button')?.addEventListener('click', showChecklistView);
-            // Gunakan event delegation untuk item checklist
             document.getElementById('checklist-container')?.addEventListener('change', (event) => {
                 if (event.target.classList.contains('checklist-item')) {
                     handleChecklistChange(event);
@@ -1964,7 +1721,6 @@
             document.getElementById('reset-checklist-button')?.addEventListener('click', resetChecklist);
             
             
-            // Event listener untuk ganti lokasi
             document.getElementById('location-change-button')?.addEventListener('click', handleChangeLocation);
             document.getElementById('location-input')?.addEventListener('keyup', (event) => {
                 if (event.key === 'Enter') {
@@ -1973,33 +1729,22 @@
             });
 
             if (surahListCache.length === 0) {
-                // (fetchSurahList dipanggil saat tombol "Baca Qur'an" diklik atau jika hash=#quran)
             }
             
             updateTranslationButtonUI();
             
-            // --- [BARU] Event Listener Bookmark ---
             document.getElementById('bookmark-button')?.addEventListener('click', saveBookmark);
             document.getElementById('load-bookmark-button')?.addEventListener('click', loadBookmark);
             checkAndDisplayBookmarkButton();
             
-            // --- [MODIFIKASI] Setup Audio Player ---
             setupAudioPlayerListeners();
             
-            // Cek apakah ada audio yang perlu di-restore
             if (restoredAudioSrc) {
-                // Cari tombol yang sesuai (jika ada di DOM)
                 const matchingButton = document.querySelector(`[data-audio-url="${restoredAudioSrc}"]`);
                 if (matchingButton) {
                     playAudio(restoredAudioSrc, matchingButton);
                 } else {
-                     // Jika tombol tidak ada di DOM (misal di halaman ayat yg belum dimuat)
-                     // biarkan 'restoredAudioSrc' tetap ada, akan dicek saat rendering
-                     
-                     // Tampilkan mini-player dalam keadaan jeda jika tombol tidak ditemukan
-                     // (Perlu info title/subtitle, ini sulit didapat tanpa konteks tombol)
-                     // Untuk sementara, kita coba mainkan saja jika tombol tidak ada
-                     globalAudioPlayer.play().catch(e => { /* Gagal autoplay */ });
+                     globalAudioPlayer.play().catch(e => { });
                      showMiniPlayer("Audio Dipulihkan", " ");
                      if (miniPlayerToggle) miniPlayerToggle.innerHTML = pauseIconSvg;
                 }
@@ -2007,7 +1752,6 @@
         }
 
 
-        // Inisialisasi Firebase, Auth, dan Dark Mode saat jendela dimuat
         window.onload = () => {
              const savedSrc = sessionStorage.getItem('lastAudioSrc');
              const savedTime = sessionStorage.getItem('lastAudioTime');
@@ -2025,8 +1769,109 @@
 
              setupDarkMode(); 
              initializeFirebaseAndAuth(); 
-             // startApp() akan dipanggil oleh initializeFirebaseAndAuth setelah selesai
         }
+
+    // === [TAMBAHAN DARI KODE 1: LOGIKA JAVASCRIPT SPLASH SCREEN] ===
+    const ISLAMIC_BACKUP_FACTS = [
+        "Masjid Quba adalah masjid pertama yang dibangun Rasulullah SAW.",
+        "Al-Khawarizmi adalah bapak penemu Aljabar dan angka nol.",
+        "Universitas Al-Qarawiyyin (Maroko) adalah universitas tertua di dunia (859 M).",
+        "Ibnu Sina (Avicenna) menulis 'Al-Qanun fi al-Tibb', rujukan medis dunia.",
+        "Kata 'Kamera' berasal dari bahasa Arab 'Qamara' (ruang gelap).",
+        "Surah Al-Baqarah adalah surah terpanjang dengan 286 ayat.",
+        "Air Zamzam tidak pernah kering sejak zaman Nabi Ismail AS."
+    ];
+    const ISLAMIC_KEYWORDS = ["islam", "muslim", "nabi", "rasulullah", "muhammad saw", "allah", "khalifah", "masjid", "mekkah", "madinah", "quran", "hadits", "ulama", "sultan"];
+    const INDONESIAN_MONTHS = ["Muharram", "Shafar", "Rabiul Awal", "Rabiul Akhir", "Jumadil Awal", "Jumadil Akhir", "Rajab", "Sya'ban", "Ramadhan", "Syawal", "Dzulqa'dah", "Dzulhijjah"];
+
+    async function loadIslamicHistory() {
+        const today = new Date();
+        const displayEl = document.getElementById('islamic-history-text');
+        const dateEl = document.getElementById('hijri-date-display');
+        
+        displayEl.innerHTML = `<span class="animate-pulse text-gray-300 italic">Mencari sejarah Islam hari ini...</span>`;
+
+        try {
+            const dd = String(today.getDate()).padStart(2, '0');
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const yyyy = today.getFullYear();
+            
+            const hijriRes = await fetch(`https://api.aladhan.com/v1/gToH/${dd}-${mm}-${yyyy}`);
+            if (!hijriRes.ok) throw new Error("Hijri API Fail");
+            const hijriData = await hijriRes.json();
+            
+            const hDay = hijriData.data.hijri.day;
+            const hMonthIndex = parseInt(hijriData.data.hijri.month.number) - 1; 
+            const hYear = hijriData.data.hijri.year;
+            const hMonthName = INDONESIAN_MONTHS[hMonthIndex] || hijriData.data.hijri.month.en;
+
+            dateEl.textContent = `?? ${hDay} ${hMonthName} ${hYear} H`;
+
+            const url = `https://id.wikipedia.org/api/rest_v1/feed/onthisday/events/${today.getMonth()+1}/${today.getDate()}`;
+            const res = await fetch(url);
+            if(!res.ok) throw new Error("Wiki Fail");
+            const data = await res.json();
+            
+            let found = [];
+            if(data.events) {
+                found = data.events.filter(e => {
+                    const txt = e.text.toLowerCase();
+                    return ISLAMIC_KEYWORDS.some(k => txt.includes(k));
+                });
+            }
+
+            if(found.length > 0) {
+                const ev = found[Math.floor(Math.random() * found.length)];
+                displayEl.innerHTML = `<span class="text-emerald-300 font-bold text-xs uppercase tracking-wider mb-1 block">Sejarah Hari Ini (${ev.year}):</span><span class="italic text-white">"${ev.text.replace(/\[.*?\]/g, "")}"</span>`;
+            } else { throw new Error("No event"); }
+
+        } catch(e) {
+            const fact = ISLAMIC_BACKUP_FACTS[today.getDate() % ISLAMIC_BACKUP_FACTS.length];
+            displayEl.innerHTML = `<span class="text-emerald-300 font-bold text-xs uppercase tracking-wider mb-1 block">Tahukah Anda?</span><span class="italic text-white">"${fact}"</span>`;
+            if(dateEl.textContent === '-') dateEl.textContent = "Kalender Hijriah";
+        }
+    }
+
+    (function() {
+        const targetDate = new Date("Feb 18, 2026 00:00:00").getTime();
+        const timerEl = document.getElementById("ramadhan-timer");
+        const boxStyle = "flex flex-col items-center justify-center bg-slate-800/60 backdrop-blur-md border border-slate-700/50 rounded-2xl p-2 w-16 md:w-20 shadow-xl transform transition hover:scale-105";
+        const numStyle = "text-xl md:text-3xl font-bold font-mono text-white leading-none mb-1 drop-shadow-md";
+        const labelStyle = "text-[8px] md:text-xs text-emerald-400 uppercase font-bold tracking-wider";
+
+        setInterval(function() {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+            if (distance < 0) { timerEl.innerHTML = `<div class="text-2xl font-bold text-emerald-500 animate-pulse">MARHABAN YA RAMADHAN</div>`; return; }
+            const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((distance % (1000 * 60)) / 1000);
+            timerEl.innerHTML = `
+                <div class="${boxStyle} border-b-2 border-emerald-600"><span class="${numStyle}">${d}</span><span class="${labelStyle}">Hari</span></div>
+                <div class="${boxStyle} border-b-2 border-emerald-500"><span class="${numStyle}">${String(h).padStart(2, '0')}</span><span class="${labelStyle}">Jam</span></div>
+                <div class="${boxStyle} border-b-2 border-emerald-400"><span class="${numStyle}">${String(m).padStart(2, '0')}</span><span class="${labelStyle}">Menit</span></div>
+                <div class="${boxStyle} border-b-2 border-yellow-500 bg-slate-700/40"><span class="${numStyle} text-yellow-400">${String(s).padStart(2, '0')}</span><span class="${labelStyle} text-yellow-200">Detik</span></div>`;
+        }, 1000);
+        
+        loadIslamicHistory();
+    })();
+
+    window.enterFullScreenApp = function() {
+        const elem = document.documentElement;
+        const overlay = document.getElementById('fullscreen-overlay');
+        
+        if (elem.requestFullscreen) { elem.requestFullscreen().catch(e => console.log(e)); } 
+        else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); }
+        
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
+        setTimeout(() => { 
+            overlay.remove(); 
+            document.body.classList.remove('overflow-hidden'); 
+        }, 700);
+    };
+    // === [AKHIR TAMBAHAN JAVASCRIPT] ===
 
     </script>
     
