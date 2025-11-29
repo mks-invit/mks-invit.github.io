@@ -666,7 +666,7 @@
         let currentPage = 1;
         let totalPages = 1;
         let allVerses = []; 
-        const VERSES_PER_PAGE = 10;
+        let surahPages = []; // Menyimpan daftar halaman untuk surah saat ini
         let isTranslationVisible = true; 
 
         function playAudio(audioUrl, buttonElement) {
@@ -1016,7 +1016,8 @@
             try {
                 if (allVerses.length === 0 || (allVerses.length > 0 && allVerses[0].verse_key.startsWith(surahId + ':') === false)) {
                     
-                    const response = await fetch(`${BASE_QURAN_API}/verses/by_chapter/${surahId}?language=id&words=false&translations=33&fields=text_uthmani,verse_key,verse_number`);
+                    // MENGAMBIL DATA DENGAN PAGE NUMBER
+                    const response = await fetch(`${BASE_QURAN_API}/verses/by_chapter/${surahId}?language=id&words=false&translations=33&fields=text_uthmani,verse_key,verse_number,page_number&per_page=300`);
                     if (!response.ok) throw new Error('Gagal mengambil data ayat');
                     
                     const data = await response.json();
@@ -1027,7 +1028,9 @@
                     }
 
                     allVerses = data.verses;
-                    totalPages = Math.ceil(allVerses.length / VERSES_PER_PAGE);
+                    // Mengambil daftar nomor halaman unik yang ada di surah ini
+                    surahPages = [...new Set(allVerses.map(v => v.page_number))];
+                    totalPages = surahPages.length;
                 }
                 
                 renderAyahPage();
@@ -1050,9 +1053,11 @@
 
             ayahContentEl.innerHTML = '';
             
-            const startIndex = (currentPage - 1) * VERSES_PER_PAGE;
-            const endIndex = startIndex + VERSES_PER_PAGE;
-            const versesToShow = allVerses.slice(startIndex, endIndex);
+            // Mengambil nomor halaman Mushaf sebenarnya berdasarkan index currentPage
+            const currentQuranPageNumber = surahPages[currentPage - 1];
+            
+            // Filter ayat yang hanya berada di halaman tersebut
+            const versesToShow = allVerses.filter(verse => verse.page_number === currentQuranPageNumber);
 
             if (currentPage === 1 && currentSurahId !== 1 && currentSurahId !== 9) {
                  ayahContentEl.innerHTML += `<p class="ayah-arabic text-center mb-4 text-2xl font-light text-gray-900 dark:text-gray-100">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>`;
@@ -1084,7 +1089,7 @@
                             ${playIconSvg}
                         </button>
                     </div>
-                    <p class="ayah-arabic mb-4 text-gray-900 dark:text-gray-100">${arabicText}</p>
+                    <p class="ayah-arabic mb-4 text-gray-900 dark:text-gray-100 text-right" style="direction: rtl;">${arabicText}</p>
                     <p class="${translationClass} text-sm text-gray-700 dark:text-gray-300 italic pt-3 border-t border-gray-200 dark:border-gray-600">${translationText}</p>
                 `;
                 
@@ -1145,7 +1150,10 @@
 
             prevButton.disabled = (currentPage === 1);
             nextButton.disabled = (currentPage === totalPages);
-            pageInfo.textContent = `Halaman ${currentPage}/${totalPages}`;
+            
+            // Tampilkan informasi halaman Al-Qur'an yang sebenarnya
+            const realPageNumber = surahPages[currentPage - 1];
+            pageInfo.innerHTML = `Hal. Quran: <b>${realPageNumber}</b> <span class="text-xs ml-1 opacity-70">(${currentPage}/${totalPages})</span>`;
         }
         
         window.toggleTranslation = () => {
@@ -1221,7 +1229,7 @@
             if (bookmarkData && container && button) {
                 try {
                     const data = JSON.parse(bookmarkData);
-                    button.textContent = `Lanjutkan Baca: ${data.simpleName}, Hal. ${data.page}`;
+                    button.textContent = `Lanjutkan Baca: ${data.simpleName}`;
                     container.classList.remove('hidden');
                 } catch (e) {
                     console.error("Gagal parse bookmark:", e);
@@ -1890,4 +1898,3 @@
     </script>
     </body>
 </html>
-
