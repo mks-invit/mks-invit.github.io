@@ -191,7 +191,9 @@
             
             <div class="flex-grow flex flex-col justify-center items-center sm:flex-row sm:justify-center sm:space-x-3">
                 <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white mb-1 sm:mb-0">
-                    aic | JWS
+                    <a href="./" class="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-200" title="Kembali ke Beranda">
+                        aic | JWS
+                    </a>
                 </h1>
                 <span id="header-surah-title" class="hidden text-base sm:text-lg font-semibold text-emerald-600 dark:text-emerald-400">
                     </span>
@@ -1060,7 +1062,7 @@
             const versesToShow = allVerses.filter(verse => verse.page_number === currentQuranPageNumber);
 
             if (currentPage === 1 && currentSurahId !== 1 && currentSurahId !== 9) {
-                 ayahContentEl.innerHTML += `<p class="ayah-arabic text-center mb-4 text-2xl font-light text-gray-900 dark:text-gray-100">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>`;
+                 ayahContentEl.innerHTML += `<p class="ayah-arabic text-center mb-4 text-2xl font-light text-gray-900 dark:text-gray-100">?????? ??????? ???????????? ??????????</p>`;
             }
 
             versesToShow.forEach(verse => {
