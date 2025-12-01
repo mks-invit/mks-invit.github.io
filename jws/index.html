@@ -15,7 +15,7 @@
         /* Menggunakan font Inter */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
         
-        /* === [TAMBAHAN DARI KODE 1: FONT UNTUK SPLASH SCREEN] === */
+        /* Font untuk Splash Screen & Arab */
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Amiri&display=swap'); 
 
@@ -123,7 +123,7 @@
             padding-bottom: 0 !important;
         }
 
-        /* === [TAMBAHAN DARI KODE 1: CSS UNTUK SPLASH SCREEN] === */
+        /* CSS UNTUK SPLASH SCREEN */
         .font-serif-display { font-family: 'Playfair Display', serif; }
         
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
@@ -176,11 +176,13 @@
         </div>
     </div>
 </div>
+
 <div id="app-container" class="w-full max-w-md mx-auto bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-xl transition-colors duration-300 flex flex-col">
         
         <header class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-4">
             
-            <div class="flex items-center" style="min-width: 56px;"> <button id="checklist-icon-button" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150" aria-label="Buka Checklist Shalat">
+            <div class="flex items-center" style="min-width: 56px;"> 
+                <button id="checklist-icon-button" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150" aria-label="Buka Checklist Shalat">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                 </button>
                 
@@ -191,15 +193,16 @@
             
             <div class="flex-grow flex flex-col justify-center items-center sm:flex-row sm:justify-center sm:space-x-3">
                 <h1 class="text-xl sm:text-2xl font-extrabold text-gray-900 dark:text-white mb-1 sm:mb-0">
-                    <a href="./" class="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-200" title="Kembali ke Beranda">
+                    <a href="#" onclick="event.preventDefault(); navigateToHome();" class="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-200" title="Kembali ke Kartu Jadwal">
                         aic | JWS
                     </a>
                 </h1>
                 <span id="header-surah-title" class="hidden text-base sm:text-lg font-semibold text-emerald-600 dark:text-emerald-400">
-                    </span>
+                </span>
             </div>
             
-            <div class="flex space-x-2" style="min-width: 56px;"> <button id="bookmark-button" 
+            <div class="flex space-x-2" style="min-width: 56px;"> 
+                <button id="bookmark-button" 
                         class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-150 hidden" 
                         aria-label="Simpan Bookmark Halaman Ini">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
@@ -1062,7 +1065,7 @@
             const versesToShow = allVerses.filter(verse => verse.page_number === currentQuranPageNumber);
 
             if (currentPage === 1 && currentSurahId !== 1 && currentSurahId !== 9) {
-                 ayahContentEl.innerHTML += `<p class="ayah-arabic text-center mb-4 text-2xl font-light text-gray-900 dark:text-gray-100">?????? ??????? ???????????? ??????????</p>`;
+                 ayahContentEl.innerHTML += `<p class="ayah-arabic text-center mb-4 text-2xl font-light text-gray-900 dark:text-gray-100">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>`;
             }
 
             versesToShow.forEach(verse => {
@@ -1676,6 +1679,17 @@
                 checkAndDisplayBookmarkButton();
             }
         }
+
+        // --- FUNGSI HOME / DASHBOARD ---
+        window.navigateToHome = () => {
+            stopAudioPlayback(); // Matikan audio jika ada
+            
+            // Reset History Browser ke state awal (menghapus hash #quran dll)
+            history.pushState({ view: 'prayer' }, 'Jadwal Sholat', window.location.pathname + window.location.search);
+            
+            // Panggil handler untuk mengubah tampilan UI kembali ke prayer-view
+            handleHistoryChange({ view: 'prayer' });
+        };
 
         async function startApp() {
             window.addEventListener('popstate', (event) => {
