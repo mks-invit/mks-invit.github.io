@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CBT - PAS Bahasa Inggris Kelas 5</title>
+    <title>CBT - PAS Bahasa Inggris Kelas 6</title>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -84,7 +84,8 @@
             text-align: center;
         }
 
-        .login-card input {
+        /* Update CSS untuk Input dan Select */
+        .login-card input, .login-card select {
             width: 100%;
             padding: 12px;
             margin: 10px 0;
@@ -92,6 +93,7 @@
             border: 1px solid #ddd;
             border-radius: 6px;
             font-size: 1rem;
+            background-color: white; /* Pastikan background putih */
         }
 
         .btn {
@@ -317,7 +319,7 @@
         <div class="school-info">
             <div class="school-logo-text">SDN KAKATUA</div>
             <div class="school-text">
-                <h2>AIC</h2> 
+                <h2>UPT SPF</h2> 
                 <p>CBT System</p>
             </div>
         </div>
@@ -328,9 +330,16 @@
     <div id="login-page">
         <div class="login-card">
             <h2 style="margin-top:0; color: var(--primary-color);">Selamat Datang</h2>
-            <p style="color: #666; margin-bottom: 20px;">Latihan Ulangan Bahasa Inggris Kelas 6<br>Masukkan identitas untuk memulai ujian.</p>
+            <p style="color: #666; margin-bottom: 20px;">Latihan Bahasa Inggris Kelas 6<br>Masukkan identitas untuk memulai ujian.</p>
+            
             <input type="text" id="input-nama" placeholder="Nama Lengkap Siswa">
-            <input type="text" id="input-kelas" placeholder="Kelas (Contoh: 6A)" value="6">
+            
+            <select id="input-kelas">
+                <option value="" disabled selected>-- Pilih Kelas --</option>
+                <option value="6A">Kelas 6A</option>
+                <option value="6B">Kelas 6B</option>
+            </select>
+
             <button class="btn btn-success" style="width: 100%; margin-top: 20px; padding: 12px;" onclick="startExam()">MULAI UJIAN</button>
         </div>
     </div>
@@ -393,9 +402,8 @@
         // PENTING: GANTI URL INI DENGAN URL WEB APP MILIK ANDA SENDIRI
         const GOOGLE_SCRIPT_URL = 'PASTE_URL_WEB_APP_ANDA_DISINI'; 
 
-        // --- DATA BANK SOAL BARU ---
+        // --- DATA BANK SOAL ---
         // Jawaban Benar SELALU ditaruh di index [0] (Array elemen pertama).
-        // Sistem nanti akan mengacak posisi jawaban tersebut saat ditampilkan ke siswa.
         const questionBank = [
             { text: "Aisyah: 'Did you make this cake?'<br>Cici: 'Yes, I ___ it yesterday.'", answers: ["made", "maked", "make", "making"] },
             { text: "Perhatikan kalimat rumpang berikut:<br>'The students ___ in the library two hours ago.'", answers: ["were", "was", "are", "is"] },
@@ -518,8 +526,12 @@
             studentClass = document.getElementById('input-kelas').value;
 
             if(!studentName) { 
-                alert("Nama harus diisi!"); 
+                alert("Mohon isi Nama Lengkap!"); 
                 return; 
+            }
+            if(!studentClass) {
+                alert("Mohon pilih Kelas!");
+                return;
             }
 
             // --- AUTO FULL SCREEN ---
