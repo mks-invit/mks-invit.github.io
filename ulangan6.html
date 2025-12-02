@@ -84,7 +84,6 @@
             text-align: center;
         }
 
-        /* Update CSS untuk Input dan Select */
         .login-card input, .login-card select {
             width: 100%;
             padding: 12px;
@@ -93,7 +92,7 @@
             border: 1px solid #ddd;
             border-radius: 6px;
             font-size: 1rem;
-            background-color: white; /* Pastikan background putih */
+            background-color: white;
         }
 
         .btn {
@@ -113,7 +112,39 @@
         .btn-success { background-color: var(--accent-color); color: white; }
         .btn-warning { background-color: #f39c12; color: white; }
         .btn-danger { background-color: var(--danger-color); color: white; }
+        .btn-info { background-color: #17a2b8; color: white; } 
         .btn-outline { background: transparent; border: 1px solid #999; color: #666; }
+
+        /* KISI-KISI PAGE */
+        #kisi-kisi-page {
+            display: none; 
+            justify-content: center;
+            align-items: flex-start;
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .kisi-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px; 
+            line-height: 1.6;
+        }
+
+        .kisi-card h2 { color: var(--primary-color); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0;}
+        .kisi-card h4 { color: var(--secondary-color); margin-top: 20px; margin-bottom: 5px; }
+        
+        /* Style khusus untuk link di header */
+        .kisi-card h4 a { text-decoration: none; color: var(--secondary-color); border-bottom: 1px dashed var(--secondary-color); }
+        .kisi-card h4 a:hover { color: var(--primary-color); border-bottom: 1px solid var(--primary-color); }
+
+        .kisi-card ul { padding-left: 20px; margin-top: 5px; }
+        .kisi-card li { margin-bottom: 5px; }
+        .badge { background: #eee; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.9em; }
 
         /* EXAM LAYOUT */
         #exam-page {
@@ -204,7 +235,7 @@
         /* --- GRID NAVIGASI 8 KOTAK --- */
         .nav-grid {
             display: grid;
-            grid-template-columns: repeat(8, 1fr); /* 8 Kolom Fix */
+            grid-template-columns: repeat(8, 1fr);
             gap: 8px;
             max-height: 100px;
             overflow-y: auto;
@@ -310,6 +341,7 @@
             .school-logo-text { font-size: 1.2rem; }
             .timer-box { font-size: 0.9rem; padding: 5px 10px; min-width: 50px; }
             .nav-grid { gap: 4px; }
+            .kisi-card { padding: 20px; }
         }
     </style>
 </head>
@@ -341,6 +373,60 @@
             </select>
 
             <button class="btn btn-success" style="width: 100%; margin-top: 20px; padding: 12px;" onclick="startExam()">MULAI UJIAN</button>
+            
+            <button class="btn btn-info" style="width: 100%; margin-top: 10px; padding: 12px;" onclick="showKisiKisi()">📘 Lihat Kisi-kisi Materi</button>
+        </div>
+    </div>
+
+    <div id="kisi-kisi-page">
+        <div class="kisi-card">
+            <h2><center>Ringkasan Materi PAS Bahasa Inggris Kelas 6<br>UPT SPF SDN Kakatua</center></h2>
+            <p style="color:#666;">Mengacu pada Kurikulum Merdeka buku "My Next Words"</p>
+            
+            <h4>1. Kegiatan di Masa Lampau (Simple Past Tense)</h4>
+            <ul>
+                <li><b>Materi:</b> Menceritakan kejadian yang sudah berlalu (kemarin, liburan lalu).</li>
+                <li><b>Fokus:</b>
+                    <ul>
+                        <li>Perubahan kata kerja menjadi <span class="badge">Verb 2</span>:</li>
+                        <li><i>Irregular:</i> Go → Went, Buy → Bought, Eat → Ate, Have → Had, Drink → Drank.</li>
+                        <li><i>Regular:</i> Study → Studied, Play → Played, Borrow → Borrowed.</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h4>2. Penggunaan To Be Lampau (Was/Were)</h4>
+            <ul>
+                <li><b>Was:</b> Subjek tunggal (I, She, He, It, Nama Orang). <br><i>Contoh: I was sad.</i></li>
+                <li><b>Were:</b> Subjek jamak (You, They, We). <br><i>Contoh: They were happy.</i></li>
+            </ul>
+
+            <h4>3. Perasaan dan Emosi (Feelings)</h4>
+            <ul>
+                <li><b>Kosa kata:</b> Sad (sedih), Happy (senang), Bored (bosan), Tired (lelah), Hungry (lapar), Crying (menangis).</li>
+                <li><b>HOTS:</b> Mengapa seseorang merasa sedih/senang (sebab-akibat).</li>
+            </ul>
+
+            <h4><a href="https://image.slidesharecdn.com/englishforelementaryschool-220901145153-bc1f58b7/75/English-for-Elementary-School-pptx-5-2048.jpg" target="_blank" title="Klik untuk melihat gambar materi">4. Arah dan Lokasi (Direction & Location)</a></h4>
+            <ul>
+                <li><b>Instruksi:</b> Go straight (lurus), Turn left (belok kiri), Turn right (belok kanan).</li>
+                <li><b>Preposisi:</b> Between (di antara), Near (dekat), Behind (di belakang), Across (di seberang).</li>
+                <li><b>Rambu:</b> No Parking, No Entry, T-junction (pertigaan).</li>
+            </ul>
+
+            <h4><a href="https://www.grammar.cl/rules/possessive-pronouns.jpg" target="_blank" title="Klik untuk melihat gambar materi">5. Kepemilikan (Possession)</a></h4>
+            <ul>
+                <li><b>Kata ganti:</b> Mine (milikku), Yours (milikmu), Hers (miliknya pr), His (miliknya lk).</li>
+            </ul>
+
+            <h4>6. Keterangan Waktu (Time Signals)</h4>
+            <ul>
+                <li>Yesterday (kemarin), Last week/year/Sunday, Two days ago.</li>
+            </ul>
+
+            <div style="margin-top: 30px; text-align: center;">
+                <button class="btn btn-warning" onclick="hideKisiKisi()" style="width: 200px;">Kembali ke Login</button>
+            </div>
         </div>
     </div>
 
@@ -399,11 +485,9 @@
 
     <script>
         // --- KONFIGURASI SPREADSHEET ---
-        // PENTING: GANTI URL INI DENGAN URL WEB APP MILIK ANDA SENDIRI
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzfgxbUbh83EzZPvu9PGZlveEQA1L5d9SwWnyQ0qXzsKZWB8ITJeLyn5t2k5x930UWpnQ/exec'; 
+        const GOOGLE_SCRIPT_URL = 'PASTE_URL_WEB_APP_ANDA_DISINI'; 
 
         // --- DATA BANK SOAL ---
-        // Jawaban Benar SELALU ditaruh di index [0] (Array elemen pertama).
         const questionBank = [
             { text: "Aisyah: 'Did you make this cake?'<br>Cici: 'Yes, I ___ it yesterday.'", answers: ["made", "maked", "make", "making"] },
             { text: "Perhatikan kalimat rumpang berikut:<br>'The students ___ in the library two hours ago.'", answers: ["were", "was", "are", "is"] },
@@ -446,6 +530,17 @@
         const userDisplay = document.getElementById('user-display');
         const modalOverlay = document.getElementById('custom-modal');
         
+        // --- LOGIKA KISI-KISI ---
+        function showKisiKisi() {
+            document.getElementById('login-page').style.display = 'none';
+            document.getElementById('kisi-kisi-page').style.display = 'flex';
+        }
+
+        function hideKisiKisi() {
+            document.getElementById('kisi-kisi-page').style.display = 'none';
+            document.getElementById('login-page').style.display = 'flex';
+        }
+
         // --- UTILITY: SHUFFLE FUNCTION (Fisher-Yates) ---
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
