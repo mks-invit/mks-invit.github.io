@@ -136,7 +136,25 @@
         }
 
         .kisi-card h2 { color: var(--primary-color); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0;}
-        .kisi-card h4 { color: var(--secondary-color); margin-top: 20px; margin-bottom: 5px; }
+        .kisi-card h4 { color: var(--secondary-color); margin-top: 25px; margin-bottom: 5px; }
+        
+        /* STYLE TOMBOL MATERI */
+        .btn-materi {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            transition: background 0.3s;
+        }
+        .btn-materi:hover {
+            background-color: #219150;
+        }
+
         .kisi-card ul { padding-left: 20px; margin-top: 5px; }
         .kisi-card li { margin-bottom: 5px; }
         .badge { background: #eee; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.9em; }
@@ -369,7 +387,7 @@
 
             <button class="btn btn-success" style="width: 100%; margin-top: 20px; padding: 12px;" onclick="startExam()">MULAI UJIAN</button>
             
-            <button class="btn btn-info" style="width: 100%; margin-top: 10px; padding: 12px;" onclick="showKisiKisi()">ð Lihat Kisi-kisi Materi</button>
+            <button class="btn btn-info" style="width: 100%; margin-top: 10px; padding: 12px;" onclick="showKisiKisi()">?? Lihat Kisi-kisi Materi</button>
         </div>
     </div>
 
@@ -379,6 +397,7 @@
             <p style="color:#666;">Mengacu pada Kurikulum Merdeka buku "My Next Words"</p>
             
             <h4>1. Makanan dan Minuman (Food & Drinks)</h4>
+            <a href="https://drive.google.com/file/d/1_-41HtaRGjKfrpdyht7ZAsY3uLC_GDbc/view?usp=drivesdk" target="_blank" class="btn-materi">?? LIHAT MATERI</a>
             <ul>
                 <li><b>Materi:</b> Mengenal rasa makanan dan satuan hitung makanan (Quantifiers).</li>
                 <li><b>Fokus:</b>
@@ -391,6 +410,7 @@
             </ul>
 
             <h4>2. Harga dan Angka (Prices & Numbers)</h4>
+            <a href="https://drive.google.com/file/d/1JVp4DSlow4awornT7d_uFXHBFz2nOWsQ/view?usp=drivesdk" target="_blank" class="btn-materi">?? LIHAT MATERI</a>
             <ul>
                 <li><b>Materi:</b> Menyebutkan harga barang dalam Rupiah dan operasi matematika sederhana.</li>
                 <li><b>Fokus:</b>
@@ -403,6 +423,7 @@
             </ul>
 
             <h4>3. Kesehatan dan Penyakit (Health Problems)</h4>
+            <a href="https://drive.google.com/file/d/1GTiKr4i-PLWpB-tsIr6VubfpERqdKPuu/view?usp=drivesdk" target="_blank" class="btn-materi">?? LIHAT MATERI</a>
             <ul>
                 <li><b>Materi:</b> Menyebutkan jenis penyakit umum dan bagian tubuh yang sakit.</li>
                 <li><b>Fokus:</b>
@@ -414,6 +435,7 @@
             </ul>
 
             <h4>4. Pakaian dan Aksesoris (Clothes & Accessories)</h4>
+            <a href="https://drive.google.com/file/d/1XAzd7drTTeC8LIB_IRm7oafDRdQtim1-/view?usp=drivesdk" target="_blank" class="btn-materi">?? LIHAT MATERI</a>
             <ul>
                 <li><b>Materi:</b> Jenis pakaian dan penggunaannya sesuai situasi/bagian tubuh.</li>
                 <li><b>Fokus:</b>
@@ -463,7 +485,7 @@
 
     <div id="result-page">
         <div class="login-card" style="width: 320px;">
-            <div style="font-size: 4rem; margin-bottom: 0;">ð</div>
+            <div style="font-size: 4rem; margin-bottom: 0;">??</div>
             <h2 style="margin-top: 5px;">Hasil Ujian</h2>
             <p id="result-name" style="margin:0; font-weight:bold; color: #555;">Nama Siswa</p>
             <div class="score-circle" id="final-score">0</div>
@@ -485,7 +507,7 @@
 
     <div id="custom-modal" class="modal-overlay">
         <div class="modal-box">
-            <span id="modal-icon" class="modal-icon">â ï¸</span>
+            <span id="modal-icon" class="modal-icon">??</span>
             <h3 id="modal-title" class="modal-title">Konfirmasi</h3>
             <p id="modal-desc" class="modal-desc">Deskripsi modal disini.</p>
             <div class="modal-buttons" id="modal-actions"></div>
@@ -497,8 +519,6 @@
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw8-tja-3d838DJzcoU9QODy_p-Bbf853LRz-z3ufKO73V4w93SZAfIMA6x_0NZeZsbSw/exec'; 
 
         // --- DATA BANK SOAL KELAS 5 ---
-        // Array index 0 di 'answers' adalah jawaban BENAR.
-        // Sistem akan mengacak posisi jawaban saat ditampilkan.
         const questionBank = [
             { text: "Limes (jeruk nipis) are green and they taste ...", answers: ["sour", "sweet", "spicy", "salty"] },
             { text: "Manakah makanan yang memiliki rasa 'Salty' (Asin)?", answers: ["Salted fish", "Chocolate cake", "Ice cream", "Watermelon"] },
@@ -595,7 +615,7 @@
             actionContainer.innerHTML = ''; 
 
             if(type === 'confirm') {
-                document.getElementById('modal-icon').innerText = 'ð¤';
+                document.getElementById('modal-icon').innerText = '??';
                 const btnCancel = document.createElement('button');
                 btnCancel.className = 'btn btn-outline';
                 btnCancel.innerText = 'Batal';
@@ -609,7 +629,7 @@
                 actionContainer.appendChild(btnCancel);
                 actionContainer.appendChild(btnConfirm);
             } else if (type === 'alert') {
-                document.getElementById('modal-icon').innerText = 'â°';
+                document.getElementById('modal-icon').innerText = '?';
                 const btnOk = document.createElement('button');
                 btnOk.className = 'btn btn-danger';
                 btnOk.innerText = 'OK, Lihat Nilai';
