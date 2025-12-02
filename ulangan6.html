@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBT - PAS Bahasa Inggris Kelas 5</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #27ae60;
+            --danger-color: #e74c3c;
+            --text-color: #333;
+            --bg-color: #f4f6f7;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        .header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            height: 60px;
+            box-sizing: border-box;
+            z-index: 10;
+        }
+
+        .school-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .school-logo-text {
+            font-weight: 900;
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+            color: #ffffff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .school-text h2 { margin: 0; font-size: 1rem; }
+        .school-text p { margin: 0; font-size: 0.7rem; opacity: 0.8; }
+
+        .timer-box {
+            background: var(--danger-color);
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            min-width: 70px;
+            text-align: center;
+            display: none; 
+        }
+
+        /* LOGIN PAGE */
+        #login-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+        }
+
+        .login-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            width: 300px;
+            text-align: center;
+        }
+
+        .login-card input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .btn {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.2s;
+            font-weight: 600;
+        }
+
+        .btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+        .btn:active { transform: translateY(0); }
+        
+        .btn-primary { background-color: var(--secondary-color); color: white; }
+        .btn-success { background-color: var(--accent-color); color: white; }
+        .btn-warning { background-color: #f39c12; color: white; }
+        .btn-danger { background-color: var(--danger-color); color: white; }
+        .btn-outline { background: transparent; border: 1px solid #999; color: #666; }
+
+        /* EXAM LAYOUT */
+        #exam-page {
+            display: none; 
+            flex-direction: column;
+            padding: 10px;
+            gap: 10px;
+            height: calc(100vh - 60px);
+            box-sizing: border-box;
+        }
+
+        /* Question Area */
+        .question-area {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .q-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .q-text {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            font-weight: 700;
+            color: #222;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .option-label:hover { background-color: #f8f9fa; border-color: #ccc; }
+        .option-label input { margin-right: 15px; transform: scale(1.2); accent-color: var(--secondary-color); }
+
+        .q-footer {
+            margin-top: auto;
+            padding-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        /* SIDEBAR NAVIGASI DI BAWAH */
+        .sidebar {
+            width: 100%;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        .nav-title {
+            font-size: 0.9rem;
+            margin: 0 0 10px 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            color: #555;
+        }
+
+        /* --- GRID NAVIGASI 8 KOTAK --- */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr); /* 8 Kolom Fix */
+            gap: 8px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            aspect-ratio: 1.2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f1f3f5;
+            border: 1px solid #e9ecef;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #495057;
+            transition: 0.2s;
+        }
+
+        .nav-item:hover { background: #e2e6ea; }
+        .nav-item.active { border: 2px solid var(--secondary-color); background-color: #e7f5ff; color: var(--secondary-color); }
+        .nav-item.answered { background-color: var(--accent-color); color: white; border-color: var(--accent-color); }
+
+        /* RESULT PAGE */
+        #result-page {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+            flex-direction: column;
+        }
+
+        .score-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary-color), #2980b9);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 20px 0;
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        /* --- CUSTOM MODAL (Estetis) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(3px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal-box {
+            transform: translateY(0);
+        }
+
+        .modal-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .modal-title { margin: 0 0 10px 0; font-size: 1.4rem; color: #333; }
+        .modal-desc { color: #666; margin-bottom: 25px; line-height: 1.5; }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .modal-buttons button { flex: 1; }
+
+        @media (max-width: 768px) {
+            .header .school-text { display: none; } 
+            .school-logo-text { font-size: 1.2rem; }
+            .timer-box { font-size: 0.9rem; padding: 5px 10px; min-width: 50px; }
+            .nav-grid { gap: 4px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="school-info">
+            <div class="school-logo-text">SDN KAKATUA</div>
+            <div class="school-text">
+                <h2>UPT SPF</h2> 
+                <p>CBT System</p>
+            </div>
+        </div>
+        <div id="user-display" style="display:none; margin-right: 20px; font-weight: bold; font-size: 0.9rem;"></div>
+        <div class="timer-box" id="timer">00:00</div>
+    </header>
+
+    <div id="login-page">
+        <div class="login-card">
+            <h2 style="margin-top:0; color: var(--primary-color);">Selamat Datang</h2>
+            <p style="color: #666; margin-bottom: 20px;">Latihan Bahasa Inggris<br>Masukkan identitas untuk memulai ujian.</p>
+            <input type="text" id="input-nama" placeholder="Nama Lengkap Siswa">
+            <input type="text" id="input-kelas" placeholder="Kelas (Contoh: 5A)" value="5">
+            <button class="btn btn-success" style="width: 100%; margin-top: 20px; padding: 12px;" onclick="startExam()">MULAI UJIAN</button>
+        </div>
+    </div>
+
+    <div id="exam-page">
+        <div class="question-area">
+            <div class="q-header">
+                <h3 id="q-number" style="margin:0;">Soal No. 1</h3>
+            </div>
+            
+            <div class="q-text" id="q-content">Loading...</div>
+            <div class="options-group" id="q-options"></div>
+
+            <div class="q-footer">
+                <button class="btn btn-outline" onclick="prevQuestion()" id="btn-prev">Sebelumnya</button>
+                <button class="btn btn-danger" onclick="confirmFinish()" id="btn-finish" style="display:none;">Selesai Ujian</button>
+                <button class="btn btn-primary" onclick="nextQuestion()" id="btn-next">Selanjutnya</button>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <h4 class="nav-title">Navigasi Soal</h4>
+            <div class="nav-grid" id="nav-grid"></div>
+        </div>
+    </div>
+
+    <div id="result-page">
+        <div class="login-card" style="width: 320px;">
+            <div style="font-size: 4rem; margin-bottom: 0;">🏆</div>
+            <h2 style="margin-top: 5px;">Hasil Ujian</h2>
+            <p id="result-name" style="margin:0; font-weight:bold; color: #555;">Nama Siswa</p>
+            <div class="score-circle" id="final-score">0</div>
+            
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px; width:100%; background: #f8f9fa; padding: 10px; border-radius: 8px; box-sizing: border-box;">
+                <div style="text-align: center; flex: 1; border-right: 1px solid #ddd;">
+                    <div style="font-size: 0.8rem; color: #666;">Benar</div>
+                    <b id="total-correct" style="color: var(--accent-color); font-size: 1.2rem;">0</b>
+                </div>
+                <div style="text-align: center; flex: 1;">
+                    <div style="font-size: 0.8rem; color: #666;">Salah</div>
+                    <b id="total-wrong" style="color: var(--danger-color); font-size: 1.2rem;">0</b>
+                </div>
+            </div>
+            <div id="loading-msg" style="display:none; color: #888; font-style: italic; margin-bottom: 10px;">Menyimpan nilai...</div>
+            <button class="btn btn-primary" onclick="window.location.reload()" id="btn-reload" style="display:none; width:100%;">Tutup Aplikasi</button>
+        </div>
+    </div>
+
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-box">
+            <span id="modal-icon" class="modal-icon">⚠️</span>
+            <h3 id="modal-title" class="modal-title">Konfirmasi</h3>
+            <p id="modal-desc" class="modal-desc">Deskripsi modal disini.</p>
+            <div class="modal-buttons" id="modal-actions"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- KONFIGURASI SPREADSHEET ---
+        // PENTING: GANTI URL INI DENGAN URL WEB APP MILIK ANDA SENDIRI
+        const GOOGLE_SCRIPT_URL = 'PASTE_URL_WEB_APP_ANDA_DISINI'; 
+
+        // --- DATA BANK SOAL BARU ---
+        // Jawaban Benar SELALU ditaruh di index [0] (Array elemen pertama).
+        // Sistem nanti akan mengacak posisi jawaban tersebut saat ditampilkan ke siswa.
+        const questionBank = [
+            { text: "Aisyah: 'Did you make this cake?'<br>Cici: 'Yes, I ___ it yesterday.'", answers: ["made", "maked", "make", "making"] },
+            { text: "Perhatikan kalimat rumpang berikut:<br>'The students ___ in the library two hours ago.'", answers: ["were", "was", "are", "is"] },
+            { text: "Susun kata-kata ini menjadi kalimat yang benar:<br><i>not – did – Joshua – football – play – Sunday – last</i>", answers: ["Joshua did not play football last Sunday.", "Joshua not did play football last Sunday.", "Did not Joshua play football last Sunday.", "Joshua did not played football last Sunday."] },
+            { text: "Made memenangkan lomba lari kemarin. Bagaimana perasaannya?", answers: ["He was happy and excited.", "He was sad and angry.", "He was bored.", "He was hungry."] },
+            { text: "Lihat instruksi arah ini:<br>'<i>Go straight until you see a crossroad, then turn right.</i>'<br>Apa arti kata yang dicetak miring?", answers: ["Perempatan", "Pertigaan", "Bundaran", "Jalan buntu"] },
+            { text: "Manakah kalimat tanya yang TEPAT untuk jawaban ini:<br>'<i>I went to Bali last holiday.</i>'", answers: ["Where did you go last holiday?", "When did you go to Bali?", "What did you do in Bali?", "Who did you go with?"] },
+            { text: "My father ___ a new bicycle for me last month.", answers: ["bought", "buys", "buyed", "bringing"] },
+            { text: "Jika 'Mine' artinya Milikku, maka 'Theirs' artinya ...", answers: ["Milik mereka", "Milik kita", "Milik dia (laki-laki)", "Milik kamu"] },
+            { text: "Pilihlah kalimat yang menggunakan keterangan waktu (Time Signal) yang BENAR.", answers: ["We visited the museum yesterday.", "We visited the museum tomorrow.", "We visited the museum now.", "We visited the museum next week."] },
+            { text: "Analisis Situasi: '<i>I wanted to eat, but the plate was empty.</i>' (Saya ingin makan, tapi piringnya kosong). Bagaimana perasaan pembicara?", answers: ["Disappointed and hungry", "Happy and full", "Sleepy", "Thirsty"] },
+            { text: "Terjemahkan kalimat ini: 'Belok kanan di pertigaan.'", answers: ["Turn right at the T-junction.", "Turn left at the crossroad.", "Go straight to the T-junction.", "Turn right at the traffic light."] },
+            { text: "Lengkapi kalimat kepemilikan ini:<br>'This is not your bag. It is ___ (milik dia perempuan).'", answers: ["hers", "her", "she", "him"] },
+            { text: "Apa bentuk lampau (V2) dari kata kerja 'Drink' dan 'Eat'?", answers: ["Drank and Ate", "Drunk and Eaten", "Drinked and Eated", "Dranks and Eats"] },
+            { text: "Kemarin hujan deras. Cici tidak membawa payung. Akibatnya ...", answers: ["She was wet and cold.", "She was happy.", "She was dry.", "She was thirsty."] },
+            { text: "Di perpustakaan, posisi rak buku ada 'Behind' meja petugas. Artinya ...", answers: ["Rak buku ada di belakang meja.", "Rak buku ada di depan meja.", "Rak buku ada di samping meja.", "Rak buku ada di seberang meja."] },
+            { text: "Ubah kalimat positif ini menjadi negatif:<br>'We studied Math last night.'", answers: ["We did not study Math last night.", "We did not studied Math last night.", "We were not study Math last night.", "We not studied Math last night."] },
+            { text: "Made: 'Why were you absent yesterday?'<br>Joshua: 'I ___ sick.'", answers: ["was", "were", "am", "did"] },
+            { text: "Tanda lalu lintas dengan panah melengkung ke kanan yang dicoret merah artinya ...", answers: ["No turn right", "No turn left", "Turn right", "No parking"] },
+            { text: "Manakah yang merupakan kalimat Past Tense (Masa Lampau)?", answers: ["She watched a movie last night.", "She watches a movie every day.", "She is watching a movie now.", "She will watch a movie."] },
+            { text: "Joshua went to the library. He wanted to ___ a book.", answers: ["borrow", "borrowed", "borrows", "buy"] },
+            { text: "What is the past form (V2) of 'Bring'?", answers: ["Brought", "Bringed", "Bought", "Brang"] },
+            { text: "Susun kalimat kepemilikan:<br><i>bag – yours – pink – The – is</i>", answers: ["The pink bag is yours.", "Yours is the pink bag.", "The bag pink is yours.", "Is the pink bag yours."] },
+            { text: "Jika kamu berdiri menghadap 'North' (Utara), maka di belakangmu adalah arah ...", answers: ["South", "East", "West", "Northeast"] },
+            { text: "Kalimat mana yang menjelaskan bahwa Cici merasa 'Haus' kemarin?", answers: ["Cici was thirsty yesterday.", "Cici was thirty yesterday.", "Cici was hungry yesterday.", "Cici was angry yesterday."] },
+            { text: "Aisyah: 'Did you swim in the river?'<br>Cici: '___, I did not. It was dangerous.'", answers: ["No", "Yes", "Sure", "Okay"] }
+        ];
+
+        // VARIABLES
+        let activeQuestions = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = {};
+        let timerInterval;
+        let timeRemaining = 90 * 60;
+        let studentName = "";
+        let studentClass = "";
+
+        // DOM ELEMENTS
+        const timerDisplay = document.getElementById('timer');
+        const userDisplay = document.getElementById('user-display');
+        const modalOverlay = document.getElementById('custom-modal');
+        
+        // --- UTILITY: SHUFFLE FUNCTION (Fisher-Yates) ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // --- CORE: PREPARE EXAM DATA ---
+        function prepareExamQuestions() {
+            let raw = JSON.parse(JSON.stringify(questionBank));
+            raw = shuffleArray(raw);
+
+            activeQuestions = raw.map((q, index) => {
+                const correctAnswerText = q.answers[0]; 
+                let shuffledOptions = shuffleArray([...q.answers]); 
+                const correctIndex = shuffledOptions.indexOf(correctAnswerText);
+                const keys = ['a', 'b', 'c', 'd'];
+                const correctKey = keys[correctIndex];
+
+                let optionsObj = {};
+                shuffledOptions.forEach((opt, i) => {
+                    optionsObj[keys[i]] = opt;
+                });
+
+                return {
+                    id: index + 1,
+                    text: q.text,
+                    options: optionsObj,
+                    key: correctKey 
+                };
+            });
+        }
+
+        // --- MODAL LOGIC ---
+        function showModal(type, title, desc, onConfirm) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-desc').innerHTML = desc; 
+            const actionContainer = document.getElementById('modal-actions');
+            actionContainer.innerHTML = ''; 
+
+            if(type === 'confirm') {
+                document.getElementById('modal-icon').innerText = '🤔';
+                const btnCancel = document.createElement('button');
+                btnCancel.className = 'btn btn-outline';
+                btnCancel.innerText = 'Batal';
+                btnCancel.onclick = closeModal;
+
+                const btnConfirm = document.createElement('button');
+                btnConfirm.className = 'btn btn-primary';
+                btnConfirm.innerText = 'Ya, Selesai';
+                btnConfirm.onclick = () => { closeModal(); onConfirm(); };
+
+                actionContainer.appendChild(btnCancel);
+                actionContainer.appendChild(btnConfirm);
+            } else if (type === 'alert') {
+                document.getElementById('modal-icon').innerText = '⏰';
+                const btnOk = document.createElement('button');
+                btnOk.className = 'btn btn-danger';
+                btnOk.innerText = 'OK, Lihat Nilai';
+                btnOk.onclick = () => { closeModal(); onConfirm(); };
+                actionContainer.appendChild(btnOk);
+            }
+
+            modalOverlay.style.display = 'flex';
+            setTimeout(() => modalOverlay.classList.add('show'), 10);
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('show');
+            setTimeout(() => modalOverlay.style.display = 'none', 300);
+        }
+
+        // --- APP LOGIC ---
+        function startExam() {
+            studentName = document.getElementById('input-nama').value;
+            studentClass = document.getElementById('input-kelas').value;
+
+            if(!studentName) { 
+                alert("Nama harus diisi!"); 
+                return; 
+            }
+
+            // --- AUTO FULL SCREEN ---
+            let elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { /* Safari */
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { /* IE11 */
+                elem.msRequestFullscreen();
+            }
+            // ------------------------
+
+            prepareExamQuestions();
+
+            userDisplay.innerText = studentName + " (" + studentClass + ")";
+            userDisplay.style.display = "block";
+            timerDisplay.style.display = "block";
+
+            document.getElementById('login-page').style.display = 'none';
+            document.getElementById('exam-page').style.display = 'flex';
+
+            initNavGrid();
+            loadQuestion(0);
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                let m = Math.floor(timeRemaining / 60);
+                let s = timeRemaining % 60;
+                timerDisplay.innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+
+                if(timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    showModal('alert', 'Waktu Habis!', 'Waktu ujian telah berakhir. Jawaban Anda akan dikumpulkan otomatis.', finishExam);
+                }
+            }, 1000);
+        }
+
+        function initNavGrid() {
+            const navGrid = document.getElementById('nav-grid');
+            navGrid.innerHTML = '';
+            activeQuestions.forEach((q, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'nav-item';
+                btn.innerText = index + 1;
+                btn.id = `nav-${index}`;
+                btn.onclick = () => loadQuestion(index);
+                navGrid.appendChild(btn);
+            });
+        }
+
+        function loadQuestion(index) {
+            currentQuestionIndex = index;
+            const q = activeQuestions[index];
+            document.getElementById('q-number').innerText = `Soal No. ${index + 1}`;
+            document.getElementById('q-content').innerHTML = q.text;
+            
+            const qOptions = document.getElementById('q-options');
+            qOptions.innerHTML = '';
+            for(const [key, val] of Object.entries(q.options)) {
+                const label = document.createElement('label');
+                label.className = 'option-label';
+                const input = document.createElement('input');
+                input.type = 'radio';
+                input.name = 'answer';
+                input.value = key;
+                input.onclick = () => selectAnswer(index, key);
+                if(userAnswers[index] === key) input.checked = true;
+                label.appendChild(input);
+                label.appendChild(document.createTextNode(`${key.toUpperCase()}. ${val}`));
+                qOptions.appendChild(label);
+            }
+            
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`nav-${index}`).classList.add('active');
+
+            const btnNext = document.getElementById('btn-next');
+            const btnPrev = document.getElementById('btn-prev');
+            const btnFinish = document.getElementById('btn-finish');
+
+            btnPrev.disabled = index === 0;
+            if(index === activeQuestions.length - 1) {
+                btnNext.style.display = 'none';
+                btnFinish.style.display = 'inline-block';
+            } else {
+                btnNext.style.display = 'inline-block';
+                btnFinish.style.display = 'none';
+            }
+        }
+
+        function selectAnswer(qIndex, answer) {
+            userAnswers[qIndex] = answer;
+            document.getElementById(`nav-${qIndex}`).classList.add('answered');
+        }
+
+        function nextQuestion() {
+            if(currentQuestionIndex < activeQuestions.length - 1) loadQuestion(currentQuestionIndex + 1);
+        }
+
+        function prevQuestion() {
+            if(currentQuestionIndex > 0) loadQuestion(currentQuestionIndex - 1);
+        }
+
+        function confirmFinish() {
+            const answered = Object.keys(userAnswers).length;
+            const total = activeQuestions.length;
+            const msg = `Anda baru menjawab <b>${answered}</b> dari <b>${total}</b> soal.<br>Apakah Anda yakin ingin menyelesaikan ujian?`;
+            showModal('confirm', 'Selesai Ujian?', msg, finishExam);
+        }
+
+        function finishExam() {
+            clearInterval(timerInterval);
+            document.getElementById('exam-page').style.display = 'none';
+            timerDisplay.style.display = 'none'; 
+            document.getElementById('result-page').style.display = 'flex';
+            
+            let correct = 0;
+            activeQuestions.forEach((q, index) => {
+                if(userAnswers[index] === q.key) correct++;
+            });
+
+            const score = Math.round((correct / activeQuestions.length) * 100);
+            
+            document.getElementById('result-name').innerText = studentName;
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('total-correct').innerText = correct;
+            document.getElementById('total-wrong').innerText = activeQuestions.length - correct;
+
+            sendDataToSheet(studentName, studentClass, score);
+        }
+
+        function sendDataToSheet(name, kelas, nilai) {
+            const loadingMsg = document.getElementById('loading-msg');
+            const btnReload = document.getElementById('btn-reload');
+
+            loadingMsg.style.display = 'block';
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nama: name, kelas: kelas, nilai: nilai })
+            })
+            .then(response => {
+                loadingMsg.innerText = "Nilai berhasil disimpan!";
+                loadingMsg.style.color = "var(--accent-color)";
+                btnReload.style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loadingMsg.innerText = "Gagal menyimpan (Cek Koneksi).";
+                loadingMsg.style.color = "var(--danger-color)";
+                btnReload.style.display = 'block';
+            });
+        }
+    </script>
+</body>
+</html>
