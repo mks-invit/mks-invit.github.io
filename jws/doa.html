@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hafalan Anak Muslim (Gestures)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- CSS TEMA --- */
+        :root {
+            --primary: #FF6B81;
+            --secondary: #2ED573;
+            --blue: #1E90FF;
+            --yellow: #FFA502;
+            --bg: #F1F2F6;
+            --card-bg: #FFFFFF;
+            --text-main: #2f3542;
+            --text-sec: #57606f;
+            --border: #dfe4ea;
+        }
+
+        body.dark-mode {
+            --bg: #1e272e;
+            --card-bg: #2f3640;
+            --text-main: #f1f2f6;
+            --text-sec: #ced6e0;
+            --border: #485460;
+            --blue: #54a0ff;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0; padding: 0;
+            padding-bottom: 150px;
+            transition: 0.3s;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden; /* Mencegah scroll horizontal browser */
+        }
+
+        /* LOGIKA SEMBUNYIKAN TERJEMAHAN */
+        body.hide-trans .ayah-latin, 
+        body.hide-trans .ayah-arti,
+        body.hide-trans .doa-latin, 
+        body.hide-trans .doa-arti {
+            display: none !important;
+        }
+
+        /* FLOATING BUTTONS */
+        .float-group {
+            position: fixed; top: 15px; right: 15px;
+            display: flex; flex-direction: column; gap: 10px; z-index: 10001;
+        }
+        .btn-float {
+            width: 45px; height: 45px; border-radius: 50%; border: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); font-size: 1.4em; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-theme { background: var(--yellow); color: white; }
+        .btn-eye { background: var(--blue); color: white; }
+        
+        body.hide-trans .btn-eye { background: #ff4757; opacity: 0.9; }
+
+        /* OVERLAY */
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--blue), var(--secondary));
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 9999; color: white; text-align: center;
+        }
+        .btn-start {
+            background: var(--yellow); color: white; border: none; padding: 15px 40px;
+            font-size: 1.5em; border-radius: 50px; font-weight: bold; margin-top: 20px; cursor: pointer;
+            box-shadow: 0 5px 0 #e67e22;
+        }
+
+        /* TABS */
+        .nav-tabs {
+            display: flex; background: var(--card-bg); padding: 10px;
+            position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .tab-btn {
+            flex: 1; border: none; background: transparent; padding: 12px;
+            font-size: 1.1em; font-weight: bold; color: var(--text-sec); cursor: pointer;
+            border-bottom: 4px solid transparent; transition: 0.3s;
+        }
+        .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+        .view-section { display: none; padding: 15px; max-width: 800px; margin: 0 auto; min-height: 80vh;}
+        .view-section.active { display: block; animation: fadeIn 0.3s; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* DOA CARD STYLE */
+        .search-box {
+            width: 100%; padding: 12px; border-radius: 25px; border: 2px solid var(--border);
+            margin-bottom: 15px; background: var(--card-bg); color: var(--text-main); font-family: inherit;
+        }
+        
+        .card-doa {
+            background: var(--card-bg); border-radius: 15px; padding: 15px; margin-bottom: 15px;
+            border-left: 5px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .doa-arab { font-family: 'Amiri', serif; font-size: 2em; text-align: right; color: var(--blue); margin: 10px 0; line-height: 1.8; direction: rtl; }
+        .doa-latin { font-style: italic; color: var(--text-sec); margin-bottom: 5px; }
+        .doa-arti { font-size: 0.9em; color: var(--text-sec); }
+        .btn-tts { background: var(--yellow); border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; float: right; color: white; }
+
+        /* JUZ AMMA STYLE */
+        .surah-item {
+            background: var(--card-bg); padding: 15px; border-radius: 15px; margin-bottom: 10px;
+            display: flex; align-items: center; justify-content: space-between; cursor: pointer;
+            border-bottom: 3px solid var(--border);
+        }
+        .surah-number {
+            background: var(--secondary); color: white; width: 35px; height: 35px;
+            display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; margin-right: 15px; flex-shrink: 0;
+        }
+        .surah-info h3 { margin: 0; font-size: 1.1em; color: var(--text-main); }
+        .surah-info p { margin: 0; font-size: 0.9em; color: var(--text-sec); }
+        .surah-arab { font-family: 'Amiri', serif; font-size: 1.4em; color: var(--blue); }
+
+        .header-surah { text-align: center; margin-bottom: 20px; background: var(--card-bg); padding: 20px; border-radius: 15px; border: 2px solid var(--border); }
+        .btn-back { background: var(--border); color: var(--text-main); border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; margin-bottom: 10px; display: inline-block; }
+        
+        .ayah-card {
+            background: var(--card-bg); padding: 20px; border-radius: 15px; margin-bottom: 15px;
+            position: relative; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            cursor: pointer; transition: transform 0.1s;
+        }
+        .ayah-card:active { transform: scale(0.98); }
+        .ayah-card.active-playing {
+            border-color: var(--secondary); background-color: rgba(46, 213, 115, 0.1); 
+            transform: scale(1.02); box-shadow: 0 5px 15px rgba(46, 213, 115, 0.2);
+        }
+        .ayah-arab { font-family: 'Amiri', serif; font-size: 2.2em; text-align: right; color: var(--text-main); line-height: 2.2; margin-bottom: 15px; direction: rtl; }
+        .ayah-latin { color: var(--primary); font-style: italic; margin-bottom: 5px; }
+        .ayah-arti { color: var(--text-sec); font-size: 0.9em; }
+        
+        /* PLAYER BAR */
+        #player-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: var(--card-bg); padding: 15px; box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
+            display: none; align-items: center; justify-content: space-between; z-index: 999;
+            border-top: 1px solid var(--border); box-sizing: border-box;
+        }
+        .p-info h4 { margin: 0; font-size: 1em; color: var(--text-main); }
+        .p-info p { margin: 0; font-size: 0.8em; color: var(--text-sec); }
+        .p-ctrl { display: flex; gap: 10px; align-items: center; }
+        .p-ctrl button { background: none; border: none; font-size: 1.6em; cursor: pointer; color: var(--text-main); }
+        .btn-main { color: var(--secondary) !important; font-size: 2.2em !important; }
+        #btn-rep { font-size: 0.9em !important; width: 35px; height: 35px; background: var(--border) !important; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        #btn-rep.active { background: var(--blue) !important; color: white !important; }
+
+        .loading-audio { color: var(--yellow); font-size: 0.8em; display: none; margin-left: 5px;}
+
+    </style>
+</head>
+<body class="hide-trans">
+
+    <div class="float-group">
+        <button class="btn-float btn-theme" onclick="toggleTheme()">&#127912;</button>
+        <button class="btn-float btn-eye" id="btnEye" onclick="toggleTrans()">&#128584;</button>
+    </div>
+
+    <div id="overlay">
+        <h1 style="font-size:2.5em; margin:0;">&#127769; Hafalan Anak</h1>
+        <p>Juz Amma & Doa (Swipe & Back Support)</p>
+        <button class="btn-start" onclick="startApp()">MULAI BELAJAR &#9654;</button>
+    </div>
+
+    <div class="nav-tabs" id="navbar" style="display:none;">
+        <button class="tab-btn active" onclick="switchTab('juzamma')">&#128214; Juz Amma</button>
+        <button class="tab-btn" onclick="switchTab('doa')">&#129330; Doa Harian</button>
+    </div>
+
+    <div id="main-content">
+        <div id="view-juzamma" class="view-section active">
+            <div id="list-view">
+                <div id="loading" style="text-align:center; padding:20px; color:var(--text-sec);">Mengambil Data... &#8987;</div>
+                <div id="container-surah"></div>
+            </div>
+            <div id="detail-view" style="display:none;">
+                <div class="header-surah">
+                    <button class="btn-back" onclick="btnBackNav()">&#11013; Kembali</button>
+                    <h2 id="s-name" style="margin:5px 0;">Surah</h2>
+                    <p id="s-info">Info</p>
+                </div>
+                <div style="text-align:center; color:var(--primary); font-size:0.9em; margin-bottom:10px;">
+                    Klik kartu ayat untuk memutar suara &#128266;
+                </div>
+                <div id="container-ayah"></div>
+                <div style="height: 100px;"></div>
+            </div>
+        </div>
+
+        <div id="view-doa" class="view-section">
+            <input type="text" class="search-box" id="searchDoa" placeholder="&#128269; Cari doa..." onkeyup="filterDoa()">
+            <div id="container-doa"></div>
+        </div>
+    </div>
+
+    <div id="player-bar">
+        <div class="p-info">
+            <h4 id="p-title">Surat</h4>
+            <div style="display:flex; align-items:center;">
+                <p id="p-ayat">Ayat</p>
+                <span id="load-status" class="loading-audio"> (Unduh...)</span>
+            </div>
+        </div>
+        <div class="p-ctrl">
+            <button onclick="prev()">&#9198;</button>
+            <button class="btn-main" onclick="togglePlay()" id="btn-play">&#9654;</button>
+            <button onclick="next()">&#9197;</button>
+            <button id="btn-rep" onclick="toggleRep()">&#8635;</button>
+        </div>
+        <audio id="audio"></audio>
+    </div>
+
+    <script>
+        // --- 1. SETUP & UTILS ---
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        }
+        function toggleTrans() {
+            document.body.classList.toggle('hide-trans');
+            const h = document.body.classList.contains('hide-trans');
+            const b = document.getElementById('btnEye');
+            b.innerHTML = h ? '&#128584;' : '&#128065;'; b.style.background = h ? '#ff4757' : '#1E90FF';
+        }
+        if(localStorage.getItem('theme')==='dark') document.body.classList.add('dark-mode');
+
+        function startApp() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('navbar').style.display = 'flex';
+            switchTab('juzamma');
+            fetchSurah();
+            renderDoa(dbDoa);
+        }
+
+        // --- 2. NAVIGATION & HISTORY (ANDROID BACK BUTTON) ---
+        function switchTab(t) {
+            document.querySelectorAll('.view-section').forEach(e=>e.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active'));
+            document.getElementById('view-'+t).classList.add('active');
+            const btns = document.querySelectorAll('.tab-btn');
+            if(t==='juzamma') btns[0].classList.add('active'); else btns[1].classList.add('active');
+            
+            // Scroll ke atas saat ganti tab
+            window.scrollTo(0,0);
+        }
+
+        // Tombol Kembali di Layar (Trigger History Back)
+        function btnBackNav() {
+            window.history.back(); 
+        }
+
+        // Fungsi Menutup UI Detail (Dipanggil oleh Popstate)
+        function closeSurahUI() {
+            document.getElementById('detail-view').style.display = 'none';
+            document.getElementById('list-view').style.display = 'block';
+            document.getElementById('player-bar').style.display = 'none';
+            pause(); // Stop audio
+        }
+
+        // Event Listener untuk Tombol Back Android
+        window.addEventListener('popstate', function(event) {
+            // Jika detail view sedang terbuka, tutup
+            if (document.getElementById('detail-view').style.display === 'block') {
+                closeSurahUI();
+            }
+        });
+
+        // --- 3. SWIPE GESTURES ---
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        const mainContent = document.getElementById('main-content');
+
+        mainContent.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+
+        mainContent.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, {passive: true});
+
+        function handleSwipe() {
+            // Jangan swipe jika sedang di dalam Detail Surat (agar tidak ganggu baca)
+            if (document.getElementById('detail-view').style.display === 'block') return;
+
+            const diff = touchEndX - touchStartX;
+            
+            // Ambang batas swipe (50px)
+            if (Math.abs(diff) > 50) {
+                if (diff < 0) {
+                    // Swipe Kiri (Juz Amma -> Doa)
+                    switchTab('doa');
+                } else {
+                    // Swipe Kanan (Doa -> Juz Amma)
+                    switchTab('juzamma');
+                }
+            }
+        }
+
+        // --- 4. CACHE AUDIO ---
+        async function getCachedAudioUrl(url) {
+            if (!('caches' in window)) return url; 
+            const cacheName = 'juzamma-cache-v1';
+            try {
+                const cache = await caches.open(cacheName);
+                const cachedResponse = await cache.match(url);
+                if (cachedResponse) return URL.createObjectURL(await cachedResponse.blob());
+                document.getElementById('load-status').style.display = 'inline';
+                const r = await fetch(url);
+                if (!r.ok) throw new Error('Err');
+                cache.put(url, r.clone());
+                return URL.createObjectURL(await r.blob());
+            } catch (e) { return url; }
+        }
+
+        // --- 5. DATABASE DOA (Lengkap) ---
+        const dbDoa = [
+            {judul:"Doa Sebelum Tidur",arab:"Ø¨ÙØ³ÙÙÙÙÙ Ø§ÙÙÙÙÙÙÙÙ Ø§ÙØ­ÙÙÙØ§ ÙÙ Ø¨ÙØ³ÙÙÙÙÙ Ø§ÙÙÙÙÙØªÙ",latin:"Bismika Allahumma ahyaa wa bismika amuut.",arti:"Dengan nama-Mu aku hidup dan mati."},
+            {judul:"Doa Bangun Tidur",arab:"Ø§ÙÙÙØ­ÙÙÙØ¯Ù ÙÙÙÙÙ Ø§ÙÙÙØ°ÙÙÙ Ø§ÙØ­ÙÙÙØ§ÙÙØ§ Ø¨ÙØ¹ÙØ¯ÙÙÙØ¢ Ø§ÙÙÙØ§ØªÙÙÙØ§ ÙÙØ§ÙÙÙÙÙÙÙ Ø§ÙÙÙÙØ´ÙÙÙØ±Ù",latin:"Alhamdu lillahil ladzii ahyaanaa ba'da maa amaatanaa wa ilaihin nusyuur.",arti:"Segala puji bagi Allah yang menghidupkan kami sesudah mati."},
+            {judul:"Doa Sebelum Makan",arab:"Ø§ÙÙÙÙÙ°ÙÙÙÙÙ Ø¨ÙØ§Ø±ÙÙÙ ÙÙÙÙØ§ ÙÙÙÙÙÙØ§ Ø±ÙØ²ÙÙÙØªÙÙÙØ§ ÙÙÙÙÙÙØ§ Ø¹ÙØ°ÙØ§Ø¨Ù Ø§ÙÙÙÙØ§Ø±Ù",latin:"Allahumma baarik lanaa fiimaa rozaqtanaa wa qinaa 'adzaaban naar.",arti:"Ya Allah berkahilah rezeki kami."},
+            {judul:"Doa Sesudah Makan",arab:"Ø§ÙÙÙØ­ÙÙÙØ¯Ù ÙÙÙÙÙ Ø§ÙÙÙØ°ÙÙÙ Ø§ÙØ·ÙØ¹ÙÙÙÙÙØ§ ÙÙØ³ÙÙÙØ§ÙÙØ§ ÙÙØ¬ÙØ¹ÙÙÙÙÙØ§ ÙÙØ³ÙÙÙÙÙÙÙÙÙ",latin:"Alhamdulillahilladzi ath'amanaa wa saqoonaa wa ja'alanaa minal muslimiin.",arti:"Segala puji bagi Allah yang memberi makan minum."},
+            {judul:"Doa Masuk WC",arab:"Ø§ÙÙÙÙÙ°ÙÙÙÙÙ Ø§ÙÙÙÙÙÙ Ø§ÙØ¹ÙÙÙØ°ÙØ¨ÙÙÙ ÙÙÙÙ Ø§ÙÙØ®ÙØ¨ÙØ«Ù ÙÙØ§ÙÙØ®ÙØ¨ÙØ¢Ø¦ÙØ«Ù",latin:"Allahumma innii a'uudzu bika minal khubutsi wal khabaa'its.",arti:"Aku berlindung dari setan laki & perempuan."},
+            {judul:"Doa Keluar WC",arab:"ØºÙÙÙØ±ÙØ§ÙÙÙÙ Ø§ÙÙØ­ÙÙÙØ¯Ù ÙÙÙÙÙ Ø§ÙÙÙØ°ÙÙÙ Ø§ÙØ°ÙÙÙØ¨Ù Ø¹ÙÙÙÙÙ Ø§ÙÙØ§ÙØ°ÙÙ ÙÙØ¹ÙØ§ÙÙØ§ÙÙÙÙ",latin:"Ghufraanakal hamdu lillahil ladzii adzhaba 'annil adzaa wa 'aafaanii.",arti:"Aku mohon ampunan-Mu."},
+            {judul:"Doa Masuk Masjid",arab:"Ø§ÙÙÙÙÙ°ÙÙÙÙÙ Ø§ÙÙØªÙØ­Ù ÙÙÙÙ Ø§ÙØ¨ÙÙÙØ§Ø¨Ù Ø±ÙØ­ÙÙÙØªÙÙÙ",latin:"Allahummaftah lii abwaaba rohmatik.",arti:"Bukalah pintu rahmat-Mu."},
+            {judul:"Doa Keluar Masjid",arab:"Ø§ÙÙÙÙÙ°ÙÙÙÙÙ Ø§ÙÙÙÙÙ Ø§ÙØ³ÙØ£ÙÙÙÙÙ ÙÙÙÙ ÙÙØ¶ÙÙÙÙÙ",latin:"Allahumma innii as'aluka min fadllik.",arti:"Ya Allah aku mohon karunia-Mu."},
+            {judul:"Doa Belajar",arab:"Ø±ÙØ¨ÙÙ Ø²ÙØ¯ÙÙÙÙ Ø¹ÙÙÙÙÙØ§ ÙÙØ§Ø±ÙØ²ÙÙÙÙÙÙÙ ÙÙÙÙÙÙØ§",latin:"Robbi zidnii 'ilman warzuqnii fahman.",arti:"Tambahilah ilmuku."},
+            {judul:"Doa Kedua Orang Tua",arab:"Ø±ÙØ¨ÙÙ Ø§ØºÙÙÙØ±Ù ÙÙÙÙ ÙÙÙÙÙÙØ§ÙÙØ¯ÙÙÙÙ ÙÙØ§Ø±ÙØ­ÙÙÙÙÙÙÙØ§ ÙÙÙÙØ§ Ø±ÙØ¨ÙÙÙÙØ§ÙÙÙÙ ØµÙØºÙÙÙØ±ÙØ§",latin:"Rabbighfir lii waliwaalidayya warhamhumaa kamaa rabbayaanii shaghiraa.",arti:"Ampunilah aku dan orang tuaku."},
+            {judul:"Doa Kebaikan Dunia Akhirat",arab:"Ø±ÙØ¨ÙÙÙÙØ§ Ø¢ØªÙÙÙØ§ ÙÙÙ Ø§ÙØ¯ÙÙÙÙÙÙØ§ Ø­ÙØ³ÙÙÙØ©Ù ÙÙÙÙÙ Ø§ÙÙØ¢Ø®ÙØ±ÙØ©Ù Ø­ÙØ³ÙÙÙØ©Ù",latin:"Rabbanaa aatinaa fid dunyaa hasanah wa fil aakhirati hasanah.",arti:"Berilah kebaikan dunia dan akhirat."},
+            {judul:"Doa Naik Kendaraan",arab:"Ø³ÙØ¨ÙØ­ÙØ§ÙÙ Ø§ÙÙÙØ°ÙÙÙ Ø³ÙØ®ÙÙØ±ÙÙÙÙÙØ§ ÙÙØ°ÙØ§",latin:"Subhaanal ladzii sakhkhara lanaa haadzaa.",arti:"Maha Suci Allah yang menundukkan kendaraan ini."},
+            {judul:"Doa Ketika Hujan",arab:"Ø§ÙÙÙÙÙ°ÙÙÙÙÙ ØµÙÙÙÙØ¨ÙØ§ ÙÙØ§ÙÙØ¹ÙØ§",latin:"Allahumma shoyyiban naafi'an.",arti:"Ya Allah turunkanlah hujan yang bermanfaat."},
+            {judul:"Doa Mendengar Petir",arab:"Ø³ÙØ¨ÙØ­ÙØ§ÙÙ Ø§ÙÙÙØ°ÙÙÙ ÙÙØ³ÙØ¨ÙÙØ­Ù Ø§ÙØ±ÙÙØ¹ÙØ¯Ù Ø¨ÙØ­ÙÙÙØ¯ÙÙÙ",latin:"Subhaanalladzii yusabbihur ro'du bihamdihi.",arti:"Maha Suci Allah yang petir bertasbih pada-Nya."},
+            {judul:"Doa Bercermin",arab:"Ø§ÙÙÙØ­ÙÙÙØ¯Ù ÙÙÙÙÙ ÙÙÙÙØ§ Ø­ÙØ³ÙÙÙÙØªÙ Ø®ÙÙÙÙÙÙÙ ÙÙØ­ÙØ³ÙÙÙÙ Ø®ÙÙÙÙÙÙÙ",latin:"Alhamdulillah kamaa hassanta kholqii fahassin khuluqii.",arti:"Baguskanlah akhlakku sebagaimana Engkau baguskan wajahku."},
+            {judul:"Doa Memakai Pakaian",arab:"Ø§ÙÙÙÙÙ°ÙÙÙÙÙ Ø§ÙÙÙÙÙ Ø§ÙØ³ÙØ£ÙÙÙÙÙ ÙÙÙÙ Ø®ÙÙÙØ±ÙÙÙ",latin:"Allahumma innii as'aluka min khoirihi.",arti:"Ya Allah aku mohon kebaikan pakaian ini."},
+            {judul:"Doa Melepas Pakaian",arab:"Ø¨ÙØ³ÙÙÙ Ø§ÙÙÙÙ Ø§ÙÙÙØ°ÙÙÙ ÙØ§ÙØ§ÙÙÙÙÙ Ø§ÙÙØ§ÙÙ ÙÙÙÙ",latin:"Bismillaahil ladzii laa ilaaha illaa huw.",arti:"Dengan nama Allah yang tiada Tuhan selain-Nya."},
+            {judul:"Doa Menjenguk Orang Sakit",arab:"ÙØ§Ù Ø¨ÙØ£ÙØ³Ù Ø·ÙÙÙÙÙØ±Ù Ø§ÙÙÙ Ø´ÙØ§Ø¡Ù Ø§ÙÙÙÙ",latin:"Laa ba'sa thohuurun in syaa-allaah.",arti:"Semoga jadi pembersih dosa."},
+            {judul:"Doa Ketika Sakit",arab:"Ø§ÙÙÙÙÙ°ÙÙÙÙÙ Ø§Ø´ÙÙÙ Ø§ÙÙÙØªÙ Ø§ÙØ´ÙÙØ§ÙÙÙ",latin:"Allahumma isyfi antasy syaafii.",arti:"Ya Allah sembuhkanlah."},
+            {judul:"Doa Bersin",arab:"Ø§ÙÙÙØ­ÙÙÙØ¯Ù ÙÙÙÙÙ",latin:"Alhamdulillah.",arti:"Segala puji bagi Allah."},
+            {judul:"Doa Ketika Marah",arab:"Ø§ÙØ¹ÙÙÙØ°Ù Ø¨ÙØ§ÙÙÙÙ ÙÙÙÙ Ø§ÙØ´ÙÙÙÙØ·ÙØ§ÙÙ Ø§ÙØ±ÙÙØ¬ÙÙÙÙÙ",latin:"A'uudzu billaahi minasy syaithoonir rojiim.",arti:"Aku berlindung dari setan."},
+            {judul:"Doa Mimpi Buruk",arab:"Ø§ÙÙÙÙÙ°ÙÙÙÙÙ Ø§ÙÙÙÙÙ Ø§ÙØ¹ÙÙÙØ°Ù Ø¨ÙÙÙ ÙÙÙÙ Ø¹ÙÙÙÙÙ Ø§ÙØ´ÙÙÙÙØ·ÙØ§ÙÙ",latin:"Allahumma inni a'uudzubika min 'amalisy syaithooni.",arti:"Aku berlindung dari perbuatan setan."},
+            {judul:"Doa Agar Hati Tenang",arab:"Ø§ÙÙØ§Ù Ø¨ÙØ°ÙÙÙØ±Ù Ø§ÙÙÙÙ ØªÙØ·ÙÙÙØ¦ÙÙÙÙ Ø§ÙÙÙÙÙÙÙÙØ¨Ù",latin:"Alaa bidzikrillaahi tathma'innul quluub.",arti:"Dengan mengingat Allah hati menjadi tenang."},
+            {judul:"Doa Berbuka Puasa",arab:"Ø§ÙÙÙÙÙ°ÙÙÙÙÙ ÙÙÙÙ ØµÙÙÙØªÙ ÙÙØ¹ÙÙÙÙ Ø±ÙØ²ÙÙÙÙÙ Ø§ÙÙÙØ·ÙØ±ÙØªÙ",latin:"Allahumma laka shumtu wa 'alaa rizqika afthortu.",arti:"Untuk-Mu aku berpuasa dan dengan rezeki-Mu aku berbuka."},
+            {judul:"Niat Puasa Ramadhan",arab:"ÙÙÙÙÙÙØªÙ ØµÙÙÙÙÙ ØºÙØ¯Ù Ø¹ÙÙÙ Ø§ÙØ¯ÙØ§Ø¡Ù ÙÙØ±ÙØ¶Ù Ø´ÙÙÙØ±Ù Ø±ÙÙÙØ¶ÙØ§ÙÙ",latin:"Nawaitu shouma ghodin 'an adaai fardhi syahri romadhoona.",arti:"Aku niat puasa esok hari."},
+            {judul:"Doa Pagi Hari",arab:"Ø§ÙÙÙÙÙ°ÙÙÙÙÙ Ø¨ÙÙÙ Ø§ÙØµÙØ¨ÙØ­ÙÙÙØ§ ÙÙØ¨ÙÙÙ Ø§ÙÙÙØ³ÙÙÙÙÙØ§",latin:"Allahumma bika ashbahnaa wa bika amsainaa.",arti:"Dengan-Mu kami berpagi hari."},
+            {judul:"Doa Sore Hari",arab:"Ø§ÙÙÙÙÙ°ÙÙÙÙÙ Ø¨ÙÙÙ Ø§ÙÙÙØ³ÙÙÙÙÙØ§ ÙÙØ¨ÙÙÙ Ø§ÙØµÙØ¨ÙØ­ÙÙÙØ§",latin:"Allahumma bika amsainaa wa bika ashbahnaa.",arti:"Dengan-Mu kami bersore hari."},
+            {judul:"Doa Masuk Pasar",arab:"ÙØ§ÙØ§ÙÙÙÙÙ Ø§ÙÙØ§ÙÙ Ø§ÙÙÙÙ ÙÙØ­ÙØ¯ÙÙÙ ÙØ§ÙØ´ÙØ±ÙÙÙÙÙ ÙÙÙÙ",latin:"Laa ilaaha illallaahu wahdahu laa syariika lahu.",arti:"Tiada Tuhan selain Allah."},
+            {judul:"Doa Bayar Hutang",arab:"Ø§ÙÙÙÙÙ°ÙÙÙÙÙ Ø§ÙÙÙÙÙÙÙÙ Ø¨ÙØ­ÙÙØ§ÙÙÙÙÙ Ø¹ÙÙÙ Ø­ÙØ±ÙØ§ÙÙÙÙ",latin:"Allahummak finii bihalaalika 'an haroomik.",arti:"Cukupkan aku dengan yang halal."},
+            {judul:"Doa Mohon Kesabaran",arab:"Ø±ÙØ¨ÙÙÙÙØ§ Ø£ÙÙÙØ±ÙØºÙ Ø¹ÙÙÙÙÙÙÙØ§ ØµÙØ¨ÙØ±ÙØ§",latin:"Rabbanaa afrigh 'alainaa shobroo.",arti:"Ya Tuhan, limpahkanlah kesabaran."},
+            {judul:"Doa Tolak Bala",arab:"Ø§ÙÙÙÙÙ°ÙÙÙÙÙ Ø§Ø¯ÙÙÙØ¹Ù Ø¹ÙÙÙÙØ§ Ø§ÙÙØ¨ÙÙØ§ÙØ¡Ù",latin:"Allahummadfa' 'annal balaa-a.",arti:"Hindarkanlah kami dari bencana."},
+            {judul:"Doa Husnul Khotimah",arab:"Ø§ÙÙÙÙÙ°ÙÙÙÙÙ Ø§Ø®ÙØªÙÙÙ ÙÙÙÙØ§ Ø¨ÙØ­ÙØ³ÙÙÙ Ø§ÙÙØ®ÙØ§ØªÙÙÙØ©Ù",latin:"Allahummakhtim lanaa bihusnil khootimah.",arti:"Akhirilah hidup kami dengan baik."},
+            {judul:"Doa Untuk Pemimpin",arab:"Ø§ÙÙÙÙÙ°ÙÙÙÙÙ Ø§ÙØµÙÙÙØ­Ù ÙÙÙØ§ÙØ©Ù Ø§ÙÙÙÙÙØ±ÙÙÙØ§",latin:"Allahumma ashlih wulaata umuurinaa.",arti:"Perbaikilah pemimpin kami."},
+            {judul:"Doa Minta Anak Sholeh",arab:"Ø±ÙØ¨ÙÙ ÙÙØ¨Ù ÙÙÙÙ ÙÙÙÙ ÙÙØ¯ÙÙÙÙÙ Ø°ÙØ±ÙÙÙÙÙØ©Ù Ø·ÙÙÙÙØ¨ÙØ©Ù",latin:"Robbi hab lii mil ladunka dzurriyyatan thoyyibah.",arti:"Berilah aku keturunan yang baik."},
+            {judul:"Doa Masuk Kota",arab:"Ø§ÙÙÙÙÙ°ÙÙÙÙÙ Ø¨ÙØ§Ø±ÙÙÙ ÙÙÙÙØ§ ÙÙÙÙÙÙØ§",latin:"Allahumma baarik lanaa fiihaa.",arti:"Berkahilah kami di kota ini."}
+        ];
+
+        function renderDoa(data) {
+            const el = document.getElementById('container-doa');
+            el.innerHTML = '';
+            if(!data || data.length === 0) { el.innerHTML = '<div style="text-align:center;">Data Kosong</div>'; return; }
+            data.forEach(i => {
+                const d = document.createElement('div');
+                d.className = 'card-doa';
+                d.innerHTML = `
+                    <div style="overflow:hidden; margin-bottom:10px;">
+                        <span style="font-weight:bold; font-size:1.1em; color:var(--text-main);">${i.judul}</span>
+                        <button class="btn-tts" onclick="speakDoa('${i.latin}')">&#128266;</button>
+                    </div>
+                    <div class="doa-arab">${i.arab}</div>
+                    <div class="doa-latin">${i.latin}</div>
+                    <div class="doa-arti">${i.arti}</div>
+                `;
+                el.appendChild(d);
+            });
+        }
+        function speakDoa(t) {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(t);
+            u.lang = 'id-ID'; window.speechSynthesis.speak(u);
+        }
+        function filterDoa() {
+            const q = document.getElementById('searchDoa').value.toLowerCase();
+            renderDoa(dbDoa.filter(d => d.judul.toLowerCase().includes(q)));
+        }
+
+        // --- 6. JUZ AMMA LOGIC ---
+        let surahData = [], ayahIdx = 0, isPlay = false, repMode = 0, repCount = 0;
+        const audio = document.getElementById('audio');
+
+        async function fetchSurah() {
+            try {
+                const r = await fetch('https://equran.id/api/v2/surat');
+                const j = await r.json();
+                const d = j.data.filter(s => s.nomor >= 78);
+                let h = '';
+                d.forEach(s => {
+                    h += `<div class="surah-item" onclick="openSurah(${s.nomor})">
+                        <div style="display:flex; align-items:center;">
+                            <div class="surah-number">${s.nomor}</div>
+                            <div class="surah-info"><h3>${s.namaLatin}</h3><p>${s.arti} â¢ ${s.jumlahAyat} Ayat</p></div>
+                        </div>
+                        <div class="surah-arab">${s.nama}</div>
+                    </div>`;
+                });
+                document.getElementById('container-surah').innerHTML = h;
+                document.getElementById('loading').style.display = 'none';
+            } catch(e) { document.getElementById('loading').innerHTML = 'Gagal Koneksi'; }
+        }
+
+        async function openSurah(no) {
+            // Push state ke history agar tombol back berfungsi
+            window.history.pushState({page: "detail"}, "Detail", "#detail");
+
+            document.getElementById('list-view').style.display = 'none';
+            document.getElementById('detail-view').style.display = 'block';
+            document.getElementById('container-ayah').innerHTML = '<div style="text-align:center; padding:20px;">Memuat...</div>';
+            
+            try {
+                const r = await fetch(`https://equran.id/api/v2/surat/${no}`);
+                const j = await r.json();
+                const d = j.data;
+                document.getElementById('s-name').innerText = d.namaLatin;
+                document.getElementById('s-info').innerText = `${d.arti} â¢ ${d.jumlahAyat} Ayat`;
+                surahData = d.ayat; ayahIdx = 0; repCount = 0;
+                let h = '';
+                surahData.forEach((a, i) => {
+                    h += `<div class="ayah-card" id="ay-${i}" onclick="playIdx(${i})">
+                        <div class="ayah-arab">${a.teksArab} <span style="font-size:0.6em; border:1px solid currentColor; border-radius:50%; padding:2px 8px;">${a.nomorAyat}</span></div>
+                        <div class="ayah-latin">${a.teksLatin}</div>
+                        <div class="ayah-arti">${a.teksIndonesia}</div>
+                    </div>`;
+                });
+                document.getElementById('container-ayah').innerHTML = h;
+            } catch(e) { window.history.back(); }
+        }
+
+        // --- 7. PLAYER WITH CACHE ---
+        function toggleRep() {
+            repMode++; if(repMode>3) repMode=0;
+            const b = document.getElementById('btn-rep');
+            if(repMode===0){ b.innerHTML='&#8635;'; b.className=''; }
+            else { b.innerHTML=repMode===1?'&#8635;&#185;':(repMode===2?'&#8635;&#178;':'&#8635;&#179;'); b.className='active'; }
+        }
+
+        function playIdx(i) { ayahIdx=i; loadPlay(); }
+
+        async function loadPlay() {
+            if(!surahData.length) return;
+            repCount = 0;
+            const a = surahData[ayahIdx];
+            const onlineUrl = a.audio['05'] || a.audio['01'];
+            
+            document.getElementById('player-bar').style.display = 'flex';
+            document.getElementById('p-title').innerText = document.getElementById('s-name').innerText;
+            document.getElementById('p-ayat').innerText = `Ayat ${a.nomorAyat}`;
+            
+            audio.pause();
+            const blobUrl = await getCachedAudioUrl(onlineUrl);
+            document.getElementById('load-status').style.display = 'none';
+            audio.src = blobUrl;
+            play();
+            hl();
+        }
+
+        function play() { audio.play().then(()=>{ isPlay=true; updBtn(); }).catch(e=>console.log(e)); }
+        function pause() { audio.pause(); isPlay=false; updBtn(); }
+        function togglePlay() { if(isPlay) pause(); else if(audio.src) play(); else loadPlay(); }
+        function next() { if(ayahIdx < surahData.length-1) { ayahIdx++; loadPlay(); } else { pause(); } }
+        function prev() { if(ayahIdx > 0) { ayahIdx--; loadPlay(); } }
+        function updBtn() { document.getElementById('btn-play').innerHTML = isPlay ? '&#10074;&#10074;' : '&#9654;'; }
+        
+        function hl() {
+            document.querySelectorAll('.ayah-card').forEach(e=>e.classList.remove('active-playing'));
+            const e = document.getElementById(`ay-${ayahIdx}`);
+            if(e) { e.classList.add('active-playing'); e.scrollIntoView({behavior:'smooth', block:'center'}); }
+        }
+
+        audio.addEventListener('ended', () => {
+            if(repCount < repMode) { repCount++; play(); } else { next(); }
+        });
+    </script>
+</body>
+</html>
