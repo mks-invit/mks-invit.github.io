@@ -2034,59 +2034,70 @@
     
     
     // Fungsi untuk Auto Scroll Perlahan
- // --- LOGIKA AUTO SCROLL BARU DENGAN TOMBOL ---
-// --- LOGIKA AUTO SCROLL DENGAN PENGATUR KECEPATAN ---
+    // --- LOGIKA AUTO SCROLL SUPER SMOOTH (requestAnimationFrame) ---
 
-let scrollInterval;
+let animationFrameId; // Variabel untuk menyimpan ID animasi
 let isScrolling = false;
 
 function toggleAutoScroll() {
     const btn = document.getElementById('btn-auto-scroll');
     const icon = document.getElementById('icon-auto-scroll');
-    const speedInput = document.getElementById('scroll-speed-input'); // Ambil elemen slider
+    const speedInput = document.getElementById('scroll-speed-input');
     
     if (isScrolling) {
-        // --- STOP SCROLL ---
+        // --- STOP ---
         isScrolling = false;
-        clearInterval(scrollInterval);
+        cancelAnimationFrame(animationFrameId); // Hentikan animasi
         
-        // Reset tampilan tombol ke "Play"
+        // Ubah UI kembali ke Play (Biru)
         icon.classList.remove('fa-pause');
         icon.classList.add('fa-play');
         btn.classList.remove('bg-red-600', 'hover:bg-red-700');
         btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
         
     } else {
-        // --- START SCROLL ---
+        // --- START ---
         isScrolling = true;
         
-        // Ubah tampilan tombol ke "Pause"
+        // Ubah UI menjadi Pause (Merah)
         icon.classList.remove('fa-play');
         icon.classList.add('fa-pause');
         btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
         btn.classList.add('bg-red-600', 'hover:bg-red-700');
         
-        // Loop Scroll
-        scrollInterval = setInterval(() => {
-            // 1. Ambil nilai kecepatan dari slider saat ini (1 sampai 10)
-            // Semakin besar angka, semakin jauh jarak scroll per 'tick'
-            let currentSpeed = parseInt(speedInput.value) || 1; 
-
-            // Cek apakah sudah mentok bawah
-            if ((window.innerHeight + window.scrollY) < document.body.offsetHeight) {
-                window.scrollBy({
-                    top: currentSpeed, // Gunakan nilai slider di sini
-                    left: 0,
-                    behavior: 'auto'
-                });
-            } else {
-                toggleAutoScroll(); // Stop jika sudah selesai
-            }
-        }, 30); // Interval tetap 30ms agar gerakan halus
+        // Mulai Loop Animasi
+        performScroll();
     }
 }
 
-// Matikan scroll otomatis jika user menyentuh layar
+function performScroll() {
+    // Ambil elemen slider kecepatan
+    const speedInput = document.getElementById('scroll-speed-input');
+    
+    // Ambil nilai kecepatan (bisa desimal untuk kehalusan ekstra)
+    // Kita bagi 2 agar range 1-10 di slider terasa lebih terkontrol
+    // Jika ingin lebih ngebut, hapus pembagian "/ 2"
+    let speed = (parseFloat(speedInput.value) || 1) ; 
+
+    // Cek apakah belum mentok bawah
+    if ((window.innerHeight + window.scrollY) < document.body.offsetHeight) {
+        
+        // Lakukan scroll
+        // Kita tidak pakai behavior 'smooth' di sini karena rAF sudah menangani kehalusannya per-frame
+        window.scrollBy(0, speed);
+        
+        // Panggil frame berikutnya (biasanya 60fps)
+        if (isScrolling) {
+            animationFrameId = requestAnimationFrame(performScroll);
+        }
+        
+    } else {
+        // Jika mentok bawah, stop otomatis
+        toggleAutoScroll();
+    }
+}
+
+// Matikan scroll jika user menyentuh layar (Manual Override)
 ['mousedown', 'wheel', 'touchstart', 'keydown'].forEach(evt => {
     window.addEventListener(evt, () => {
         if(isScrolling) toggleAutoScroll();
