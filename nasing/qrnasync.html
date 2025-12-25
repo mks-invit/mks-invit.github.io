@@ -589,6 +589,52 @@
         if (isDarkNow) { icon.classList.replace('fa-moon', 'fa-sun'); } else { icon.classList.replace('fa-sun', 'fa-moon'); }
     });
 
+// Fungsi Pembungkus Fetch (Smart Fetch)
+async function fetchFamilyDataSmart() {
+    // 1. Cek apakah ada internet (opsional, tapi bagus untuk UX)
+    if (!navigator.onLine) {
+        console.warn("Browser mendeteksi offline. Mencoba ambil cache...");
+    }
+
+    try {
+        console.log("Sedang mencoba mengunduh data terbaru dari server...");
+        
+        // --- COBA AMBIL DARI INTERNET ---
+        // Ganti parameter action sesuai kebutuhan backend Anda (misal: action=get_all)
+        const response = await fetch(API_URL + "?action=get_all");
+        
+        if (!response.ok) throw new Error("Gagal mengambil data dari server");
+        
+        const data = await response.json();
+        
+        // --- JIKA SUKSES, SIMPAN KE LOCALSTORAGE (BACKUP) ---
+        // Kita simpan sebagai string JSON
+        localStorage.setItem('offlineFamilyData', JSON.stringify(data));
+        localStorage.setItem('lastUpdate', new Date().toLocaleString());
+        
+        console.log("Data berhasil diunduh dan dicadangkan.");
+        return data;
+
+    } catch (error) {
+        // --- JIKA ERROR / INTERNET MATI, AMBIL DARI LOCALSTORAGE ---
+        console.error("Gagal koneksi internet:", error);
+        console.log("Mengambil data dari penyimpanan offline...");
+        
+        const offlineData = localStorage.getItem('offlineFamilyData');
+        
+        if (offlineData) {
+            // Beritahu user mereka dalam mode offline
+            showCustomAlert("Mode Offline", "Internet bermasalah. Menampilkan data terakhir yang tersimpan.", "warning");
+            return JSON.parse(offlineData);
+        } else {
+            // Jika internet mati DAN tidak ada backup (penggunaan pertama kali)
+            showCustomAlert("Gagal Memuat", "Butuh koneksi internet untuk pengambilan data pertama kali.", "error");
+            throw error; // Lempar error agar fungsi pemanggil tahu proses gagal
+        }
+    }
+}
+
+	
     async function fetchData() {
         const localData = localStorage.getItem('familyDataCache');
         if (localData) {
