@@ -492,7 +492,7 @@
 <script>
     // PENTING: GANTI URL DI BAWAH INI DENGAN URL WEB APP DARI DEPLOYMENT GOOGLE APPS SCRIPT ANDA
     const API_URL = "https://script.google.com/macros/s/AKfycbyQl9FvW-6UaSgPCDu7S4Iv__CHHotZookf5wXfT_SRb_680YL8JMfRKz21DijEi0J7/exec"; 
-    
+
     let isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'; 
     let allData = [], searchableNamesList = []; 
     let pendingQueue = JSON.parse(localStorage.getItem('pendingChanges') || '[]');
@@ -588,6 +588,31 @@
         const icon = document.querySelector('#theme-btn i');
         if (isDarkNow) { icon.classList.replace('fa-moon', 'fa-sun'); } else { icon.classList.replace('fa-sun', 'fa-moon'); }
     });
+
+
+	// Panggil saat halaman dimuat
+document.addEventListener('DOMContentLoaded', async () => {
+    // Tampilkan loading (animasi phinisi Anda)
+    showLoader(true);
+
+    try {
+        // --- INI CARA MEMANGGILNYA ---
+        const data = await fetchFamilyDataSmart();
+        
+        // Simpan ke variabel global (sesuaikan nama variabel Anda, misal: allFamilyData)
+        allFamilyData = data; 
+        
+        // Lanjut render pohon/tampilan
+        renderTree(); 
+        updateStatistics(); // Jika ada fungsi update statistik
+        
+    } catch (error) {
+        console.error("Aplikasi gagal memuat data:", error);
+    } finally {
+        // Matikan loading baik sukses maupun gagal
+        showLoader(false);
+    }
+});
 
 // Fungsi Pembungkus Fetch (Smart Fetch)
 async function fetchFamilyDataSmart() {
