@@ -2016,6 +2016,41 @@
             showLoader(false); 
         }
     }
+
+    // --- TAMBAHAN UNTUK PWA & OFFLINE MODE ---
+
+    // 1. Daftarkan Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('Service Worker Registered'))
+                .catch(err => console.log('SW Gagal:', err));
+        });
+    }
+
+    // 2. Modifikasi Fungsi Fetch Data (Simpan Backup Lokal)
+    // Ganti fungsi fetch data yang lama dengan logika ini:
+    async function fetchFamilyDataSmart() {
+        try {
+            // Coba ambil data dari Internet
+            const response = await fetch(API_URL + "?action=get_all"); 
+            const data = await response.json();
+            
+            // Jika berhasil, SIMPAN ke LocalStorage sebagai cadangan
+            localStorage.setItem('offlineFamilyData', JSON.stringify(data));
+            return data;
+        } catch (error) {
+            console.log("Internet mati, mengambil data offline...");
+            // Jika internet mati, ambil dari LocalStorage
+            const offlineData = localStorage.getItem('offlineFamilyData');
+            if (offlineData) {
+                showCustomAlert("Mode Offline", "Anda sedang membuka data versi offline.", "warning");
+                return JSON.parse(offlineData);
+            } else {
+                throw new Error("Tidak ada koneksi internet dan tidak ada data tersimpan.");
+            }
+        }
+    }
 </script>
 </body>
 </html>
