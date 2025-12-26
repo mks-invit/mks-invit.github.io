@@ -114,10 +114,17 @@
     </div>
 
 <script>
-    // ?? PASTIKAN URL INI SUDAH DIISI DENGAN URL SCRIPT GOOGLE ANDA ??
+    // KONFIGURASI
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxAkkmOD3AtWHe48wuNTjAk1WQ7BIePTuo0POA7YyHddhIIobo2KBPee476MGkbd-SQ/exec"; 
+    const QUEUE_KEY = "rsvp_offline_queue"; // Kunci penyimpanan lokal
 
-    document.addEventListener('DOMContentLoaded', loadDataKehadiran);
+    document.addEventListener('DOMContentLoaded', () => {
+        loadDataKehadiran(); // Muat data server + lokal
+        processQueue();      // Coba kirim data yang tertunda (jika ada)
+    });
+
+    // Event Listener: Jika internet nyala kembali, otomatis proses antrian
+    window.addEventListener('online', processQueue);
 
     function ubahJumlah(delta) {
         const input = document.getElementById('jumlah');
@@ -127,9 +134,56 @@
         input.value = val;
     }
 
-    // --- FUNGSI BARU: GENERATE HTML KARTU (Agar bisa dipakai ulang) ---
-    function createCardHtml(item) {
-        // Logika Warna Badge & Avatar
+    // --- MANAJEMEN ANTRIAN LOKAL ---
+    function getQueue() {
+        return JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+    }
+
+    function addToQueue(data) {
+        const queue = getQueue();
+        queue.push(data);
+        localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+    }
+
+    function removeFromQueue(id) {
+        let queue = getQueue();
+        queue = queue.filter(item => item.id !== id);
+        localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+    }
+
+    // Fungsi Background: Mengirim data yang tertunda
+    async function processQueue() {
+        const queue = getQueue();
+        if (queue.length === 0) return;
+
+        console.log(`?? Mencoba sinkronisasi ${queue.length} data tertunda...`);
+
+        // Kita gunakan loop for...of agar bisa await satu per satu
+        for (const item of queue) {
+            try {
+                // Hapus properti ID lokal sebelum kirim ke Google (agar bersih)
+                const { id, ...dataToSend } = item; 
+
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(dataToSend)
+                });
+                
+                // Jika tidak error, anggap sukses & hapus dari antrian
+                removeFromQueue(item.id);
+                console.log(`? Data ${item.nama} berhasil disinkronkan.`);
+            } catch (error) {
+                console.error(`? Gagal kirim ${item.nama}, simpan untuk nanti.`);
+                // Jika error koneksi, stop loop agar tidak membebani browser, coba lagi nanti
+                break; 
+            }
+        }
+    }
+
+    // --- RENDER KARTU HTML ---
+    function createCardHtml(item, isPending = false) {
         let badgeClass = "bg-gray-100 text-gray-600 border-gray-200";
         let avatarColor = "bg-gray-400";
         const k = item.keturunan || "";
@@ -141,9 +195,14 @@
         else if(k.includes("Bacce")) { badgeClass = "bg-orange-50 text-orange-700 border-orange-100"; avatarColor = "bg-orange-500"; }
         else if(k.includes("Barang")) { badgeClass = "bg-purple-50 text-purple-700 border-purple-100"; avatarColor = "bg-purple-500"; }
 
+        // Indikator Status (Pending/Sent)
+        const statusIcon = isPending 
+            ? `<span class="text-orange-500 text-[10px] animate-pulse"><i class="fas fa-clock"></i> Menunggu koneksi...</span>` 
+            : `<span class="text-gray-300 text-[10px]"><i class="fas fa-check-circle"></i></span>`;
+
         // Format Waktu
         let timeString = "Baru saja";
-        if (item.waktu) {
+        if (item.waktu && !isPending) {
             try {
                 const date = new Date(item.waktu);
                 timeString = date.toLocaleDateString('id-ID', {day:'numeric', month:'short'}) + ', ' + date.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
@@ -154,7 +213,7 @@
         const inisial = item.nama ? item.nama.charAt(0).toUpperCase() : "?";
 
         return `
-            <div class="p-4 hover:bg-white transition-colors bg-white/50 fade-in">
+            <div class="p-4 hover:bg-white transition-colors bg-white/50 fade-in border-b border-gray-100 last:border-0">
                 <div class="flex gap-3">
                     <div class="w-10 h-10 ${avatarColor} rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm flex-shrink-0">
                         ${inisial}
@@ -163,7 +222,10 @@
                     <div class="flex-1 min-w-0">
                         <div class="flex justify-between items-start mb-1">
                             <h4 class="font-bold text-gray-800 text-sm truncate pr-2">${item.nama}</h4>
-                            <span class="text-[10px] text-gray-400 whitespace-nowrap">${timeString}</span>
+                            <div class="flex flex-col items-end">
+                                <span class="text-[10px] text-gray-400 whitespace-nowrap">${timeString}</span>
+                                ${statusIcon}
+                            </div>
                         </div>
                         
                         <div class="flex items-center gap-2 mb-2 flex-wrap">
@@ -185,50 +247,49 @@
         `;
     }
 
-    // --- LOGIKA UTAMA: OPTIMISTIC UI ---
+    // --- FUNGSI SUBMIT (UTAMA) ---
     function kirimKeGoogle(e) {
         e.preventDefault();
         
-        // 1. Ambil Data dari Form
         const namaInput = document.getElementById('nama');
         const keturunanInput = document.getElementById('keturunan');
         const jumlahInput = document.getElementById('jumlah');
         const pesanInput = document.getElementById('pesan');
 
-        if (GOOGLE_SCRIPT_URL === "ISI_URL_APPS_SCRIPT_DISINI" || GOOGLE_SCRIPT_URL === "") {
-            Swal.fire("Error", "URL Script belum dipasang!", "error"); return;
+        // Validasi
+        if (!namaInput.value || !keturunanInput.value) {
+            Swal.fire("Ups", "Mohon lengkapi nama dan asal keturunan.", "warning");
+            return;
         }
 
-        // Buat Objek Data Lokal
+        // 1. BUAT DATA LOKAL (Dengan ID unik untuk antrian)
         const dataBaru = {
+            id: Date.now(), // ID unik berdasarkan waktu
             nama: namaInput.value,
             keturunan: keturunanInput.value,
             jumlah: jumlahInput.value,
             pesan: pesanInput.value,
-            waktu: new Date().toISOString() // Pakai waktu lokal
+            waktu: new Date().toISOString()
         };
 
-        // 2. UPDATE UI SECARA LANGSUNG (OPTIMISTIC)
+        // 2. SIMPAN KE ANTRIAN LOKAL DULU (PENTING!)
+        addToQueue(dataBaru);
+
+        // 3. UPDATE UI (OPTIMISTIC) - Langsung render dari data lokal
         const listContainer = document.getElementById('komentarList');
+        if (listContainer.innerHTML.includes('Belum ada data')) listContainer.innerHTML = '';
         
-        // Jika list masih kosong/loading, bersihkan dulu
-        if (listContainer.querySelector('.fa-spinner') || listContainer.innerHTML.includes('Belum ada data')) {
-            listContainer.innerHTML = '';
-        }
+        // Render dengan status "Pending" (ikon jam oren)
+        listContainer.insertAdjacentHTML('afterbegin', createCardHtml(dataBaru, true));
 
-        // Tambahkan kartu baru di paling atas (prepend)
-        const htmlCard = createCardHtml(dataBaru);
-        listContainer.insertAdjacentHTML('afterbegin', htmlCard);
-
-        // Update Counter Jumlah Hadir
+        // Update Counter
         const totalBadge = document.getElementById('totalHadir');
         let currentTotal = parseInt(totalBadge.innerText) || 0;
         totalBadge.innerText = `${currentTotal + parseInt(dataBaru.jumlah)} Hadir`;
 
-        // Tampilkan Notifikasi Sukses Langsung
         Swal.fire({
-            title: 'Alhamdulillah!',
-            text: 'Terima kasih, konfirmasi Anda telah ditampilkan.',
+            title: 'Tercatat!',
+            text: 'Data Anda telah disimpan dan akan disinkronkan.',
             icon: 'success',
             timer: 2000,
             showConfirmButton: false
@@ -238,33 +299,38 @@
         document.getElementById('rsvpForm').reset();
         document.getElementById('jumlah').value = 1;
 
-        // 3. KIRIM DATA KE BACKGROUND (TANPA MENUNGGU / AWAIT)
-        fetch(GOOGLE_SCRIPT_URL, {
-            method: "POST",
-            mode: "no-cors", // Google Script butuh no-cors untuk simple request
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(dataBaru)
-        }).then(() => {
-            console.log("Sinkronisasi background berhasil.");
-            // Tidak perlu reloadDataKehadiran() agar tidak flickering/mengganggu user
-        }).catch(error => {
-            console.error("Gagal sinkronisasi background:", error);
-            // Opsional: Beritahu user jika benar-benar krusial, tapi untuk RSVP biasanya aman diabaikan
-        });
+        // 4. COBA KIRIM SEKARANG (BACKGROUND)
+        processQueue();
     }
 
-    // --- LOAD DATA SERVER ---
+    // --- LOAD DATA (GABUNGAN SERVER + LOKAL) ---
     async function loadDataKehadiran() {
         const listContainer = document.getElementById('komentarList');
         const totalBadge = document.getElementById('totalHadir');
         
         try {
+            // 1. Ambil Data Antrian Lokal (Yang belum terkirim)
+            const localQueue = getQueue();
+            
+            // 2. Ambil Data Server
             const response = await fetch(GOOGLE_SCRIPT_URL);
-            const data = await response.json();
+            const serverData = await response.json();
             
             listContainer.innerHTML = ''; 
 
-            if (!data || data.length === 0) {
+            let totalOrang = 0;
+
+            // 3. RENDER DATA LOKAL DULUAN (Paling Atas)
+            // Agar user melihat data yang baru saja dia input meskipun belum masuk server
+            if (localQueue.length > 0) {
+                localQueue.reverse().forEach(item => { // Reverse agar yang terbaru di atas
+                    totalOrang += parseInt(item.jumlah) || 0;
+                    listContainer.innerHTML += createCardHtml(item, true); // True = isPending
+                });
+            }
+
+            // 4. RENDER DATA SERVER
+            if ((!serverData || serverData.length === 0) && localQueue.length === 0) {
                 listContainer.innerHTML = `
                     <div class="flex flex-col items-center justify-center py-8 px-4 text-center">
                         <div class="bg-gray-100 p-4 rounded-full mb-3">
@@ -277,22 +343,34 @@
                 return;
             }
 
-            let totalOrang = 0;
-
-            // Render semua data dari server
-            data.forEach(item => {
-                totalOrang += parseInt(item.jumlah) || 0;
-                listContainer.innerHTML += createCardHtml(item); // Pakai fungsi yang sama
-            });
+            if (serverData && serverData.length > 0) {
+                serverData.forEach(item => {
+                    totalOrang += parseInt(item.jumlah) || 0;
+                    listContainer.innerHTML += createCardHtml(item, false); // False = sudah di server
+                });
+            }
 
             totalBadge.innerText = `${totalOrang} Hadir`;
 
         } catch (error) {
             console.error(error);
-            listContainer.innerHTML = '<div class="p-4 text-center text-red-400 text-xs">Gagal memuat data. Periksa koneksi atau URL Script.</div>';
+            // Jika gagal load server, minimal tampilkan data lokal jika ada
+            const localQueue = getQueue();
+            if (localQueue.length > 0) {
+                listContainer.innerHTML = '';
+                let totalOrang = 0;
+                localQueue.reverse().forEach(item => {
+                    totalOrang += parseInt(item.jumlah) || 0;
+                    listContainer.innerHTML += createCardHtml(item, true);
+                });
+                totalBadge.innerText = `${totalOrang} Hadir (Offline)`;
+            } else {
+                listContainer.innerHTML = '<div class="p-4 text-center text-red-400 text-xs">Gagal memuat data server. Periksa koneksi.</div>';
+            }
         }
     }
 </script>
+
 
 </body>
 </html>
