@@ -2264,26 +2264,27 @@ async function fetchFamilyDataSmart() {
         const dontShow = localStorage.getItem('hideInfoPopupDate');
         const today = new Date().toDateString();
 
-        // Cek apakah user memilih "Jangan tampilkan hari ini"
         if (dontShow !== today) {
             popup.classList.remove('hidden');
-            
-            // Animasi Masuk (Fade In)
             setTimeout(() => {
-                popup.firstElementChild.classList.remove('opacity-0'); // Backdrop
-                popup.querySelector('.transform').classList.remove('scale-95', 'opacity-0'); // Panel
-                popup.querySelector('.transform').classList.add('scale-100', 'opacity-100');
+                // Pastikan elemen ada sebelum mengakses classList
+                if(popup.firstElementChild) popup.firstElementChild.classList.remove('opacity-0');
+                const panel = popup.querySelector('.transform');
+                if(panel) {
+                    panel.classList.remove('scale-95', 'opacity-0');
+                    panel.classList.add('scale-100', 'opacity-100');
+                }
             }, 10);
         }
     }
 
-    // Fungsi Menutup Popup
+    // Fungsi Menutup Popup (SUDAH DIPERBAIKI)
     function closeInfoPopup() {
         const popup = document.getElementById('infoPopup');
-        const checkbox = document.getElementById('dontShowAgain');
+        const checkbox = document.getElementById('dontShowAgain'); // Mencari elemen checkbox
 
-        // Jika checkbox dicentang, simpan tanggal hari ini ke penyimpanan
-        if (checkbox.checked) {
+        // PERBAIKAN: Cek dulu apakah checkbox "ada" sebelum mengecek "checked"
+        if (checkbox && checkbox.checked) {
             localStorage.setItem('hideInfoPopupDate', new Date().toDateString());
         }
 
@@ -2292,12 +2293,12 @@ async function fetchFamilyDataSmart() {
         setTimeout(() => {
             popup.classList.add('hidden');
             popup.classList.remove('transition-opacity', 'duration-300', 'ease-out', 'opacity-0');
+            // Reset opacity agar bisa dibuka lagi jika perlu (opsional)
+            popup.classList.remove('opacity-0'); 
         }, 300);
     }
 
-    // Jalankan saat halaman selesai dimuat
     document.addEventListener('DOMContentLoaded', () => {
-        // Beri sedikit delay agar tidak kaget
         setTimeout(openInfoPopup, 1000); 
     });
 </script>
