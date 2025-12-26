@@ -113,181 +113,186 @@
         </div>
     </div>
 
+<script>
+    // ?? PASTIKAN URL INI SUDAH DIISI DENGAN URL SCRIPT GOOGLE ANDA ??
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxAkkmOD3AtWHe48wuNTjAk1WQ7BIePTuo0POA7YyHddhIIobo2KBPee476MGkbd-SQ/exec"; 
 
-    <script>
-        // ?? PASTIKAN URL INI SUDAH DIISI DENGAN URL SCRIPT GOOGLE ANDA ??
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxAkkmOD3AtWHe48wuNTjAk1WQ7BIePTuo0POA7YyHddhIIobo2KBPee476MGkbd-SQ/exec"; 
+    document.addEventListener('DOMContentLoaded', loadDataKehadiran);
 
-        document.addEventListener('DOMContentLoaded', loadDataKehadiran);
+    function ubahJumlah(delta) {
+        const input = document.getElementById('jumlah');
+        let val = parseInt(input.value) || 1;
+        val += delta;
+        if (val < 1) val = 1;
+        input.value = val;
+    }
 
-        function ubahJumlah(delta) {
-            const input = document.getElementById('jumlah');
-            let val = parseInt(input.value) || 1;
-            val += delta;
-            if (val < 1) val = 1;
-            input.value = val;
-        }
+    // --- FUNGSI BARU: GENERATE HTML KARTU (Agar bisa dipakai ulang) ---
+    function createCardHtml(item) {
+        // Logika Warna Badge & Avatar
+        let badgeClass = "bg-gray-100 text-gray-600 border-gray-200";
+        let avatarColor = "bg-gray-400";
+        const k = item.keturunan || "";
 
-        function kirimKeGoogle(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btnSubmit');
-            const originalText = btn.innerHTML;
+        if(k.includes("Tadung")) { badgeClass = "bg-blue-50 text-blue-700 border-blue-100"; avatarColor = "bg-blue-500"; }
+        else if(k.includes("Hammadu")) { badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-100"; avatarColor = "bg-emerald-500"; }
+        else if(k.includes("Badu")) { badgeClass = "bg-amber-50 text-amber-700 border-amber-100"; avatarColor = "bg-amber-500"; }
+        else if(k.includes("Dida")) { badgeClass = "bg-pink-50 text-pink-700 border-pink-100"; avatarColor = "bg-pink-500"; }
+        else if(k.includes("Bacce")) { badgeClass = "bg-orange-50 text-orange-700 border-orange-100"; avatarColor = "bg-orange-500"; }
+        else if(k.includes("Barang")) { badgeClass = "bg-purple-50 text-purple-700 border-purple-100"; avatarColor = "bg-purple-500"; }
 
-            if (GOOGLE_SCRIPT_URL === "ISI_URL_APPS_SCRIPT_DISINI" || GOOGLE_SCRIPT_URL === "") {
-                Swal.fire("Error", "URL Script belum dipasang!", "error"); return;
-            }
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
-            btn.classList.add('opacity-75', 'cursor-not-allowed');
-
-            const dataKirim = {
-                nama: document.getElementById('nama').value,
-                keturunan: document.getElementById('keturunan').value,
-                jumlah: document.getElementById('jumlah').value,
-                pesan: document.getElementById('pesan').value
-            };
-
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(dataKirim)
-            })
-            .then(() => {
-                Swal.fire({
-                    title: 'Alhamdulillah!',
-                    text: 'Konfirmasi kehadiran berhasil disimpan.',
-                    icon: 'success',
-                    confirmButtonColor: '#2563EB'
-                });
-                document.getElementById('rsvpForm').reset();
-                document.getElementById('jumlah').value = 1;
-                loadDataKehadiran();
-            })
-            .catch(error => {
-                Swal.fire("Gagal", "Koneksi bermasalah.", "error");
-            })
-            .finally(() => {
-                btn.disabled = false;
-                btn.innerHTML = originalText;
-                btn.classList.remove('opacity-75', 'cursor-not-allowed');
-            });
-        }
-
-        async function loadDataKehadiran() {
-            const listContainer = document.getElementById('komentarList');
-            const totalBadge = document.getElementById('totalHadir');
-            
+        // Format Waktu
+        let timeString = "Baru saja";
+        if (item.waktu) {
             try {
-                const response = await fetch(GOOGLE_SCRIPT_URL);
-                const data = await response.json();
-                
-                listContainer.innerHTML = ''; 
-
-                if (!data || data.length === 0) {
-                    listContainer.innerHTML = `
-                        <div class="flex flex-col items-center justify-center py-8 px-4 text-center">
-                            <div class="bg-gray-100 p-4 rounded-full mb-3">
-                                <i class="fas fa-user-clock text-gray-400 text-xl"></i>
-                            </div>
-                            <p class="text-gray-500 text-sm font-medium">Belum ada data masuk.</p>
-                            <p class="text-gray-400 text-xs">Jadilah yang pertama mengisi!</p>
-                        </div>`;
-                    totalBadge.innerText = "0 Hadir";
-                    return;
-                }
-
-                let totalOrang = 0;
-
-                data.forEach(item => {
-                    totalOrang += parseInt(item.jumlah) || 0;
-
-                    // --- LOGIKA WARNA BARU (SESUAI 6 NAMA) ---
-                    let badgeClass = "bg-gray-100 text-gray-600 border-gray-200";
-                    let avatarColor = "bg-gray-400";
-
-                    // 1. Puang Tadung (Biru)
-                    if(item.keturunan.includes("Tadung")) { 
-                        badgeClass = "bg-blue-50 text-blue-700 border-blue-100"; 
-                        avatarColor = "bg-blue-500"; 
-                    }
-                    // 2. Puang Hammadu (Hijau)
-                    if(item.keturunan.includes("Hammadu")) { 
-                        badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-100"; 
-                        avatarColor = "bg-emerald-500"; 
-                    }
-                    // 3. Puang Badu (Kuning/Amber)
-                    if(item.keturunan.includes("Badu")) { 
-                        badgeClass = "bg-amber-50 text-amber-700 border-amber-100"; 
-                        avatarColor = "bg-amber-500"; 
-                    }
-                    // 4. Puang Dida (Pink)
-                    if(item.keturunan.includes("Dida")) { 
-                        badgeClass = "bg-pink-50 text-pink-700 border-pink-100"; 
-                        avatarColor = "bg-pink-500"; 
-                    }
-                    // 5. Puang Bacce (Oranye)
-                    if(item.keturunan.includes("Bacce")) { 
-                        badgeClass = "bg-orange-50 text-orange-700 border-orange-100"; 
-                        avatarColor = "bg-orange-500"; 
-                    }
-                    // 6. Puang Barang (Ungu)
-                    if(item.keturunan.includes("Barang")) { 
-                        badgeClass = "bg-purple-50 text-purple-700 border-purple-100"; 
-                        avatarColor = "bg-purple-500"; 
-                    }
-
-                    // Format Waktu
-                    let timeString = "";
-                    try {
-                        const date = new Date(item.waktu);
-                        timeString = date.toLocaleDateString('id-ID', {day:'numeric', month:'short'}) + ', ' + date.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
-                    } catch(e) { timeString = "Baru saja"; }
-
-                    // Hapus angka urutan (misal: "1. Puang Tadung" jadi "Puang Tadung" agar badge tidak kepanjangan)
-                    const displayKeturunan = item.keturunan.replace(/^[0-9]+\.\s/, '');
-
-                    const htmlCard = `
-                        <div class="p-4 hover:bg-white transition-colors bg-white/50">
-                            <div class="flex gap-3">
-                                <div class="w-10 h-10 ${avatarColor} rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm flex-shrink-0">
-                                    ${item.nama ? item.nama.charAt(0).toUpperCase() : "?"}
-                                </div>
-                                
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex justify-between items-start mb-1">
-                                        <h4 class="font-bold text-gray-800 text-sm truncate pr-2">${item.nama}</h4>
-                                        <span class="text-[10px] text-gray-400 whitespace-nowrap">${timeString}</span>
-                                    </div>
-                                    
-                                    <div class="flex items-center gap-2 mb-2 flex-wrap">
-                                        <span class="text-[10px] px-2 py-0.5 rounded border ${badgeClass} font-semibold">
-                                            ${displayKeturunan}
-                                        </span>
-                                        <span class="text-[10px] text-gray-500 flex items-center gap-1">
-                                            <i class="fas fa-users text-xs"></i> ${item.jumlah} Orang
-                                        </span>
-                                    </div>
-
-                                    ${item.pesan ? `
-                                    <div class="relative bg-slate-50 p-2.5 rounded-br-xl rounded-bl-xl rounded-tr-xl border border-slate-100 text-sm text-gray-600 italic">
-                                        "${item.pesan}"
-                                    </div>` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    listContainer.innerHTML += htmlCard;
-                });
-
-                totalBadge.innerText = `${totalOrang} Hadir`;
-
-            } catch (error) {
-                console.error(error);
-                listContainer.innerHTML = '<div class="p-4 text-center text-red-400 text-xs">Gagal memuat data. Periksa koneksi atau URL Script.</div>';
-            }
+                const date = new Date(item.waktu);
+                timeString = date.toLocaleDateString('id-ID', {day:'numeric', month:'short'}) + ', ' + date.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+            } catch(e) {}
         }
-    </script>
+
+        const displayKeturunan = k.replace(/^[0-9]+\.\s/, '');
+        const inisial = item.nama ? item.nama.charAt(0).toUpperCase() : "?";
+
+        return `
+            <div class="p-4 hover:bg-white transition-colors bg-white/50 fade-in">
+                <div class="flex gap-3">
+                    <div class="w-10 h-10 ${avatarColor} rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm flex-shrink-0">
+                        ${inisial}
+                    </div>
+                    
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start mb-1">
+                            <h4 class="font-bold text-gray-800 text-sm truncate pr-2">${item.nama}</h4>
+                            <span class="text-[10px] text-gray-400 whitespace-nowrap">${timeString}</span>
+                        </div>
+                        
+                        <div class="flex items-center gap-2 mb-2 flex-wrap">
+                            <span class="text-[10px] px-2 py-0.5 rounded border ${badgeClass} font-semibold">
+                                ${displayKeturunan}
+                            </span>
+                            <span class="text-[10px] text-gray-500 flex items-center gap-1">
+                                <i class="fas fa-users text-xs"></i> ${item.jumlah} Orang
+                            </span>
+                        </div>
+
+                        ${item.pesan ? `
+                        <div class="relative bg-slate-50 p-2.5 rounded-br-xl rounded-bl-xl rounded-tr-xl border border-slate-100 text-sm text-gray-600 italic">
+                            "${item.pesan}"
+                        </div>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // --- LOGIKA UTAMA: OPTIMISTIC UI ---
+    function kirimKeGoogle(e) {
+        e.preventDefault();
+        
+        // 1. Ambil Data dari Form
+        const namaInput = document.getElementById('nama');
+        const keturunanInput = document.getElementById('keturunan');
+        const jumlahInput = document.getElementById('jumlah');
+        const pesanInput = document.getElementById('pesan');
+
+        if (GOOGLE_SCRIPT_URL === "ISI_URL_APPS_SCRIPT_DISINI" || GOOGLE_SCRIPT_URL === "") {
+            Swal.fire("Error", "URL Script belum dipasang!", "error"); return;
+        }
+
+        // Buat Objek Data Lokal
+        const dataBaru = {
+            nama: namaInput.value,
+            keturunan: keturunanInput.value,
+            jumlah: jumlahInput.value,
+            pesan: pesanInput.value,
+            waktu: new Date().toISOString() // Pakai waktu lokal
+        };
+
+        // 2. UPDATE UI SECARA LANGSUNG (OPTIMISTIC)
+        const listContainer = document.getElementById('komentarList');
+        
+        // Jika list masih kosong/loading, bersihkan dulu
+        if (listContainer.querySelector('.fa-spinner') || listContainer.innerHTML.includes('Belum ada data')) {
+            listContainer.innerHTML = '';
+        }
+
+        // Tambahkan kartu baru di paling atas (prepend)
+        const htmlCard = createCardHtml(dataBaru);
+        listContainer.insertAdjacentHTML('afterbegin', htmlCard);
+
+        // Update Counter Jumlah Hadir
+        const totalBadge = document.getElementById('totalHadir');
+        let currentTotal = parseInt(totalBadge.innerText) || 0;
+        totalBadge.innerText = `${currentTotal + parseInt(dataBaru.jumlah)} Hadir`;
+
+        // Tampilkan Notifikasi Sukses Langsung
+        Swal.fire({
+            title: 'Alhamdulillah!',
+            text: 'Terima kasih, konfirmasi Anda telah ditampilkan.',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+        });
+
+        // Reset Form
+        document.getElementById('rsvpForm').reset();
+        document.getElementById('jumlah').value = 1;
+
+        // 3. KIRIM DATA KE BACKGROUND (TANPA MENUNGGU / AWAIT)
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: "POST",
+            mode: "no-cors", // Google Script butuh no-cors untuk simple request
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(dataBaru)
+        }).then(() => {
+            console.log("Sinkronisasi background berhasil.");
+            // Tidak perlu reloadDataKehadiran() agar tidak flickering/mengganggu user
+        }).catch(error => {
+            console.error("Gagal sinkronisasi background:", error);
+            // Opsional: Beritahu user jika benar-benar krusial, tapi untuk RSVP biasanya aman diabaikan
+        });
+    }
+
+    // --- LOAD DATA SERVER ---
+    async function loadDataKehadiran() {
+        const listContainer = document.getElementById('komentarList');
+        const totalBadge = document.getElementById('totalHadir');
+        
+        try {
+            const response = await fetch(GOOGLE_SCRIPT_URL);
+            const data = await response.json();
+            
+            listContainer.innerHTML = ''; 
+
+            if (!data || data.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-8 px-4 text-center">
+                        <div class="bg-gray-100 p-4 rounded-full mb-3">
+                            <i class="fas fa-user-clock text-gray-400 text-xl"></i>
+                        </div>
+                        <p class="text-gray-500 text-sm font-medium">Belum ada data masuk.</p>
+                        <p class="text-gray-400 text-xs">Jadilah yang pertama mengisi!</p>
+                    </div>`;
+                totalBadge.innerText = "0 Hadir";
+                return;
+            }
+
+            let totalOrang = 0;
+
+            // Render semua data dari server
+            data.forEach(item => {
+                totalOrang += parseInt(item.jumlah) || 0;
+                listContainer.innerHTML += createCardHtml(item); // Pakai fungsi yang sama
+            });
+
+            totalBadge.innerText = `${totalOrang} Hadir`;
+
+        } catch (error) {
+            console.error(error);
+            listContainer.innerHTML = '<div class="p-4 text-center text-red-400 text-xs">Gagal memuat data. Periksa koneksi atau URL Script.</div>';
+        }
+    }
+</script>
+
 </body>
 </html>
