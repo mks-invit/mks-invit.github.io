@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kbpgn-v1';
+const CACHE_NAME = 'silsilah-v1';
 const ASSETS_TO_CACHE = [
   './qrnasync.html',
   './manifest.json',
@@ -8,7 +8,7 @@ const ASSETS_TO_CACHE = [
   'https://unpkg.com/html5-qrcode'
 ];
 
-// 1. Install Service Worker & Cache Aset Statis
+// Install Service Worker
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -17,7 +17,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// 2. Ambil dari Cache dulu, kalau gak ada baru internet (Offline First)
+// Fetch Data (Offline Support)
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
@@ -26,15 +26,17 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// 3. Hapus cache lama jika ada update versi
+// Activate & Cleanup Old Caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keyList) => {
-      return Promise.all(keyList.map((key) => {
-        if (key !== CACHE_NAME) {
-          return caches.delete(key);
-        }
-      }));
+      return Promise.all(
+        keyList.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      );
     })
   );
 });
