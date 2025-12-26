@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konfirmasi Kehadiran - EMPO SIPITANGARI 2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .fade-in { animation: fadeIn 0.8s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col items-center py-8 px-4 gap-6 font-sans text-gray-800">
+
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border-t-8 border-blue-600 fade-in">
+        
+        <div class="bg-blue-50 p-6 text-center border-b border-blue-100">
+            <h2 class="text-2xl font-extrabold text-blue-800 tracking-tight">PUANG GURU NASING</h2>
+            <p class="text-sm font-semibold text-gray-600 mt-1">EMPO SIPITANGARI 2</p>
+            <div class="inline-flex items-center gap-2 mt-2 bg-white px-3 py-1 rounded-full shadow-sm border border-blue-200">
+                <i class="far fa-calendar-alt text-blue-500"></i>
+                <span class="text-xs text-gray-600 font-bold">04 Januari 2026</span>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <form id="rsvpForm" onsubmit="kirimKeGoogle(event)">
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-xs font-bold mb-1 ml-1 uppercase">Nama Lengkap</label>
+                    <input class="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-300 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 transition-all outline-none" 
+                           id="nama" name="nama" type="text" placeholder="Isi nama Anda..." required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-xs font-bold mb-1 ml-1 uppercase">Jalur Keturunan</label>
+                    <div class="relative">
+                        <select class="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-300 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 transition-all outline-none appearance-none cursor-pointer" 
+                                id="keturunan" name="keturunan" required>
+                            <option value="" disabled selected>-- Pilih --</option>
+                            <option value="Puang Tadung">Puang Tadung</option>
+                            <option value="Puang Hammadu">Puang Hammadu</option>
+                            <option value="Puang Badu">Puang Badu</option>
+                            <option value="Puang Dida">Puang Dida</option>
+                            <option value="Puang Bacce">Puang Bacce</option>
+                            <option value="Puang Barang">Puang Barang</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500">
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-xs font-bold mb-1 ml-1 uppercase">Jumlah Rombongan</label>
+                    <div class="flex items-center border border-gray-300 rounded-lg bg-gray-50 overflow-hidden focus-within:ring-2 focus-within:ring-blue-200 focus-within:border-blue-500">
+                        <button type="button" onclick="ubahJumlah(-1)" class="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 font-bold">-</button>
+                        <input class="w-full text-center bg-transparent border-none focus:ring-0 text-gray-800 font-bold" 
+                               id="jumlah" name="jumlah" type="number" min="1" value="1" required readonly>
+                        <button type="button" onclick="ubahJumlah(1)" class="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-600 font-bold">+</button>
+                    </div>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-gray-700 text-xs font-bold mb-1 ml-1 uppercase">Pesan / Doa</label>
+                    <textarea class="w-full px-4 py-2 rounded-lg bg-gray-50 border border-gray-300 focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 transition-all outline-none h-20 resize-none text-sm" 
+                              id="pesan" name="pesan" placeholder="Tulis pesan untuk keluarga..."></textarea>
+                </div>
+
+                <button type="submit" id="btnSubmit"
+                        class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 hover:shadow-lg transform active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
+                    <span>Konfirmasi Hadir</span>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+                
+                <a href="https://mks-invit.github.io/nasing" class="block text-center text-gray-400 text-xs mt-4 hover:text-blue-600 transition">
+                    &larr; Kembali ke Silsilah
+                </a>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden border-t-8 border-green-500 fade-in" style="animation-delay: 0.2s;">
+        
+        <div class="bg-green-50 p-4 px-6 border-b border-green-100 flex justify-between items-center sticky top-0 z-10">
+            <div>
+                <h3 class="font-bold text-green-800 text-lg"><i class="fas fa-users mr-2"></i>Kabar Keluarga</h3>
+                <p class="text-xs text-green-600">Daftar yang sudah konfirmasi</p>
+            </div>
+            <span id="totalHadir" class="bg-white text-green-700 border border-green-200 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                0 Hadir
+            </span>
+        </div>
+        
+        <div id="komentarList" class="bg-slate-50 min-h-[150px] max-h-[500px] overflow-y-auto divide-y divide-gray-100">
+            <div class="flex flex-col items-center justify-center py-10 text-gray-400">
+                <i class="fas fa-circle-notch fa-spin text-3xl mb-3 text-green-500"></i>
+                <span class="text-sm">Memuat data keluarga...</span>
+            </div>
+        </div>
+
+        <div class="bg-gray-50 p-2 text-center border-t border-gray-200">
+            <p class="text-[10px] text-gray-400">Data diperbarui secara real-time</p>
+        </div>
+    </div>
+
+
+    <script>
+        // ?? PASTIKAN URL INI SUDAH DIISI DENGAN URL SCRIPT GOOGLE ANDA ??
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxAkkmOD3AtWHe48wuNTjAk1WQ7BIePTuo0POA7YyHddhIIobo2KBPee476MGkbd-SQ/exec"; 
+
+        document.addEventListener('DOMContentLoaded', loadDataKehadiran);
+
+        function ubahJumlah(delta) {
+            const input = document.getElementById('jumlah');
+            let val = parseInt(input.value) || 1;
+            val += delta;
+            if (val < 1) val = 1;
+            input.value = val;
+        }
+
+        function kirimKeGoogle(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            const originalText = btn.innerHTML;
+
+            if (GOOGLE_SCRIPT_URL === "https://script.google.com/macros/s/AKfycbxAkkmOD3AtWHe48wuNTjAk1WQ7BIePTuo0POA7YyHddhIIobo2KBPee476MGkbd-SQ/exec" || GOOGLE_SCRIPT_URL === "") {
+                Swal.fire("Error", "URL Script belum dipasang!", "error"); return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+
+            const dataKirim = {
+                nama: document.getElementById('nama').value,
+                keturunan: document.getElementById('keturunan').value,
+                jumlah: document.getElementById('jumlah').value,
+                pesan: document.getElementById('pesan').value
+            };
+
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(dataKirim)
+            })
+            .then(() => {
+                Swal.fire({
+                    title: 'Alhamdulillah!',
+                    text: 'Konfirmasi kehadiran berhasil disimpan.',
+                    icon: 'success',
+                    confirmButtonColor: '#2563EB'
+                });
+                document.getElementById('rsvpForm').reset();
+                document.getElementById('jumlah').value = 1;
+                loadDataKehadiran();
+            })
+            .catch(error => {
+                Swal.fire("Gagal", "Koneksi bermasalah.", "error");
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            });
+        }
+
+        async function loadDataKehadiran() {
+            const listContainer = document.getElementById('komentarList');
+            const totalBadge = document.getElementById('totalHadir');
+            
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                const data = await response.json();
+                
+                listContainer.innerHTML = ''; 
+
+                if (!data || data.length === 0) {
+                    listContainer.innerHTML = `
+                        <div class="flex flex-col items-center justify-center py-8 px-4 text-center">
+                            <div class="bg-gray-100 p-4 rounded-full mb-3">
+                                <i class="fas fa-user-clock text-gray-400 text-xl"></i>
+                            </div>
+                            <p class="text-gray-500 text-sm font-medium">Belum ada data masuk.</p>
+                            <p class="text-gray-400 text-xs">Jadilah yang pertama mengisi!</p>
+                        </div>`;
+                    totalBadge.innerText = "0 Hadir";
+                    return;
+                }
+
+                let totalOrang = 0;
+
+                data.forEach(item => {
+                    totalOrang += parseInt(item.jumlah) || 0;
+
+                    // --- LOGIKA WARNA BARU (SESUAI 6 NAMA) ---
+                    let badgeClass = "bg-gray-100 text-gray-600 border-gray-200";
+                    let avatarColor = "bg-gray-400";
+
+                    // 1. Puang Tadung (Biru)
+                    if(item.keturunan.includes("Tadung")) { 
+                        badgeClass = "bg-blue-50 text-blue-700 border-blue-100"; 
+                        avatarColor = "bg-blue-500"; 
+                    }
+                    // 2. Puang Hammadu (Hijau)
+                    if(item.keturunan.includes("Hammadu")) { 
+                        badgeClass = "bg-emerald-50 text-emerald-700 border-emerald-100"; 
+                        avatarColor = "bg-emerald-500"; 
+                    }
+                    // 3. Puang Badu (Kuning/Amber)
+                    if(item.keturunan.includes("Badu")) { 
+                        badgeClass = "bg-amber-50 text-amber-700 border-amber-100"; 
+                        avatarColor = "bg-amber-500"; 
+                    }
+                    // 4. Puang Dida (Pink)
+                    if(item.keturunan.includes("Dida")) { 
+                        badgeClass = "bg-pink-50 text-pink-700 border-pink-100"; 
+                        avatarColor = "bg-pink-500"; 
+                    }
+                    // 5. Puang Bacce (Oranye)
+                    if(item.keturunan.includes("Bacce")) { 
+                        badgeClass = "bg-orange-50 text-orange-700 border-orange-100"; 
+                        avatarColor = "bg-orange-500"; 
+                    }
+                    // 6. Puang Barang (Ungu)
+                    if(item.keturunan.includes("Barang")) { 
+                        badgeClass = "bg-purple-50 text-purple-700 border-purple-100"; 
+                        avatarColor = "bg-purple-500"; 
+                    }
+
+                    // Format Waktu
+                    let timeString = "";
+                    try {
+                        const date = new Date(item.waktu);
+                        timeString = date.toLocaleDateString('id-ID', {day:'numeric', month:'short'}) + ', ' + date.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+                    } catch(e) { timeString = "Baru saja"; }
+
+                    // Hapus angka urutan (misal: "1. Puang Tadung" jadi "Puang Tadung" agar badge tidak kepanjangan)
+                    const displayKeturunan = item.keturunan.replace(/^[0-9]+\.\s/, '');
+
+                    const htmlCard = `
+                        <div class="p-4 hover:bg-white transition-colors bg-white/50">
+                            <div class="flex gap-3">
+                                <div class="w-10 h-10 ${avatarColor} rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm flex-shrink-0">
+                                    ${item.nama ? item.nama.charAt(0).toUpperCase() : "?"}
+                                </div>
+                                
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <h4 class="font-bold text-gray-800 text-sm truncate pr-2">${item.nama}</h4>
+                                        <span class="text-[10px] text-gray-400 whitespace-nowrap">${timeString}</span>
+                                    </div>
+                                    
+                                    <div class="flex items-center gap-2 mb-2 flex-wrap">
+                                        <span class="text-[10px] px-2 py-0.5 rounded border ${badgeClass} font-semibold">
+                                            ${displayKeturunan}
+                                        </span>
+                                        <span class="text-[10px] text-gray-500 flex items-center gap-1">
+                                            <i class="fas fa-users text-xs"></i> ${item.jumlah} Orang
+                                        </span>
+                                    </div>
+
+                                    ${item.pesan ? `
+                                    <div class="relative bg-slate-50 p-2.5 rounded-br-xl rounded-bl-xl rounded-tr-xl border border-slate-100 text-sm text-gray-600 italic">
+                                        "${item.pesan}"
+                                    </div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    listContainer.innerHTML += htmlCard;
+                });
+
+                totalBadge.innerText = `${totalOrang} Hadir`;
+
+            } catch (error) {
+                console.error(error);
+                listContainer.innerHTML = '<div class="p-4 text-center text-red-400 text-xs">Gagal memuat data. Periksa koneksi atau URL Script.</div>';
+            }
+        }
+    </script>
+</body>
+</html>
