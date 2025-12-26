@@ -2122,6 +2122,71 @@ async function fetchFamilyDataSmart() {
             }
         }
     }
+
+    // --- FITUR BIOMETRIC LOGIN (Local Guard) ---
+    
+    // Panggil fungsi ini SETELAH user berhasil Login (di dalam if result.status === "success")
+    function offerBiometricSetup(username, password) {
+        if (window.confirm("Mau aktifkan Login Biometrik (Sidik Jari/Wajah) untuk selanjutnya?")) {
+            // Simpan kredensial sederhana (Base64 encoded agar tidak telanjang mata)
+            const creds = btoa(username + ":" + password); 
+            localStorage.setItem('bio_creds', creds);
+            localStorage.setItem('bio_enabled', 'true');
+            alert("Login Biometrik Aktif! Besok tinggal scan jari.");
+        }
+    }
+
+    // Panggil fungsi ini SAAT halaman baru dibuka (di window.onload)
+    async function checkBiometricLogin() {
+        const isBioEnabled = localStorage.getItem('bio_enabled');
+        const savedCreds = localStorage.getItem('bio_creds');
+
+        if (isBioEnabled && savedCreds) {
+            // Tampilkan tombol khusus di halaman Login
+            const loginArea = document.querySelector('.login-container'); // Pastikan class container login Anda sesuai
+            if(loginArea) {
+                const btnBio = document.createElement('button');
+                btnBio.innerHTML = '<i class="fas fa-fingerprint"></i> Login dengan Sidik Jari';
+                btnBio.className = "w-full bg-green-600 text-white p-3 rounded mt-2 hover:bg-green-700 font-bold shadow-lg transition transform hover:scale-105";
+                btnBio.onclick = async () => {
+                    // Memicu autentikasi perangkat (Pattern/Pin/Fingerprint)
+                    try {
+                        // Kita menggunakan WebAuthn dummy challenge hanya untuk memicu prompt keamanan HP
+                        const publicKeyCredentialCreationOptions = {
+                            challenge: new Uint8Array([1, 2, 3, 4]), // Dummy
+                            rp: { name: "Keluarga Besar" },
+                            user: {
+                                id: new Uint8Array([1]),
+                                name: "user",
+                                displayName: "Anggota Keluarga"
+                            },
+                            pubKeyCredParams: [{alg: -7, type: "public-key"}],
+                            authenticatorSelection: { authenticatorAttachment: "platform" },
+                            timeout: 60000,
+                            attestation: "direct"
+                        };
+
+                        // Ini akan memunculkan popup sistem HP (Fingerprint/FaceID)
+                        await navigator.credentials.create({ publicKey: publicKeyCredentialCreationOptions });
+                        
+                        // JIKA SUKSES (Tidak error):
+                        // Decode username & password lalu login otomatis
+                        const decoded = atob(savedCreds).split(":");
+                        doLoginDirect(decoded[0], decoded[1]); 
+
+                    } catch (e) {
+                        alert("Verifikasi Biometrik Gagal atau Dibatalkan.");
+                        console.error(e);
+                    }
+                };
+                // Masukkan tombol di bawah tombol login biasa
+                document.getElementById('btnLogin').parentNode.appendChild(btnBio);
+            }
+        }
+    }
+    
+    // PENTING: Panggil checkBiometricLogin() saat halaman dimuat
+    // Tambahkan di document.addEventListener('DOMContentLoaded', ...) yang sudah ada
 </script>
 </body>
 </html>
