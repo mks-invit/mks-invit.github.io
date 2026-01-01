@@ -129,6 +129,8 @@
 
 <body class="bg-bg-light text-slate-700 dark:bg-bg-dark dark:text-gray-200 font-sans transition-colors duration-300 px-5 pt-5 pb-0 min-h-screen">
 
+
+
 <div id="fullscreen-overlay" onclick="startApp()" class="fixed inset-0 z-[100] bg-gray-900 flex flex-col items-center justify-center text-white cursor-pointer transition-opacity duration-500 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]">
     <div class="text-center mb-16 relative z-10 w-full px-4">
         <p class="text-xs md:text-sm text-blue-300 mb-6 uppercase tracking-[0.3em] font-semibold">MENUJU<br>"EMPO SIPITANGARI 2"</p>
@@ -142,29 +144,43 @@
         </div>
         <h2 class="text-xl font-bold tracking-wide">KETUK LAYAR</h2>
     </div>
-	<center>
-	<p class="text-xs text-gray-400 mt-1">UNTUK MELIHAT SILSILAH<br>KETURUNAN PUANG GURU NASING</p></center>
+    <center>
+    <p class="text-xs text-gray-400 mt-1">UNTUK MELIHAT SILSILAH<br>KETURUNAN PUANG GURU NASING</p></center>
     <script>
         (function() {
-            const targetDate = new Date("Jan 4, 2026 06:00:00").getTime();
+            // PERUBAHAN DISINI: Format ISO dengan Timezone +08:00 (WITA)
+            // Format: TAHUN-BULAN-TANGGAL T JAM:MENIT:DETIK + OFFSET
+            const targetDate = new Date("2026-01-04T06:00:00+08:00").getTime();
+            
             const timerEl = document.getElementById("countdown-timer");
             const boxStyle = "flex flex-col items-center justify-center bg-gray-800/40 backdrop-blur-md border border-gray-600/50 rounded-xl p-3 w-[70px] md:w-28 shadow-lg transform transition hover:scale-105 duration-300";
             const numStyle = "text-2xl md:text-5xl font-bold font-mono text-white tabular-nums leading-none mb-1 md:mb-2 drop-shadow-md";
             const labelStyle = "text-[10px] md:text-xs text-gray-400 uppercase font-semibold tracking-wider";
+            
             const interval = setInterval(function() {
                 const now = new Date().getTime();
                 const distance = targetDate - now;
+
                 const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                if (distance < 0) { clearInterval(interval); timerEl.innerHTML = `<div class="text-3xl font-bold text-green-500 animate-pulse">ACARA DIMULAI</div>`; return; }
+
+                if (distance < 0) { 
+                    clearInterval(interval); 
+                    timerEl.innerHTML = `<div class="text-3xl font-bold text-green-500 animate-pulse">ACARA DIMULAI</div>`; 
+                    return; 
+                }
+
                 timerEl.innerHTML = `<div class="${boxStyle} border-b-4 border-b-blue-500"><span class="${numStyle}">${days}</span><span class="${labelStyle}">Hari</span></div><div class="${boxStyle} border-b-4 border-b-purple-500"><span class="${numStyle}">${String(hours).padStart(2, '0')}</span><span class="${labelStyle}">Jam</span></div><div class="${boxStyle} border-b-4 border-b-pink-500"><span class="${numStyle}">${String(minutes).padStart(2, '0')}</span><span class="${labelStyle}">Menit</span></div><div class="${boxStyle} border-b-4 border-b-yellow-500 bg-gray-700/30"><span class="${numStyle} text-yellow-400">${String(seconds).padStart(2, '0')}</span><span class="${labelStyle} text-yellow-100/70">Detik</span></div>`;
             }, 1000);
+            
             window.countdownInterval = interval;
         })();
     </script>
 </div>
+
+
 
 <div class="max-w-4xl mx-auto pb-6">
     <header class="text-center mb-6 mt-4">
