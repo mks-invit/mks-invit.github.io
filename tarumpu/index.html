@@ -265,9 +265,15 @@
     <button id="btn-sync" onclick="doSync()" class="hidden relative w-12 h-12 rounded-full bg-orange-500 text-white shadow-lg items-center justify-center hover:bg-orange-600 hover:scale-110 transition-all duration-200 animate-bounce-gentle" title="Sync ke Server"><i class="fas fa-cloud-upload-alt"></i><span id="sync-badge" class="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-sm border border-white dark:border-gray-800">0</span></button>
 </div>
 
-<div class="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-2"> <div id="admin-menu-container" class="hidden relative items-center justify-end">
-        
+<div class="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-2"> 
+    
+    <div id="admin-menu-container" class="hidden relative items-center justify-end">
         <div id="admin-menu-options" class="absolute right-12 flex gap-2 transition-all duration-300 opacity-0 translate-x-10 pointer-events-none scale-90 origin-right items-center">
+            
+                <button onclick="openPDFModal()" class="w-10 h-10 rounded-full bg-red-600 text-white shadow-xl flex items-center justify-center hover:bg-red-700 hover:scale-110 transition-all duration-200 group relative">
+        <i class="fas fa-file-pdf text-sm group-hover:animate-bounce"></i>
+        <span class="absolute right-full mr-3 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Cetak PDF</span>
+    </button>
             
             <button onclick="generateSecretLink()" class="w-10 h-10 rounded-full bg-pink-600 text-white shadow-lg flex items-center justify-center hover:bg-pink-700 hover:scale-110 transition-all duration-200 group/item" title="Buat Link Auto-Login">
                 <i class="fas fa-qrcode text-xs"></i>
@@ -302,16 +308,19 @@
         </button>
     </div>
     
-    <button onclick="openPDFModal()" class="w-10 h-10 rounded-full bg-red-600 text-white shadow-xl flex items-center justify-center hover:bg-red-700 hover:scale-110 transition-all duration-200 group relative">
-        <i class="fas fa-file-pdf text-sm group-hover:animate-bounce"></i>
-        <span class="absolute right-full mr-3 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Cetak PDF</span>
-    </button>
     
     <button onclick="openNarrativeMode()" class="w-10 h-10 rounded-full bg-indigo-600 text-white shadow-xl flex items-center justify-center hover:bg-indigo-700 hover:scale-110 transition-all duration-200 group relative">
         <i class="fas fa-book-open text-sm group-hover:animate-pulse"></i>
         <span class="absolute right-full mr-3 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Baca Kisah Keluarga</span>
     </button>
+    
+    <a href="https://wa.me/6282395223314" target="_blank" class="w-10 h-10 rounded-full bg-green-500 text-white shadow-xl flex items-center justify-center hover:bg-green-600 hover:scale-110 transition-all duration-200 group relative">
+        <i class="fab fa-whatsapp text-lg"></i>
+        <span class="absolute right-full mr-3 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Chat WhatsApp</span>
+    </a>
+     
 </div>
+
 
 
 <div id="login-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] hidden justify-center items-center p-4">
@@ -504,6 +513,7 @@
 </div>
 
 <datalist id="existing-members"></datalist>
+
 
 <script>
     // PENTING: GANTI URL DI BAWAH INI DENGAN URL WEB APP DARI DEPLOYMENT GOOGLE APPS SCRIPT ANDA
@@ -1544,7 +1554,7 @@ async function fetchFamilyDataSmart() {
             let html = '';
             roots.forEach(root => { html += `<div class="mb-10 pb-6 border-b border-gray-200 dark:border-gray-700 last:border-0">`; html += `<h2 class="text-2xl font-bold text-center text-indigo-800 dark:text-indigo-400 mb-6 font-serif">Kisah Keluarga Besar ${root.name}</h2>`;
 			
-			html += `<h4 style="margin-left: 30px; margin-right: 20px;" class="text-black-800 dark:text-black-400 mb-6 font-serif"><span class="font-semibold text-indigo-800 dark:text-indigo-400">* Dokumen Silsilah Rumpun Keluarga Tarumpu-Denggu</span><p style="margin-left: 13px;">Dokumen Silsilah Versi Website ini disusun oleh <span class="font-semibold text-indigo-600 dark:text-indigo-400">i.s. Dg. Mattawang</span> (Keturunan Kelima dari Garis <b>Muhammad Yakub bin Ahmad bin Dudeng bin Samadu bin Tarumpu</b>) berdasarkan Buku Silsilah dengan Judul Asli: <b>Silsilah Rumpun Keluarga dari Garis Keturunan Tarumpu – Denggu Edisi: Kedua (Sya'ban 1427 H. / September 2006 M.)</b> Penyunting: <span class="font-semibold text-indigo-600 dark:text-indigo-400">Drs. Muh. Darwin Mahmud</span> (Keturunan Keempat) Editor: <span class="font-semibold text-indigo-600 dark:text-indigo-400">Ruslan Saleh, S.Ag.</span> (Keturunan Kelima) Distribusi: <span class="font-semibold text-indigo-600 dark:text-indigo-400">Muh. Nur Mahmud, S.Sos.</span> (Jl. Sahabat No. 38 Makassar)</p></h4>`;
+			html += `<h4 style="margin-left: 30px; margin-right: 20px;" class="text-black-800 dark:text-black-400 mb-6 font-serif"><span class="font-semibold text-indigo-800 dark:text-indigo-400">* Dokumen Silsilah Rumpun Keluarga Tarumpu-Denggu</span><p style="margin-left: 13px;">Dokumen Silsilah Versi Website ini disusun oleh <span class="font-semibold text-indigo-600 dark:text-indigo-400">i.s. Dg. Mattawang</span> (Keturunan Kelima dari Garis <b>Muhammad Yakub bin Ahmad bin Dudeng bin Samadu bin Tarumpu</b>) berdasarkan Buku Silsilah dengan Judul Asli: <b>Silsilah Rumpun Keluarga dari Garis Keturunan Tarumpu â Denggu Edisi: Kedua (Sya'ban 1427 H. / September 2006 M.)</b> Penyunting: <span class="font-semibold text-indigo-600 dark:text-indigo-400">Drs. Muh. Darwin Mahmud</span> (Keturunan Keempat) Editor: <span class="font-semibold text-indigo-600 dark:text-indigo-400">Ruslan Saleh, S.Ag.</span> (Keturunan Kelima) Distribusi: <span class="font-semibold text-indigo-600 dark:text-indigo-400">Muh. Nur Mahmud, S.Sos.</span> (Jl. Sahabat No. 38 Makassar)</p></h4>`;
 			
 			html += `<h4 style="margin-left: 30px; margin-right: 20px;" class="text-black-800 dark:text-black-400 mb-6 font-serif"><span class="font-semibold text-indigo-800 dark:text-indigo-400">* Kata Pengantar</span><p style="margin-left: 13px;">Segala puji bagi <span class="font-semibold text-indigo-600 dark:text-indigo-400">Allah SWT</span> yang telah menciptakan hamba-Nya berpasang-pasangan, lalu menjadikan dari keduanya anak keturunan yang baik. Shalawat serta salam tercurah kepada <span class="font-semibold text-indigo-600 dark:text-indigo-400">Rasulullah Muhammad SAW</span>. Rumpun keluarga adalah anugerah <span class="font-semibold text-indigo-600 dark:text-indigo-400">Allah</span>. Namun, tak jarang ditemui antar individu dalam rumpun tersebut tidak lagi saling mengenal. Oleh karenanya, merupakan suatu kemestian untuk merunut kembali jaring-jaring keluarga besar tersebut agar tali ukhuwah dan silaturahmi tidak terputus. Penyusunan ini bermula dari <b>momentum pemindahan kuburan</b> salah seorang moyang, yaitu <span class="font-semibold text-indigo-600 dark:text-indigo-400">Doda (Samadu bin Tarumpu)</span> pada tanggal <b>9-11 Desember 2002</b>. Momentum ini dimanfaatkan untuk musyawarah keluarga guna <b>merunut kembali silsilah</b>.</p></h4>`
 			
